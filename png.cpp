@@ -1,10 +1,12 @@
+#include <string.h>
+
 #include "common.h"
 #include "png.h"
 
 Png::Png() {}
 
 // Cribbed from https://gist.github.com/niw/5963798 .
-Png *Png::open(std::string fn) {
+Png *Png::read(std::string fn) {
     FILE *f = fopen(fn.c_str(), "r");
     ASSERT(f != NULL);
     png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
@@ -44,10 +46,76 @@ Png *Png::open(std::string fn) {
     }
     png_read_update_info(png, info);
     p->rows = new png_bytep[p->height];
-    for (int y = 0; y < p->height; y++) {
+    for (size_t y = 0; y < p->height; y++) {
         p->rows[y] = new png_byte[png_get_rowbytes(png, info)];
     }
     png_read_image(png, p->rows);
     fclose(f);
     return p;
+}
+
+size_t Png::get_width(void) {
+    return this->width;
+}
+
+size_t Png::get_height(void) {
+    return this->height;
+}
+
+void Png::get_pixel(size_t x, size_t y, uint8_t *rgb) {
+    png_bytep pixel = &(this->rows[y][x * 4]);
+    memcpy(rgb, pixel, 3);
+}
+
+void Png::set_pixel(size_t x, size_t y, uint8_t r, uint8_t g, uint8_t b) {
+    png_bytep pixel = &(this->rows[y][x * 4]);
+    pixel[0] = r;
+    pixel[1] = g;
+    pixel[2] = b;
+}
+
+// Cribbed from https://gist.github.com/niw/5963798 .
+void Png::write(std::string fn) {
+    FILE *f = fopen(fn.c_str(), "wb");
+    ASSERT(f != NULL);
+
+    png_structp png = png_create_write_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+    ASSERT(png != NULL);
+
+    png_infop info = png_create_info_struct(png);
+    if (!info) abort();
+
+    if (setjmp(png_jmpbuf(png))) {
+        ASSERT(0);
+    }
+    png_init_io(png, f);
+
+    // Output is 8bit depth, RGBA format.
+    png_set_IHDR(
+        png,
+        info,
+        this->width, this->height,
+        8,
+        PNG_COLOR_TYPE_RGBA,
+        PNG_INTERLACE_NONE,
+        PNG_COMPRESSION_TYPE_DEFAULT,
+        PNG_FILTER_TYPE_DEFAULT
+    );
+    png_write_info(png, info);
+
+    // To remove the alpha channel for PNG_COLOR_TYPE_RGB format,
+    // Use png_set_filler().
+    //png_set_filler(png, 0, PNG_FILLER_AFTER);
+
+    png_write_image(png, rows);
+    png_write_end(png, NULL);
+
+    for (size_t y = 0; y < height; y++) {
+        free(this->rows[y]);
+    }
+    free(this->rows);
+
+    fclose(f);
+
+    png_destroy_write_struct(&png, &info);
 }
