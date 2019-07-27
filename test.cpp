@@ -23,6 +23,20 @@ bool SourceDevice::take(int x, int y, Rgb &rgb) {
     return rgb.equals(Rgb(0xff, 0xff, 0xff));
 }
 
+class SinkDevice : public Device {
+public:
+    static Device *create(void);
+    bool take(int, int, Rgb &);
+};
+
+Device *SinkDevice::create(void) {
+    return new SinkDevice();
+}
+
+bool SinkDevice::take(int x, int y, Rgb &rgb) {
+    return rgb.equals(Rgb(0, 0, 0));
+}
+
 void expand(Png *png, size_t x, size_t y, Device *d, bool **assigned) {
     if ((x < 0) || (x >= png->get_width()) || (y < 0) || (y >= png->get_height())) {
         return;
@@ -52,6 +66,7 @@ int main(void) {
     }
 
     std::vector<std::function<Device *(void)>> registry;
+    registry.push_back(SinkDevice::create);
     registry.push_back(SourceDevice::create);
 
     size_t old_assigned_count = 0;
