@@ -21,13 +21,31 @@ Device *SourceDevice::create(void) {
 }
 
 bool SourceDevice::take(int x, int y, uint8_t *rgb) {
-    return false;
+    return (rgb[0] == 0xff) && (rgb[1] == 0xff) && (rgb[2] == 0xff);
+}
+
+void expand(Png *png, size_t x, size_t y, Device *d, bool **assigned) {
+    if ((x < 0) || (x >= png->get_width()) || (y < 0) || (y >= png->get_height())) {
+        return;
+    }
+    if (assigned[x][y]) {
+        return;
+    }
+    uint8_t rgb[3];
+    png->get_pixel(x, y, rgb);
+    if (d->take(x, y, rgb)) {
+        assigned[x][y] = true;
+        expand(png, x + 1, y, d, assigned);
+        expand(png, x, y + 1, d, assigned);
+        expand(png, x - 1, y, d, assigned);
+        expand(png, x, y - 1, d, assigned);
+    }
 }
 
 int main(void) {
     auto png = Png::read("tests/basic_source_sink/_.png");
 
-    auto assigned = new bool*[png->get_width()];
+    bool **assigned = new bool*[png->get_width()];
     for (size_t x = 0; x < png->get_width(); x++) {
         assigned[x] = new bool[png->get_height()];
         for (size_t y = 0; y < png->get_height(); y++) {
@@ -49,14 +67,9 @@ int main(void) {
                 if (!assigned[x][y * png->get_width()]) {
                     for (auto di = registry.begin(); di != registry.end(); di++) {
                         Device *d = (*di)();
-
                         // Expand the device in all directions.
-
-                        uint8_t rgb[3];
-                        png->get_pixel(x, y, rgb);
-                        d->take(x, y, rgb);
+                        expand(png, x, y, d, assigned);
                     }
-                    //}
                 }
             }
         }
