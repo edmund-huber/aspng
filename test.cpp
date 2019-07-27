@@ -1,4 +1,3 @@
-#include <iostream>
 #include <functional>
 #include <vector>
 
@@ -7,21 +6,21 @@
 
 class Device {
 public:
-    virtual bool take(int, int, uint8_t*) = 0;
+    virtual bool take(int, int, Rgb &) = 0;
 };
 
 class SourceDevice : public Device {
 public:
     static Device *create(void);
-    bool take(int, int, uint8_t*);
+    bool take(int, int, Rgb &);
 };
 
 Device *SourceDevice::create(void) {
     return new SourceDevice();
 }
 
-bool SourceDevice::take(int x, int y, uint8_t *rgb) {
-    return (rgb[0] == 0xff) && (rgb[1] == 0xff) && (rgb[2] == 0xff);
+bool SourceDevice::take(int x, int y, Rgb &rgb) {
+    return rgb.equals(Rgb(0xff, 0xff, 0xff));
 }
 
 void expand(Png *png, size_t x, size_t y, Device *d, bool **assigned) {
@@ -31,8 +30,7 @@ void expand(Png *png, size_t x, size_t y, Device *d, bool **assigned) {
     if (assigned[x][y]) {
         return;
     }
-    uint8_t rgb[3];
-    png->get_pixel(x, y, rgb);
+    Rgb rgb = png->get_pixel(x, y);
     if (d->take(x, y, rgb)) {
         assigned[x][y] = true;
         expand(png, x + 1, y, d, assigned);
@@ -58,8 +56,6 @@ int main(void) {
 
     size_t old_assigned_count = 0;
     while (true) {
-        // Count up all the assigned pixels.
-
         // Go through all pixels until we find an unassigned pixel, and try to
         // start a device there.
         for (size_t y = 0; y < png->get_height(); y++) {
@@ -93,7 +89,7 @@ int main(void) {
             for (size_t x = 0; x < png->get_width(); x++) {
                 for (size_t y = 0; y < png->get_height(); y++) {
                     if (!assigned[x][y]) {
-                        png->set_pixel(x, y, 0, 0, 0);
+                        png->set_pixel(x, y, Rgb(0, 0, 0));
                     }
                 }
             }

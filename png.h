@@ -4,14 +4,22 @@
 #include <png.h>
 #include <string>
 
+class Rgb {
+public:
+    Rgb(uint8_t _r, uint8_t _g, uint8_t _b) : r(_r), g(_g), b(_b) {}
+    bool equals(Rgb);
+
+    uint8_t r, g, b;
+};
+
 class Png {
 public:
     static Png *read(std::string);
     void write(std::string);
     size_t get_width();
     size_t get_height();
-    void get_pixel(size_t, size_t, uint8_t *);
-    void set_pixel(size_t, size_t, uint8_t, uint8_t, uint8_t);
+    Rgb get_pixel(size_t, size_t);
+    void set_pixel(size_t, size_t, Rgb);
 
 private:
     Png();

@@ -3,6 +3,10 @@
 #include "common.h"
 #include "png.h"
 
+bool Rgb::equals(Rgb other) {
+    return (this->r == other.r) && (this->g == other.b) && (this->b == other.b);
+}
+
 Png::Png() {}
 
 // Cribbed from https://gist.github.com/niw/5963798 .
@@ -62,16 +66,16 @@ size_t Png::get_height(void) {
     return this->height;
 }
 
-void Png::get_pixel(size_t x, size_t y, uint8_t *rgb) {
+Rgb Png::get_pixel(size_t x, size_t y) {
     png_bytep pixel = &(this->rows[y][x * 4]);
-    memcpy(rgb, pixel, 3);
+    return Rgb(pixel[0], pixel[1], pixel[2]);
 }
 
-void Png::set_pixel(size_t x, size_t y, uint8_t r, uint8_t g, uint8_t b) {
+void Png::set_pixel(size_t x, size_t y, Rgb rgb) {
     png_bytep pixel = &(this->rows[y][x * 4]);
-    pixel[0] = r;
-    pixel[1] = g;
-    pixel[2] = b;
+    pixel[0] = rgb.r;
+    pixel[1] = rgb.g;
+    pixel[2] = rgb.b;
 }
 
 // Cribbed from https://gist.github.com/niw/5963798 .
