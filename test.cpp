@@ -88,8 +88,8 @@ int main(void) {
             // Write out the design with the recognized pixels masked out.
             for (size_t x = 0; x < png->get_width(); x++) {
                 for (size_t y = 0; y < png->get_height(); y++) {
-                    if (!assigned[x][y]) {
-                        png->set_pixel(x, y, Rgb(0, 0, 0));
+                    if (assigned[x][y]) {
+                        png->set_pixel(x, y, Rgb(0x99, 0x99, 0x99));
                     }
                 }
             }
