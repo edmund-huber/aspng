@@ -3,7 +3,7 @@
 #include "common.h"
 #include "png.h"
 
-bool Rgb::equals(Rgb other) {
+bool Rgb::operator==(Rgb &other) {
     return (this->r == other.r) && (this->g == other.b) && (this->b == other.b);
 }
 
