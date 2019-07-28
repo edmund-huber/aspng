@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <functional>
 #include <vector>
 
@@ -7,8 +8,13 @@
 class Coord2d {
 public:
     Coord2d(size_t x, size_t y) : x(x), y(y) {}
+    bool operator==(Coord2d);
     size_t x, y;
 };
+
+bool Coord2d::operator==(Coord2d other) {
+    return (this->x == other.x) && (this->y == other.y);
+}
 
 typedef std::vector<Coord2d> Patch;
 
@@ -22,33 +28,79 @@ public:
     Patch *flood(Png *, size_t, size_t, Rgb);
 
 private:
-    static void _flood(Png *, size_t, size_t, Rgb, Patch *);
+    static void _flood(Png *, size_t, size_t, Rgb, Patch *, Patch *);
 };
 
 Patch *Device::flood(Png *png, size_t x, size_t y, Rgb color) {
     Patch *patch = new Patch();
-    Device::_flood(png, x, y, color, patch);
+    Patch visited;
+    Device::_flood(png, x, y, color, patch, &visited);
     return patch;
 }
 
-void Device::_flood(Png *png, size_t x, size_t y, Rgb color, Patch *patch) {
+void Device::_flood(Png *png, size_t x, size_t y, Rgb color, Patch *patch, Patch *visited) {
     if ((x < 0) || (x >= png->get_width())) {
         return;
     }
     if ((y < 0) || (y >= png->get_height())) {
         return;
     }
+    if (std::find(visited->begin(), visited->end(), Coord2d(x, y)) != visited->end()) {
+        return;
+    }
+    visited->push_back(Coord2d(x, y));
     if (png->get_pixel(x, y) == color) {
         patch->push_back(Coord2d(x, y));
-        Device::_flood(png, x - 1, y, color, patch);
-        Device::_flood(png, x + 1, y, color, patch);
-        Device::_flood(png, x, y - 1, color, patch);
-        Device::_flood(png, x, y + 1, color, patch);
+        Device::_flood(png, x - 1, y, color, patch, visited);
+        Device::_flood(png, x + 1, y, color, patch, visited);
+        Device::_flood(png, x, y - 1, color, patch, visited);
+        Device::_flood(png, x, y + 1, color, patch, visited);
     }
+}
+
+class BackgroundDevice : public Device {
+public:
+    BackgroundDevice(void);
+    ~BackgroundDevice(void);
+    static Device *create(void);
+    bool parse(Png *, size_t, size_t);
+    Patch *all_patches(void);
+    static Rgb color;
+
+private:
+    Patch *patch;
+};
+
+BackgroundDevice::BackgroundDevice(void) {
+    this->patch = nullptr;
+}
+
+BackgroundDevice::~BackgroundDevice(void) {
+    if (this->patch != nullptr) {
+        delete this->patch;
+    }
+}
+
+Rgb BackgroundDevice::color = Rgb(0x99, 0x99, 0x99);
+
+Device *BackgroundDevice::create(void) {
+    return new BackgroundDevice();
+}
+
+bool BackgroundDevice::parse(Png *png, size_t x, size_t y) {
+    this->patch = this->flood(png, x, y, BackgroundDevice::color);
+    return this->patch->size() >= 1;
+}
+
+Patch *BackgroundDevice::all_patches(void) {
+    Patch *all_patches = new Patch();
+    all_patches->insert(all_patches->end(), this->patch->begin(), this->patch->end());
+    return all_patches;
 }
 
 class SourceDevice : public Device {
 public:
+    SourceDevice(void);
     ~SourceDevice(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
@@ -59,8 +111,14 @@ private:
     Patch *patch;
 };
 
+SourceDevice::SourceDevice(void) {
+    this->patch = nullptr;
+}
+
 SourceDevice::~SourceDevice(void) {
-    delete patch;
+    if (this->patch != nullptr) {
+       delete this->patch;
+    }
 }
 
 Rgb SourceDevice::color = Rgb(0xff, 0xff, 0xff);
@@ -121,7 +179,8 @@ Patch *SourceDevice::all_patches(void) {
 
 class SinkDevice : public Device {
 public:
-    ~SinkDevice();
+    SinkDevice(void);
+    ~SinkDevice(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
     Patch *all_patches(void);
@@ -131,8 +190,14 @@ private:
     Patch *patch;
 };
 
+SinkDevice::SinkDevice(void) {
+    this->patch = nullptr;
+}
+
 SinkDevice::~SinkDevice(void) {
-    delete patch;
+    if (this->patch != nullptr) {
+        delete this->patch;
+    }
 }
 
 Device *SinkDevice::create(void) {
@@ -152,6 +217,46 @@ Patch *SinkDevice::all_patches(void) {
     return all_patches;
 }
 
+class CopperDevice : public Device {
+public:
+    CopperDevice(void);
+    ~CopperDevice(void);
+    static Device *create(void);
+    bool parse(Png *, size_t, size_t);
+    Patch *all_patches(void);
+    static Rgb color;
+
+private:
+    Patch *patch;
+};
+
+CopperDevice::CopperDevice(void) {
+    this->patch = nullptr;
+}
+
+CopperDevice::~CopperDevice(void) {
+    if (this->patch != nullptr) {
+        delete this->patch;
+    }
+}
+
+Device *CopperDevice::create(void) {
+    return new CopperDevice();
+}
+
+Rgb CopperDevice::color = Rgb(0xdb, 0x73, 0);
+
+bool CopperDevice::parse(Png *png, size_t x, size_t y) {
+    this->patch = this->flood(png, x, y, CopperDevice::color);
+    return this->patch->size() == 1;
+}
+
+Patch *CopperDevice::all_patches(void) {
+    Patch *all_patches = new Patch();
+    all_patches->insert(all_patches->end(), this->patch->begin(), this->patch->end());
+    return all_patches;
+}
+
 int main(void) {
     auto png = Png::read("tests/basic_source_sink/_.png");
 
@@ -164,6 +269,8 @@ int main(void) {
     }
 
     std::vector<std::function<Device *(void)>> registry;
+    registry.push_back(BackgroundDevice::create);
+    registry.push_back(CopperDevice::create);
     registry.push_back(SinkDevice::create);
     registry.push_back(SourceDevice::create);
 
@@ -214,7 +321,7 @@ int main(void) {
         for (size_t x = 0; x < png->get_width(); x++) {
             for (size_t y = 0; y < png->get_height(); y++) {
                 if (assigned[x][y] != nullptr) {
-                    png->set_pixel(x, y, Rgb(0x99, 0x99, 0x99));
+                    png->set_pixel(x, y, BackgroundDevice::color);
                 }
             }
         }

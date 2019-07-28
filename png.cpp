@@ -4,7 +4,7 @@
 #include "png.h"
 
 bool Rgb::operator==(Rgb &other) {
-    return (this->r == other.r) && (this->g == other.b) && (this->b == other.b);
+    return (this->r == other.r) && (this->g == other.g) && (this->b == other.b);
 }
 
 Png::Png() {}
