@@ -26,3 +26,8 @@ Patch *SinkDevice::all_patches(void) {
     all_patches->insert(all_patches->end(), this->patch->begin(), this->patch->end());
     return all_patches;
 }
+
+bool SinkDevice::link(Device ***assignments, size_t w, size_t h, std::string *fail_string) {
+    Device::find_neighbors(assignments, w, h, &this->neighbors);
+    return true;
+}

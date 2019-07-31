@@ -27,4 +27,7 @@ Patch *SourceDevice::all_patches(void) {
     return all_patches;
 }
 
-
+bool SourceDevice::link(Device ***assignments, size_t w, size_t h, std::string *fail_string) {
+    Device::find_neighbors(assignments, w, h, &this->neighbors);
+    return true;
+}

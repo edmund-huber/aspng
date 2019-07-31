@@ -2,6 +2,7 @@
 #define __DEVICE_H__
 
 #include <cstdlib>
+#include <set>
 #include <vector>
 
 #include "png.h"
@@ -20,12 +21,15 @@ public:
     virtual ~Device(void) {};
     virtual bool parse(Png *, size_t, size_t) = 0;
     virtual Patch *all_patches(void) = 0;
+    virtual bool link(Device ***, size_t, size_t, std::string *) = 0;
 
-    // Helpers for parsing.
+    // Helpers for parsing & linking.
     Patch *flood(Png *, size_t, size_t, Rgb);
+    void find_neighbors(Device ***, size_t, size_t, std::set<Device *> *);
 
 private:
-    static void _flood(Png *, size_t, size_t, Rgb, Patch *, Patch *);
+    static void flood_helper(Png *, size_t, size_t, Rgb, Patch *, Patch *); // TODO probably more convenient if not static
+    void maybe_neighbor(Device ***, size_t, size_t, size_t, size_t, std::set<Device *> *);
 };
 
 class BackgroundDevice : public Device {
@@ -35,6 +39,7 @@ public:
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
     Patch *all_patches(void);
+    bool link(Device ***, size_t, size_t, std::string *);
     static Rgb color;
 
 private:
@@ -48,10 +53,12 @@ public:
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
     Patch *all_patches(void);
+    bool link(Device ***, size_t, size_t, std::string *);
     static Rgb color;
 
 private:
     Patch *patch;
+    std::set<Device *> neighbors;
 };
 
 class SinkDevice : public Device {
@@ -61,10 +68,12 @@ public:
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
     Patch *all_patches(void);
+    bool link(Device ***, size_t, size_t, std::string *);
     static Rgb color;
 
 private:
     Patch *patch;
+    std::set<Device *> neighbors;
 };
 
 class SourceDevice : public Device {
@@ -74,10 +83,12 @@ public:
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
     Patch *all_patches(void);
+    bool link(Device ***, size_t, size_t, std::string *);
     static Rgb color;
 
 private:
     Patch *patch;
+    std::set<Device *> neighbors;
 };
 
 #endif

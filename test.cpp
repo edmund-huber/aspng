@@ -1,3 +1,4 @@
+#include <iostream>
 #include <functional>
 #include <vector>
 
@@ -61,6 +62,8 @@ int main(void) {
     registry.push_back(SinkDevice::create);
     registry.push_back(SourceDevice::create);
 
+    std::vector<Device *> all_devices;
+
     // Go through all pixels until we find an unassigned pixel, and try to
     // parse a device starting from there.
     for (size_t y = 0; y < png->get_height(); y++) {
@@ -78,6 +81,7 @@ int main(void) {
                             // parsing rules are overlapping, (they shouldn't).
                             ASSERT(assigned[xy.x][xy.y] == nullptr)
                             assigned[xy.x][xy.y] = d;
+                            all_devices.push_back(d);
                         }
                         delete all_patches;
                     }
@@ -98,6 +102,23 @@ int main(void) {
         }
     }
 
+    // Linking stage: call each device .link() with the assignment map.  Each
+    // device uses this mapping to figure out 1) what other devices it is
+    // connected to, and 2) whether this is a valid usage of the device.
+    std::vector<std::string> link_fails;
+    for (auto i = all_devices.begin(); i != all_devices.end(); i++) {
+        std::string fail_string;
+        if (!(*i)->link(assigned, png->get_width(), png->get_height(), &fail_string)) {
+            link_fails.push_back(fail_string);
+        }
+    }
+    if (link_fails.size() > 0) {
+        std::cout << "link fails!" << std::endl;
+        for (auto i = link_fails.begin(); i != link_fails.end(); i++) {
+            std::cout << *i << std::endl;
+        }
+    }
+
     // TODO: how to connect to other devices? -> after parsing of whole image succeeds,
     //                                then "linking" stage - Device::link called with pixel->device mapping
     //                                (.. for each device)
@@ -115,6 +136,9 @@ int main(void) {
         png->write("fail.png");
         return -1;
     }
+
+    // TODO: delete each device in all_devices (delete other stuff?)
+    // TODO: move some/all of this into a Parser class
 
     return 0;
 }
