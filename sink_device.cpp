@@ -29,5 +29,10 @@ Patch *SinkDevice::all_patches(void) {
 
 bool SinkDevice::link(Device ***assignments, size_t w, size_t h, std::string *fail_string) {
     Device::find_neighbors(assignments, w, h, &this->neighbors);
+    for (auto it = this->neighbors.begin(); it != this->neighbors.end(); it++) {
+        if (dynamic_cast<BackgroundDevice *>(*it) != nullptr) continue;
+        if (dynamic_cast<CopperDevice *>(*it) != nullptr) continue;
+        return false;
+    }
     return true;
 }
