@@ -7,6 +7,12 @@
 
 #include "png.h"
 
+typedef enum {
+    VALUE_FLOAT = 0,
+    VALUE_HIGH,
+    VALUE_LOW
+} value_t;
+
 class Coord2d {
 public:
     Coord2d(size_t x, size_t y) : x(x), y(y) {}
@@ -26,6 +32,10 @@ public:
     // Helpers for parsing & linking.
     Patch *flood(Png *, size_t, size_t, Rgb);
     void find_neighbors(Device ***, size_t, size_t, std::set<Device *> *);
+
+    Device *head_of_net;
+    Device *next_in_net;
+    Device *next_head_of_net;
 
 private:
     static void flood_helper(Png *, size_t, size_t, Rgb, Patch *, Patch *); // TODO probably more convenient if not static

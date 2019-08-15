@@ -45,6 +45,26 @@
     }
 }*/
 
+void net_segment(Device *root, Device *d) {
+    // If this Device is already in this net, we can stop.
+    if (d->head_of_net == root) return;
+
+    // If this Device is in another net, then something has gone horribly
+    // wrong.
+    ASSERT(d->head_of_net == nullptr)
+
+    // This device is in the current net.
+    d->head_of_net = root;
+    d->next_in_net = root->next_in_net;
+    root->next_in_net = d;
+
+    // And all the Devices connected to it are, too.
+    auto connected = d->connected_devices();
+    for (auto iter = connected.begin(); iter != connected.end(); iter++) {
+        net_segment(root, *iter);
+    }
+}
+
 int main(void) {
     auto png = Png::read("tests/basic_source_sink/_.png");
 
@@ -91,7 +111,7 @@ int main(void) {
     }
 
     // After we have passed through the whole image, every pixel should be
-    // assigned, because everything got parsed out.
+    // assigned.
     bool parse_succeeded = true;
     for (size_t x = 0; x < png->get_width(); x++) {
         for (size_t y = 0; y < png->get_height(); y++) {
@@ -102,7 +122,7 @@ int main(void) {
         }
     }
 
-    // Linking stage: call each device .link() with the assignment map.  Each
+    // Linking stage: call each device .link() with the assignment map. Each
     // device uses this mapping to figure out 1) what other devices it is
     // connected to, and 2) whether this is a valid usage of the device.
     std::vector<std::string> link_fails;
@@ -139,6 +159,37 @@ int main(void) {
 
     // TODO: delete each device in all_devices (delete other stuff?)
     // TODO: move some/all of this into a Parser class
+
+    while (true) {
+        // Segment all devices into nets.
+        for (auto iter = all_devices.begin(); iter != all_devices.end(); iter++) {
+            (*iter)->head_of_net = nullptr;
+            (*iter)->next_in_net = nullptr;
+            (*iter)->next_head_of_net = nullptr;
+        }
+        Device *first_head_of_net = nullptr;
+        for (auto iter = all_devices.begin(); iter != all_devices.end(); iter++) {
+            net_segment(*iter, *iter);
+            (*iter)->next_head_of_net = first_head_of_net;
+            first_head_of_net = *iter;
+        }
+
+        // For each net,
+        for (Device *net = first_head_of_net; net != nullptr; net = net->next_head_of_net) {
+            // figure out the total value of the net.
+            value_t v = VALUE_FLOAT;
+            for (Device *d = net; d != nullptr; d = d->next_in_net) {
+                if (d->get_value() > v) {
+                    v = d->get_value();
+                }
+            }
+
+            // And apply that value to all devices in the net.
+            for (Device *d = net; d != nullptr; d = d->next_in_net) {
+                d->set_value(v);
+            }
+        }
+    }
 
     return 0;
 }
