@@ -33,7 +33,7 @@ void Device::flood_helper(Png *png, size_t x, size_t y, Rgb color, Patch *patch,
     }
 }
 
-void Device::find_neighbors(Device ***assigned, size_t w, size_t h, std::set<Device *> *neighbors) {
+void Device::link_find_neighbors(Device ***assigned, size_t w, size_t h, std::set<Device *> *neighbors) {
     Patch *patch = this->all_patches();
     for (auto it = patch->begin(); it != patch->end(); it++) {
         Coord2d xy = *it;

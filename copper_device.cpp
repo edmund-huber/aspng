@@ -10,6 +10,10 @@ CopperDevice::~CopperDevice(void) {
     }
 }
 
+std::string CopperDevice::name(void) {
+    return "Copper";
+}
+
 Device *CopperDevice::create(void) {
     return new CopperDevice();
 }
@@ -18,7 +22,7 @@ Rgb CopperDevice::color = Rgb(0xdb, 0x73, 0);
 
 bool CopperDevice::parse(Png *png, size_t x, size_t y) {
     // TODO: pass in pointer to vector, then can get rid of dynamic allocation of vector
-    this->patch = this->flood(png, x, y, CopperDevice::color);
+    this->patch = this->parse_flood(png, x, y, CopperDevice::color);
     return this->patch->size() == 1;
 }
 
@@ -29,6 +33,6 @@ Patch *CopperDevice::all_patches(void) {
 }
 
 bool CopperDevice::link(Device ***assignments, size_t w, size_t h, std::string *fail_string) {
-    Device::find_neighbors(assignments, w, h, &this->neighbors);
+    Device::link_find_neighbors(assignments, w, h, &this->neighbors);
     return true;
 }

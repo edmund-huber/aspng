@@ -10,6 +10,10 @@ SinkDevice::~SinkDevice(void) {
     }
 }
 
+std::string SinkDevice::name(void) {
+    return "Sink";
+}
+
 Device *SinkDevice::create(void) {
     return new SinkDevice();
 }
@@ -17,7 +21,7 @@ Device *SinkDevice::create(void) {
 Rgb SinkDevice::color = Rgb(0, 0, 0);
 
 bool SinkDevice::parse(Png *png, size_t x, size_t y) {
-    this->patch = this->flood(png, x, y, SinkDevice::color);
+    this->patch = this->flood_helper(png, x, y, SinkDevice::color);
     return this->patch->size() == 1;
 }
 
@@ -28,7 +32,7 @@ Patch *SinkDevice::all_patches(void) {
 }
 
 bool SinkDevice::link(Device ***assignments, size_t w, size_t h, std::string *fail_string) {
-    Device::find_neighbors(assignments, w, h, &this->neighbors);
+    Device::link_find_neighbors(assignments, w, h, &this->neighbors);
     for (auto it = this->neighbors.begin(); it != this->neighbors.end(); it++) {
         if (dynamic_cast<BackgroundDevice *>(*it) != nullptr) continue;
         if (dynamic_cast<CopperDevice *>(*it) != nullptr) continue;

@@ -10,6 +10,10 @@ SourceDevice::~SourceDevice(void) {
     }
 }
 
+std::string SourceDevice::name(void) {
+    return "Source";
+}
+
 Rgb SourceDevice::color = Rgb(0xff, 0xff, 0xff);
 
 Device *SourceDevice::create(void) {
@@ -17,7 +21,7 @@ Device *SourceDevice::create(void) {
 }
 
 bool SourceDevice::parse(Png *png, size_t x, size_t y) {
-    this->patch = this->flood(png, x, y, SourceDevice::color);
+    this->patch = this->flood_helper(png, x, y, SourceDevice::color);
     return this->patch->size() == 1;
 }
 
@@ -28,7 +32,7 @@ Patch *SourceDevice::all_patches(void) {
 }
 
 bool SourceDevice::link(Device ***assignments, size_t w, size_t h, std::string *fail_string) {
-    Device::find_neighbors(assignments, w, h, &this->neighbors);
+    Device::link_find_neighbors(assignments, w, h, &this->neighbors);
     for (auto it = this->neighbors.begin(); it != this->neighbors.end(); it++) {
         if (dynamic_cast<BackgroundDevice *>(*it) != nullptr) continue;
         if (dynamic_cast<CopperDevice *>(*it) != nullptr) continue;
