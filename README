@@ -4,3 +4,61 @@ aspng: application-specific PNG
 Have you ever wanted to design a CPU with Paint?
 
 Now you can, you crazy bastard!
+
+
+Parsing
+-------
+
+We parse and image by assigning every pixel in the image to some device. Even
+the 'background' is actually assigned to an inert Background device.
+
+The parser does one pass through every pixel in the image. If there are any
+unassigned pixels at the end of this, then the image is unparseable. Since
+there is no notion of backtracking, or of keeping multiple acceptable parse
+results, the grammar must be unambiguous. Given these facts, it follows that a
+device may choose to only complete a parse from one specific pixel - but that
+the Device::parse must recognize all permissible instantiations of that device
+from that one pixel.
+
+  @@@@@@@@
+  @@@@@@@@
+  @@@@@@@@&&&&&
+  @@@@@@@@&&&&&
+  @@@@@@@@&&&&&
+  @@@@@@@@   &&
+  @@@@@@@@   &&
+  @@@@@@@@ @@@@@@
+    # #    @@@@@@
+    # #    @@@@@@
+   $$$$$
+   $$$$$
+
+  11111111
+  11111111
+  1111111122222
+  1111111122222
+  1111111122222
+  11111111   22
+  11111111   22
+  11111111 333333
+    4 5    333333
+    4 5    333333
+   66666
+   66666
+
+
+Linking
+-------
+
+After parsing, we know which devices are where, but we don't know how they are
+connected yet.
+
+  11111111
+  1      1
+  1      PP2222
+  1      PP   2
+  1      PP2222
+  1      1   22
+  1      1   22
+  11111111
+
