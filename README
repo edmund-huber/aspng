@@ -1,64 +1,118 @@
 aspng: application-specific PNG
 -------------------------------
 
-Have you ever wanted to design a CPU with Paint?
+Have you ever wanted to design a CPU with Paint? Now you can!
 
-Now you can, you crazy bastard!
+`aspng` allows you to draw out digital circuits using pixels, and then simulate
+those circuits.
 
+Check out running examples (as seen in the examples/ directory) at
+<https://ehuber.info/aspng>.
 
 Parsing
 -------
 
-We parse and image by assigning every pixel in the image to some device. Even
-the 'background' is actually assigned to an inert Background device.
+An image has been "parsed" when every pixel in the image has been assigned to
+some device. Including the background - it's assigned to one or more inert
+BackgroundDevices - but for clarity's sake, the background pixels/devices are
+left out of the figures in this document.
 
-The parser does one pass through every pixel in the image. If there are any
-unassigned pixels at the end of this, then the image is unparseable. Since
-there is no notion of backtracking, or of keeping multiple acceptable parse
-results, the grammar must be unambiguous. Given these facts, it follows that a
-device may choose to only complete a parse from one specific pixel - but that
-the Device::parse must recognize all permissible instantiations of that device
-from that one pixel.
+```
+raw                      parsed
+---                      ------
 
-  @@@@@@@@
-  @@@@@@@@
-  @@@@@@@@&&&&&
-  @@@@@@@@&&&&&
-  @@@@@@@@&&&&&
-  @@@@@@@@   &&
-  @@@@@@@@   &&
-  @@@@@@@@ @@@@@@
-    # #    @@@@@@
-    # #    @@@@@@
-   $$$$$
-   $$$$$
+@@@@@@@@                 11111111
+@@@@@@@@                 11111111
+@@@@@@@@*****            1111111122222
+@@@@@@@@*****            1111111122222
+@@@@@@@@*****      ->    1111111122222
+@@@@@@@@   **            11111111   22
+@@@@@@@@   **            11111111   22
+@@@@@@@@ @@@@@@          11111111 333333
+  # #    @@@@@@            4 5    333333
+  # #    @@@@@@            4 5
+ $$$$$                    66666
+ $$$$$                    66666
 
-  11111111
-  11111111
-  1111111122222
-  1111111122222
-  1111111122222
-  11111111   22
-  11111111   22
-  11111111 333333
-    4 5    333333
-    4 5    333333
-   66666
-   66666
+                         id | device type
+                         ----------------
+                         1  | A
+                         2  | B
+                         3  | A
+                         4  | C
+                         5  | C
+                         6  | D
+```
 
+The `aspng` parser, as implemented, only does one pass over the image. For each
+unclaimed pixel, starting from the top left, the parser asks each Device
+type D to parse out a device starting from that pixel. If D is successful, then
+the parser assigns all the pixels that D has claimed to D.
+
+Since this implementation does not consider multiple parse results, the grammar
+must be unambiguous: for any given input, there must be 1 or 0 possible parses.
 
 Linking
 -------
 
-After parsing, we know which devices are where, but we don't know how they are
-connected yet.
+After parsing, we know which devices are in the image. But there is nothing to
+simulate until we know how those devices are connected.
 
-  11111111
-  1      1
-  1      PP2222
-  1      PP   2
-  1      PP2222
-  1      1   22
-  1      1   22
-  11111111
+This process is called linking. Considering a subset of the figure from before,
+the result that we want from linking is one "port" between the devices 1 and 2,
+illustrated with # and % signs:
 
+```
+raw                    parsed                    linked
+---                    ------                    ------
+
+@@@@@@@@               11111111                  11111111
+@@@@@@@@               11111111                  11111111
+@@@@@@@@*****          1111111122222             1111111#%2222
+@@@@@@@@*****          1111111122222             1111111#%2222
+@@@@@@@@*****    ->    1111111122222       ->    1111111#%2222
+@@@@@@@@   **          11111111   22             11111111   22
+@@@@@@@@   **          11111111   22             11111111   22
+@@@@@@@@               11111111                  11111111
+
+                       id | device type
+                       ----------------
+                       1  | A
+                       2  | B
+```
+
+The # and % signs, taken together, are the "port". The # signs are those pixels
+comprising the port which are contained in device 1, and the % signs are those
+contained in device 2. The reason this distinction is important is that each
+device will decide how to interact with this port based on where the port
+touches the device.
+
+The way `aspng` does the linking process is by first finding the longest
+contiguous patches where two devices meet. Then, each device is queried to find
+out whether it is legal for it to be touching the other device. If one or both
+devices do not allow the port, then it is a linking error.
+
+Simulation
+----------
+
+Simulation in `aspng` follows the clock. A simulation step looks like this:
+
+1. Flip the clock value from 0 -> 1 or 1 -> 0.
+
+2. Group all devices into "nets". A device is in the same "net" as another if
+the two devices are reachable through any number of ports (and other devices).
+Devices decide how their ports relate to one another -- for example, a
+transistor will connect two ports if and only if the third port (the gate) is
+"+".
+
+3. For each net, determine the total value of the net:
+* if there is at least one "+",
+** and no "-", then "+",
+** and one or more "-", then error,
+* if there is at least one "-",
+** and no "+", then "-",
+** and one or more "+", then error,
+* otherwise, "float".
+
+4. If any port value changed, return to step 2. If we have done "too many"
+iterations and we don't think the simulation will converge, then error.
