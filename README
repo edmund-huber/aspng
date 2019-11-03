@@ -13,9 +13,9 @@ Parsing
 -------
 
 An image has been "parsed" when every pixel in the image has been assigned to
-some device. Including the background - it's assigned to one or more inert
-BackgroundDevices - but for clarity's sake, the background pixels/devices are
-left out of the figures in this document.
+some device. Including the background -- it's assigned to an inert
+BackgroundDevices. For clarity's sake, the background pixels/devices are left
+out of the figures in this document.
 
 ```
 raw                      parsed
@@ -45,8 +45,8 @@ raw                      parsed
 ```
 
 The `aspng` parser, as implemented, only does one pass over the image. For each
-unclaimed pixel, starting from the top left, the parser asks each Device
-type D to parse out a device starting from that pixel. If D is successful, then
+unclaimed pixel, starting from the top left, the parser asks each Device type D
+to try to parse out a device starting from that pixel. If D is successful, then
 the parser assigns all the pixels that D has claimed to D.
 
 Since this implementation does not consider multiple parse results, the grammar
@@ -88,9 +88,9 @@ device will decide how to interact with this port based on where the port
 touches the device.
 
 The way `aspng` does the linking process is by first finding the longest
-contiguous patches where two devices meet. Then, each device is queried to find
-out whether it is legal for it to be touching the other device. If one or both
-devices do not allow the port, then it is a linking error.
+contiguous patches where two devices touch. Then, each device is queried to
+find out whether it is legal for it to be touching the other device. If one or
+both devices do not allow the port, then it is a linking error.
 
 Simulation
 ----------
@@ -100,12 +100,13 @@ Simulation in `aspng` follows the clock. A simulation step looks like this:
 1. Flip the clock value from 0 -> 1 or 1 -> 0.
 
 2. Group all devices into "nets". A device is in the same "net" as another if
-the two devices are reachable through any number of ports (and other devices).
-Devices decide how their ports relate to one another -- for example, a
-transistor will connect two ports if and only if the third port (the gate) is
-"+".
+the two devices are reachable through any number of ports (passing through
+other devices). Devices decide how their ports relate to one another -- for
+example, a transistor will connect two ports if and only if the third port (the
+gate) is "+".
 
-3. For each net, determine the total value of the net:
+3. Determine the total value of each net, given the states of the devices
+inside of it:
 * if there is at least one "+",
 ** and no "-", then "+",
 ** and one or more "-", then error,
