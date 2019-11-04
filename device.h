@@ -2,16 +2,11 @@
 #define __DEVICE_H__
 
 #include <cstdlib>
+#include <memory>
 #include <set>
 #include <vector>
 
 #include "png.h"
-
-typedef enum {
-    VALUE_FLOAT = 0,
-    VALUE_HIGH,
-    VALUE_LOW
-} value_t;
 
 class Coord2d {
 public:
@@ -21,6 +16,14 @@ public:
 };
 
 typedef std::vector<Coord2d> Patch;
+
+enum PortType {
+    InvalidPort,
+    BackgroundPort,
+    CopperPort,
+    SourcePort,
+    SinkPort
+};
 
 class Device {
 public:
@@ -34,23 +37,19 @@ public:
     // do not decide here whether the device can exist in the context of the
     // pixels (and devices) surrounding it.
     virtual bool parse(Png *, size_t, size_t) = 0;
-    Patch *parse_flood(Png *, size_t, size_t, Rgb);
+    Patch flood(Png *, size_t, size_t, Rgb);
 
     // Return the list of pixels that were parsed out, during the method above.
-    // The caller will delete the list.
-    virtual Patch *all_patches(void) = 0;
+    virtual std::vector<Patch> all_patches(void) = 0;
 
-    // Given a 2D array of Device *, figure out (generally, based on the
-    // neighbors) whether this device is being used in a valid way. If the link
-    // failed, fail_str should explain what went wrong.
-    virtual bool link(Device ***, size_t, size_t, std::string *) = 0;
-    void link_find_neighbors(Device ***, size_t, size_t, std::set<Device *> *);
-
-    // Given the device's current state, which ports
-    virtual void propagate(Port *, list<Port *> *);
+    // Can this device, through the given patch (which is part of this device),
+    // link to this otherother device? If yes, the patch is a port, and return
+    // a value indicating what this port means to this device. Or return
+    // InvalidPort.
+    virtual PortType link(std::shared_ptr<Patch>, std::shared_ptr<Device>) = 0;
 
 private:
-    static void flood_helper(Png *, size_t, size_t, Rgb, Patch *, Patch *); // TODO probably more convenient if not static
+    static void flood_helper(Png *, size_t, size_t, Rgb, Patch &, Patch &); // TODO probably more convenient if not static
     void maybe_neighbor(Device ***, size_t, size_t, size_t, size_t, std::set<Device *> *);
 };
 
@@ -61,59 +60,53 @@ public:
     std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
-    Patch *all_patches(void);
-    bool link(Device ***, size_t, size_t, std::string *);
+    std::vector<Patch> all_patches(void);
+    PortType link(std::shared_ptr<Patch>, std::shared_ptr<Device>);
     static Rgb color;
 
 private:
-    Patch *patch;
+    Patch patch;
 };
 
 class CopperDevice : public Device {
 public:
-    CopperDevice(void);
-    ~CopperDevice(void);
     std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
-    Patch *all_patches(void);
-    bool link(Device ***, size_t, size_t, std::string *);
+    std::vector<Patch> all_patches(void);
+    PortType link(std::shared_ptr<Patch>, std::shared_ptr<Device>);
     static Rgb color;
 
 private:
-    Patch *patch;
+    Patch patch;
     std::set<Device *> neighbors;
 };
 
 class SinkDevice : public Device {
 public:
-    SinkDevice(void);
-    ~SinkDevice(void);
     std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
-    Patch *all_patches(void);
-    bool link(Device ***, size_t, size_t, std::string *);
+    std::vector<Patch> all_patches(void);
+    PortType link(std::shared_ptr<Patch>, std::shared_ptr<Device>);
     static Rgb color;
 
 private:
-    Patch *patch;
+    Patch patch;
     std::set<Device *> neighbors;
 };
 
 class SourceDevice : public Device {
 public:
-    SourceDevice(void);
-    ~SourceDevice(void);
     std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
-    Patch *all_patches(void);
-    bool link(Device ***, size_t, size_t, std::string *);
+    std::vector<Patch> all_patches(void);
+    PortType link(std::shared_ptr<Patch>, std::shared_ptr<Device>);
     static Rgb color;
 
 private:
-    Patch *patch;
+    Patch patch;
     std::set<Device *> neighbors;
 };
 

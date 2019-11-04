@@ -8,6 +8,7 @@ those circuits.
 
 Check out running examples (as seen in the examples/ directory) at
 <https://ehuber.info/aspng>.
+TODO
 
 Parsing
 -------
@@ -103,7 +104,7 @@ Simulation in `aspng` follows the clock. A simulation step looks like this:
 the two devices are reachable through any number of ports (passing through
 other devices). Devices decide how their ports relate to one another -- for
 example, a transistor will connect two ports if and only if the third port (the
-gate) is "+".
+gate) is "+". Note that a device can be in multiple nets.
 
 3. Determine the total value of each net, given the states of the devices
 inside of it:

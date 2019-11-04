@@ -1,15 +1,5 @@
 #include "device.h"
 
-SinkDevice::SinkDevice(void) {
-    this->patch = nullptr;
-}
-
-SinkDevice::~SinkDevice(void) {
-    if (this->patch != nullptr) {
-        delete this->patch;
-    }
-}
-
 std::string SinkDevice::name(void) {
     return "Sink";
 }
@@ -21,22 +11,17 @@ Device *SinkDevice::create(void) {
 Rgb SinkDevice::color = Rgb(0, 0, 0);
 
 bool SinkDevice::parse(Png *png, size_t x, size_t y) {
-    this->patch = this->flood_helper(png, x, y, SinkDevice::color);
-    return this->patch->size() == 1;
+    this->patch = this->flood(png, x, y, SinkDevice::color);
+    return this->patch.size() == 1;
 }
 
-Patch *SinkDevice::all_patches(void) {
-    Patch *all_patches = new Patch();
-    all_patches->insert(all_patches->end(), this->patch->begin(), this->patch->end());
+std::vector<Patch> SinkDevice::all_patches(void) {
+    std::vector<Patch> all_patches;
+    all_patches.push_back(this->patch);
     return all_patches;
 }
 
-bool SinkDevice::link(Device ***assignments, size_t w, size_t h, std::string *fail_string) {
-    Device::link_find_neighbors(assignments, w, h, &this->neighbors);
-    for (auto it = this->neighbors.begin(); it != this->neighbors.end(); it++) {
-        if (dynamic_cast<BackgroundDevice *>(*it) != nullptr) continue;
-        if (dynamic_cast<CopperDevice *>(*it) != nullptr) continue;
-        return false;
-    }
-    return true;
+PortType SinkDevice::link(std::shared_ptr<Patch> patch, std::shared_ptr<Device> other) {
+    // Sinks can connect to anything.
+    return SinkPort;
 }
