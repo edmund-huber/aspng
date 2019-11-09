@@ -6,16 +6,8 @@
 #include <set>
 #include <vector>
 
+#include "patch.h"
 #include "png.h"
-
-class Coord2d {
-public:
-    Coord2d(size_t x, size_t y) : x(x), y(y) {}
-    bool operator==(Coord2d);
-    size_t x, y;
-};
-
-typedef std::vector<Coord2d> Patch;
 
 enum PortType {
     InvalidPort,

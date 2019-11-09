@@ -2,10 +2,6 @@
 
 #include "device.h"
 
-bool Coord2d::operator==(Coord2d other) {
-    return (this->x == other.x) && (this->y == other.y);
-}
-
 Patch Device::flood(Png *png, size_t x, size_t y, Rgb color) {
     Patch patch, visited;
     Device::flood_helper(png, x, y, color, patch, visited);
@@ -19,12 +15,12 @@ void Device::flood_helper(Png *png, size_t x, size_t y, Rgb color, Patch &patch,
     if ((y < 0) || (y >= png->get_height())) {
         return;
     }
-    if (std::find(visited.begin(), visited.end(), Coord2d(x, y)) != visited.end()) {
+    if (std::find(visited.begin(), visited.end(), Coord(x, y)) != visited.end()) {
         return;
     }
-    visited.push_back(Coord2d(x, y));
+    visited.push_back(Coord(x, y));
     if (png->get_pixel(x, y) == color) {
-        patch.push_back(Coord2d(x, y));
+        patch.push_back(Coord(x, y));
         Device::flood_helper(png, x - 1, y, color, patch, visited);
         Device::flood_helper(png, x + 1, y, color, patch, visited);
         Device::flood_helper(png, x, y - 1, color, patch, visited);

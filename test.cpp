@@ -42,9 +42,9 @@ int main(void) {
                                 // If this assert fails, it suggests that
                                 // greedy parsing rules are overlapping, (they
                                 // shouldn't).
-                                Coord2d coord2d = *it3;
-                                ASSERT(device_map[coord2d.x][coord2d.y] == nullptr)
-                                device_map[coord2d.x][coord2d.y] = d;
+                                Coord coord = *it3;
+                                ASSERT(device_map[coord.x][coord.y] == nullptr)
+                                device_map[coord.x][coord.y] = d;
                                 all_devices.push_back(d);
                             }
                         }
