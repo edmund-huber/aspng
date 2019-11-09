@@ -1,16 +1,19 @@
 #ifndef __PATCH_H__
 #define __PATCH_H__
 
-#include <vector>
-#include "coord.h"
+#include <set>
+#include <tuple>
 
-class Patch : private std::vector<Coord> {
+typedef std::tuple<size_t, size_t> Coord;
+
+class Patch : private std::set<Coord> {
 public:
-    using std::vector<Coord>::begin;
-    using std::vector<Coord>::end;
-    using std::vector<Coord>::size;
+    using std::set<Coord>::begin;
+    using std::set<Coord>::end;
+    using std::set<Coord>::size;
+    using std::set<Coord>::find;
 
-    void push_back(const Coord &);
+    void insert(const Coord &);
 };
 
 #endif

@@ -1,5 +1,3 @@
-#include <algorithm>
-
 #include "device.h"
 
 Patch Device::flood(Png *png, size_t x, size_t y, Rgb color) {
@@ -15,12 +13,12 @@ void Device::flood_helper(Png *png, size_t x, size_t y, Rgb color, Patch &patch,
     if ((y < 0) || (y >= png->get_height())) {
         return;
     }
-    if (std::find(visited.begin(), visited.end(), Coord(x, y)) != visited.end()) {
+    if (visited.find(Coord(x, y)) != visited.end()) {
         return;
     }
-    visited.push_back(Coord(x, y));
+    visited.insert(Coord(x, y));
     if (png->get_pixel(x, y) == color) {
-        patch.push_back(Coord(x, y));
+        patch.insert(Coord(x, y));
         Device::flood_helper(png, x - 1, y, color, patch, visited);
         Device::flood_helper(png, x + 1, y, color, patch, visited);
         Device::flood_helper(png, x, y - 1, color, patch, visited);

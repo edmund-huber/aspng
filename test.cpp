@@ -43,8 +43,8 @@ int main(void) {
                                 // greedy parsing rules are overlapping, (they
                                 // shouldn't).
                                 Coord coord = *it3;
-                                ASSERT(device_map[coord.x][coord.y] == nullptr)
-                                device_map[coord.x][coord.y] = d;
+                                ASSERT(device_map[std::get<0>(coord)][std::get<1>(coord)] == nullptr)
+                                device_map[std::get<0>(coord)][std::get<1>(coord)] = d;
                                 all_devices.push_back(d);
                             }
                         }
