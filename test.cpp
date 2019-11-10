@@ -1,7 +1,7 @@
 #include <iostream>
 #include <functional>
+#include <list>
 #include <memory>
-#include <vector>
 
 #include "common.h"
 #include "device.h"
@@ -18,14 +18,14 @@ int main(void) {
         }
     }
 
-    std::vector<std::function<Device *(void)>> registry;
+    std::list<std::function<Device *(void)>> registry;
     registry.push_back(BackgroundDevice::create);
     registry.push_back(CopperDevice::create);
     registry.push_back(SinkDevice::create);
     registry.push_back(SourceDevice::create);
 
     // Go through all pixels until we find an unassigned pixel ..
-    std::vector<Device *> all_devices;
+    std::list<Device *> all_devices;
     for (size_t y = 0; y < png->get_height(); y++) {
         for (size_t x = 0; x < png->get_width(); x++) {
             if (device_map[x][y] == nullptr) {

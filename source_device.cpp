@@ -15,8 +15,8 @@ bool SourceDevice::parse(Png *png, size_t x, size_t y) {
     return this->patch.size() == 1;
 }
 
-std::vector<Patch> SourceDevice::all_patches(void) {
-    std::vector<Patch> all_patches;
+std::list<Patch> SourceDevice::all_patches(void) {
+    std::list<Patch> all_patches;
     all_patches.push_back(this->patch);
     return all_patches;
 }

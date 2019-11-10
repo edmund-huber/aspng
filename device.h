@@ -2,9 +2,9 @@
 #define __DEVICE_H__
 
 #include <cstdlib>
+#include <list>
 #include <memory>
 #include <set>
-#include <vector>
 
 #include "patch.h"
 #include "png.h"
@@ -32,7 +32,7 @@ public:
     Patch flood(Png *, size_t, size_t, Rgb);
 
     // Return the list of pixels that were parsed out, during the method above.
-    virtual std::vector<Patch> all_patches(void) = 0;
+    virtual std::list<Patch> all_patches(void) = 0;
 
     // Can this device, through the given patch (which is part of this device),
     // link to this otherother device? If yes, the patch is a port, and return
@@ -52,7 +52,7 @@ public:
     std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
-    std::vector<Patch> all_patches(void);
+    std::list<Patch> all_patches(void);
     PortType link(std::shared_ptr<Patch>, std::shared_ptr<Device>);
     static Rgb color;
 
@@ -65,7 +65,7 @@ public:
     std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
-    std::vector<Patch> all_patches(void);
+    std::list<Patch> all_patches(void);
     PortType link(std::shared_ptr<Patch>, std::shared_ptr<Device>);
     static Rgb color;
 
@@ -79,7 +79,7 @@ public:
     std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
-    std::vector<Patch> all_patches(void);
+    std::list<Patch> all_patches(void);
     PortType link(std::shared_ptr<Patch>, std::shared_ptr<Device>);
     static Rgb color;
 
@@ -93,7 +93,7 @@ public:
     std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
-    std::vector<Patch> all_patches(void);
+    std::list<Patch> all_patches(void);
     PortType link(std::shared_ptr<Patch>, std::shared_ptr<Device>);
     static Rgb color;
 
