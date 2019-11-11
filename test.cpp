@@ -28,9 +28,55 @@ void single_pixel_port_helper(Device *d1, Patch &p1, Coord coord, Device *d2, Pa
     }
 }
 
+typedef std::array<char, 4> Weld;
+
+class PortWeldingRule {
+public:
+    PortWeldingRule(Weld _a, Weld _b, Weld _c, Weld _d) : a(_a), b(_b), c(_c), d(_d) {}
+
+private:
+    Weld a, b, c, d;
+};
+
+// After creating ports for every pair of touching pixels:
+//  11      11     11     11     11
+// 2112 => xo12 , 2o12 , 21o2 , 21ox
+// 2222    2222   2x22 , 22x2   2222
+std::list<PortWeldingRule> port_welding_rules = {
+    // Combine trivially-combinable ports:
+    //  11     11     11     11      11     11     11
+    // xo12 , 2o12 , 21o2 , 21ox => xo12 , 2oo2 , 21ox
+    // 2222   2x22 , 22x2   2222    2222   2xx2   2222
+    //        -----------                  ----
+    PortWeldingRule(
+        Weld({'o', 'x',
+              ' ', ' '}),
+        Weld({' ', ' ',
+              'o', 'x'}),
+        Weld({' ', ' ',
+              ' ', ' '}),
+        Weld({'o', 'x',
+              'o', 'x'})
+    ),
+    // Combine ports that need to round a corner to be contiguous:
+    //  11     11     11      11     11      11
+    // xo12 , 2oo2 , 21ox => xoo2 , 21ox => xoox
+    // 2222   2xx2   2222    xxx2   2222    xxxx
+    // -----------           ----
+    //                       -----------    ----
+    PortWeldingRule(
+        Weld({'o', ' ',
+              'x', ' '}),
+        Weld({'o', 'x',
+              ' ', ' '}),
+        Weld({' ', ' ',
+              ' ', 'x'}),
+        Weld({'o', 'x',
+              'x', 'x'})
+    )
+};
+
 void patches_to_ports(Device *d1, Patch &p1, Device *d2, Patch &p2) {
-    // Pass 1: for each pixel in p1, if any pixel in patch2 touches, those
-    // are one port.
     std::list<Port> ports;
     for (auto it = p1.begin(); it != p1.end(); it++) {
         Coord coord = *it;
@@ -40,18 +86,14 @@ void patches_to_ports(Device *d1, Patch &p1, Device *d2, Patch &p2) {
         single_pixel_port_helper(d1, p1, coord, d2, p2, 0, -1, ports);
     }
 
-    // Now we have a bunch of one-pixel ports. While we can combine ports
-    // (because they are right next to each other and are actually one port),
-    // do so.
+    bool did_combine = true;
+    while (did_combine) {
+        did_combine = false;
 
-    // for each port1 and port2
-    //     if some pixel1 and pixel2 in port1.a and port2.a touch,
-    //         (depending on how those 2 touch, if same for .b ..)
-    //             merge port1 and port2
-    // (repeat until did a pass with no merges)
+        // Combine ports that share a pixel in p1, and from that pixel 
 
+    }
 
-    // .. now have to do something to give each device its ports..
 }
 
 int main(void) {
