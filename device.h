@@ -41,7 +41,7 @@ public:
     virtual PortType link(std::shared_ptr<Patch>, std::shared_ptr<Device>) = 0;
 
 private:
-    static void flood_helper(Png *, size_t, size_t, Rgb, Patch &, Patch &); // TODO probably more convenient if not static
+    static void flood_helper(Png *, size_t, size_t, Rgb, Patch &, Patch &);
     void maybe_neighbor(Device ***, size_t, size_t, size_t, size_t, std::set<Device *> *);
 };
 

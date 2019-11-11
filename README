@@ -6,10 +6,6 @@ Have you ever wanted to design a CPU with Paint? Now you can!
 `aspng` allows you to draw out digital circuits using pixels, and then simulate
 those circuits.
 
-Check out running examples (as seen in the examples/ directory) at
-<https://ehuber.info/aspng>.
-TODO
-
 Parsing
 -------
 
