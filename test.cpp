@@ -175,6 +175,14 @@ int main(void) {
         }
     }
 
+    // Do passes over bridge_map, attempting to run as many of the
+    // BridgeWeldingRules as possible.
+
+    // For the Bridges we figured out, check to see if the Devices allow those
+    // Bridges to be there.
+
+    // Add Ports to the Devices corresponding to the Bridges. (The Bridges
+    // aren't relevant anymore after this.)
 
     return 0;
 }
