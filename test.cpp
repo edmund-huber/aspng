@@ -1,54 +1,63 @@
 #include <iostream>
 #include <functional>
+#include <optional>
 #include <list>
+#include <map>
 #include <memory>
 
 #include "common.h"
 #include "device.h"
 #include "png.h"
 
-class Port {
-    Device *d1;
+// Bridge is an intermediate data structure that is used by the linker to track
+// the Patches that will end up being a Port between two devices. When linking
+// is complete, the Bridges will have been converted into Ports, and Bridges
+// are thrown away.
+class Bridge {
+    std::shared_ptr<Device> d1;
     Patch p1;
-    Device *d2;
+    std::shared_ptr<Device> d2;
     Patch p2;
 
 public:
-    Port(Device *_d1, Patch _p1, Device *_d2, Patch _p2) : d1(_d1), p1(_p1), d2(_d2), p2(_p2) {}
+    Bridge(std::shared_ptr<Device> _d1, Patch _p1, std::shared_ptr<Device> _d2, Patch _p2) : d1(_d1), p1(_p1), d2(_d2), p2(_p2) {}
 };
 
-void single_pixel_port_helper(Device *d1, Patch &p1, Coord coord, Device *d2, Patch &p2, size_t x_off, size_t y_off, std::list<Port> &ports) {
+std::shared_ptr<Bridge> single_pixel_bridge(std::map<Coord, std::shared_ptr<Device>> &device_map, Coord coord, size_t x_off, size_t y_off) {
     Coord neighbor = Coord(std::get<0>(coord) + x_off, std::get<1>(coord) + y_off);
-    if (p2.find(neighbor) != p2.end()) {
-        Patch port_p1;
-        port_p1.insert(coord);
-        Patch port_p2;
-        port_p2.insert(neighbor);
-        ports.push_back(Port(d1, port_p1, d2, port_p2));
+    if ((device_map[neighbor] != nullptr) && (device_map[neighbor] != device_map[coord])) {
+        Patch p1;
+        p1.insert(coord);
+        Patch p2;
+        p2.insert(neighbor);
+        return std::shared_ptr<Bridge>(new Bridge(device_map[coord], p1, device_map[neighbor], p2));
     }
+    return nullptr;
 }
 
 typedef std::array<char, 4> Weld;
 
-class PortWeldingRule {
+class BridgeWeldingRule {
 public:
-    PortWeldingRule(Weld _a, Weld _b, Weld _c, Weld _d) : a(_a), b(_b), c(_c), d(_d) {}
+    BridgeWeldingRule(Weld _a, Weld _b, Weld _c, Weld _d) : a(_a), b(_b), c(_c), d(_d) {}
+    BridgeWeldingRule rotated90cw(void);
+    BridgeWeldingRule mirroredx(void);
+    BridgeWeldingRule mirroredy(void);
+    BridgeWeldingRule reassigned(void);
 
 private:
     Weld a, b, c, d;
 };
 
-// After creating ports for every pair of touching pixels:
-//  11      11     11     11     11
-// 2112 => xo12 , 2o12 , 21o2 , 21ox
-// 2222    2222   2x22 , 22x2   2222
-std::list<PortWeldingRule> port_welding_rules = {
-    // Combine trivially-combinable ports:
+// BridgeWeldingRules describe how Bridges can be combined to make a larger
+// Bridge.
+std::list<BridgeWeldingRule> bridge_welding_rules = {
+    // Combine trivially-combinable Bridges:
     //  11     11     11     11      11     11     11
     // xo12 , 2o12 , 21o2 , 21ox => xo12 , 2oo2 , 21ox
     // 2222   2x22 , 22x2   2222    2222   2xx2   2222
     //        -----------                  ----
-    PortWeldingRule(
+    BridgeWeldingRule(
         Weld({'o', 'x',
               ' ', ' '}),
         Weld({' ', ' ',
@@ -58,13 +67,13 @@ std::list<PortWeldingRule> port_welding_rules = {
         Weld({'o', 'x',
               'o', 'x'})
     ),
-    // Combine ports that need to round a corner to be contiguous:
+    // Combine Bridges that need to round a corner to be contiguous:
     //  11     11     11      11     11      11
     // xo12 , 2oo2 , 21ox => xoo2 , 21ox => xoox
     // 2222   2xx2   2222    xxx2   2222    xxxx
     // -----------           ----
     //                       -----------    ----
-    PortWeldingRule(
+    BridgeWeldingRule(
         Weld({'o', ' ',
               'x', ' '}),
         Weld({'o', 'x',
@@ -76,34 +85,13 @@ std::list<PortWeldingRule> port_welding_rules = {
     )
 };
 
-void patches_to_ports(Device *d1, Patch &p1, Device *d2, Patch &p2) {
-    std::list<Port> ports;
-    for (auto it = p1.begin(); it != p1.end(); it++) {
-        Coord coord = *it;
-        single_pixel_port_helper(d1, p1, coord, d2, p2, 1, 0, ports);
-        single_pixel_port_helper(d1, p1, coord, d2, p2, -1, 0, ports);
-        single_pixel_port_helper(d1, p1, coord, d2, p2, 0, 1, ports);
-        single_pixel_port_helper(d1, p1, coord, d2, p2, 0, -1, ports);
-    }
-
-    bool did_combine = true;
-    while (did_combine) {
-        did_combine = false;
-
-        // Combine ports that share a pixel in p1, and from that pixel 
-
-    }
-
-}
-
 int main(void) {
     auto png = Png::read("tests/basic_source_sink/_.png");
 
-    Device ***device_map = new Device**[png->get_width()];
+    std::map<Coord, std::shared_ptr<Device>> device_map;
     for (size_t x = 0; x < png->get_width(); x++) {
-        device_map[x] = new Device*[png->get_height()];
         for (size_t y = 0; y < png->get_height(); y++) {
-            device_map[x][y] = nullptr;
+            device_map[Coord(x, y)] = nullptr;
         }
     }
 
@@ -114,13 +102,13 @@ int main(void) {
     registry.push_back(SourceDevice::create);
 
     // Go through all pixels until we find an unassigned pixel ..
-    std::list<Device *> all_devices;
+    std::list<std::shared_ptr<Device>> all_devices;
     for (size_t y = 0; y < png->get_height(); y++) {
         for (size_t x = 0; x < png->get_width(); x++) {
-            if (device_map[x][y] == nullptr) {
+            if (device_map[Coord(x, y)] == nullptr) {
                 // .. and try to parse a device starting from that pixel.
                 for (auto it1 = registry.begin(); it1 != registry.end(); it1++) {
-                    Device *d = (*it1)();
+                    std::shared_ptr<Device> d((*it1)());
                     if (d->parse(png, x, y)) {
                         // If parsing succeeded, the device claims all those
                         // pixels.
@@ -132,8 +120,8 @@ int main(void) {
                                 // greedy parsing rules are overlapping, (they
                                 // shouldn't).
                                 Coord coord = *it3;
-                                ASSERT(device_map[std::get<0>(coord)][std::get<1>(coord)] == nullptr)
-                                device_map[std::get<0>(coord)][std::get<1>(coord)] = d;
+                                ASSERT(device_map[coord] == nullptr);
+                                device_map[coord] = d;
                                 all_devices.push_back(d);
                             }
                         }
@@ -147,12 +135,12 @@ int main(void) {
     // assigned.
     for (size_t x = 0; x < png->get_width(); x++) {
         for (size_t y = 0; y < png->get_height(); y++) {
-            if (device_map[x][y] == nullptr) {
+            if (device_map[Coord(x, y)] == nullptr) {
                 // If the parse failed, save the PNG with the recognized pixels
                 // masked out, so the user can see what they did wrong.
                 for (size_t x = 0; x < png->get_width(); x++) {
                     for (size_t y = 0; y < png->get_height(); y++) {
-                        if (device_map[x][y] != nullptr) {
+                        if (device_map[Coord(x, y)] != nullptr) {
                             png->set_pixel(x, y, BackgroundDevice::color);
                         }
                     }
@@ -164,27 +152,29 @@ int main(void) {
         }
     }
 
-    // Linking: figure out how devices are touching and set up ports.
-    std::list<Port> ports;
-    for (auto it1 = all_devices.begin(); it1 != all_devices.end(); it1++) {
-        // For each pair of devices d1 and d2,
-        Device *d1 = *it1;
-        for (auto it2 = all_devices.begin(); it2 != all_devices.end(); it2++) {
-            Device *d2 = *it2;
-            // .. and each pair of their constituent patches,
-            auto d1_all_patches = d1->all_patches();
-            for (auto it3 = d1_all_patches.begin(); it3 != d1_all_patches.end(); it3++) {
-                Patch patch1 = *it3;
-                auto d2_all_patches = d2->all_patches();
-                for (auto it4 = d2_all_patches.begin(); it4 != d2_all_patches.end(); it4++) {
-                    Patch patch2 = *it4;
-                    // .. find the longest contiguous patches of d1 and d2
-                    // which touch at every pixel.
-                    patches_to_ports(d1, patch1, d2, patch2);
-                }
+    // Linking: figure out how devices are touching and set up Ports.
+
+    // Create Bridges for every pair of touching pixels between devices, e.g.:
+    //  11      11     11     11     11
+    // 2112 => xo12 , 2o12 , 21o2 , 21ox
+    // 2222    2222   2x22 , 22x2   2222
+    std::map<Coord, std::set<std::shared_ptr<Bridge>>> bridge_map;
+    for (size_t x = 0; x < png->get_width(); x++) {
+        for (size_t y = 0; y < png->get_height(); y++) {
+            Coord coord(x, y);
+            auto bridge = single_pixel_bridge(device_map, coord, 1, 0);
+            if (bridge != nullptr) {
+                bridge_map[coord].insert(bridge);
             }
+            bridge = single_pixel_bridge(device_map, coord, 0, 1);
+            if (bridge != nullptr) {
+                bridge_map[coord].insert(bridge);
+            }
+            // Note: only checking 'right' and 'up', because if we also checked
+            // 'down' and 'left', we'd end up with duplicate Bridges.
         }
     }
+
 
     return 0;
 }
