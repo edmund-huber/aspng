@@ -1,5 +1,4 @@
-#include <assert.h>
-
+#include "common.h"
 #include "patch.h"
 
 void Patch::insert(const Coord &coord) {
@@ -18,5 +17,5 @@ void Patch::insert(const Coord &coord) {
             || (this->find(Coord(std::get<0>(coord), std::get<1>(coord) + 1)) != this->end())
             || (this->find(Coord(std::get<0>(coord), std::get<1>(coord) - 1)) != this->end());
     }
-    assert(is_contiguous);
+    ASSERT(is_contiguous);
 }
