@@ -1,3 +1,4 @@
+#include <algorithm>
 #include <iostream>
 #include <functional>
 #include <list>
@@ -8,33 +9,28 @@
 #include "device.h"
 #include "png.h"
 
-// Bridge is an intermediate data structure that is used by the linker to track
-// the Patches that will end up being a Port between two devices. When linking
-// is complete, some Bridges will have been converted into Ports, and all
-// Bridges are thrown away.
-class Bridge {
-    std::shared_ptr<Device> d1;
-    Patch p1;
-    std::shared_ptr<Device> d2;
-    Patch p2;
-
-public:
-    Bridge(std::shared_ptr<Device> _d1, Patch _p1, std::shared_ptr<Device> _d2, Patch _p2) : d1(_d1), p1(_p1), d2(_d2), p2(_p2) {}
+enum BridgeDirections {
+    BRIDGE_N = 0,
+    BRIDGE_N_E,
+    BRIDGE_E,
+    BRIDGE_S_E,
+    BRIDGE_S,
+    BRIDGE_S_W,
+    BRIDGE_W,
+    BRIDGE_N_W
 };
 
-// If neighboring Coords are different devices, then return a pointer to a new
-// (single-pixel) bridge, otherwise return nullptr.
-std::shared_ptr<Bridge> single_pixel_bridge(std::map<Coord, std::shared_ptr<Device>> &device_map, Coord coord, size_t x_off, size_t y_off) {
-    Coord neighbor = Coord(std::get<0>(coord) + x_off, std::get<1>(coord) + y_off);
-    if ((device_map[neighbor] != nullptr) && (device_map[neighbor] != device_map[coord])) {
-        Patch p1;
-        p1.insert(coord);
-        Patch p2;
-        p2.insert(neighbor);
-        return std::shared_ptr<Bridge>(new Bridge(device_map[coord], p1, device_map[neighbor], p2));
+// Bridge is an intermediate data structure that is used by the linker to track
+// what Coords might end up being ports between devices. When linking is
+// complete, Bridges will be used to construct Ports, and then will be thrown
+// away.
+struct Bridge {
+    std::array<bool, 8> connected;
+
+    Bridge() {
+        this->connected.fill(false);
     }
-    return nullptr;
-}
+};
 
 typedef std::array<char, 4> Bead;
 
@@ -95,6 +91,7 @@ int main(void) {
     auto png = Png::read("tests/basic_source_sink/_.png");
 
     std::map<Coord, std::shared_ptr<Device>> device_map;
+    std::map<Coord, Bridge> bridge_map;
     for (size_t x = 0; x < png->get_width(); x++) {
         for (size_t y = 0; y < png->get_height(); y++) {
             device_map[Coord(x, y)] = nullptr;
@@ -160,13 +157,13 @@ int main(void) {
 
     // Start linking.
 
-    // Create Bridges for every pair of touching pixels between devices, e.g.:
+    // For every pair of directly (not diagonally) touching pixels between
+    // devices, mark them as being bridged. For example:
     //  11      11     11     11     11
     // 2112 => xo12 , 2o12 , 21o2 , 21ox
     // 2222    2222   2x22 , 22x2   2222
-    std::map<Coord, std::set<std::shared_ptr<Bridge>>> bridge_map;
-    for (size_t x = 0; x < png->get_width() - 1; x++) {
-        for (size_t y = 0; y < png->get_height() - 1; y++) {
+    for (size_t x = 0; x < png->get_width(); x++) {
+        for (size_t y = 0; y < png->get_height(); y++) {
             Coord coord(x, y);
             auto bridge = single_pixel_bridge(device_map, coord, 1, 0);
             if (bridge != nullptr) {
@@ -176,8 +173,6 @@ int main(void) {
             if (bridge != nullptr) {
                 bridge_map[coord].insert(bridge);
             }
-            // Note: only checking 'right' and 'up', because if we also checked
-            // 'down' and 'left', we'd end up with duplicate Bridges.
         }
     }
 

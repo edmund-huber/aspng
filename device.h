@@ -9,12 +9,6 @@
 #include "patch.h"
 #include "png.h"
 
-class Port {
-private:
-    std::shared_ptr<Device> other_device;
-    Patch patch;
-};
-
 enum PortType {
     InvalidPort,
     BackgroundPort,
@@ -106,6 +100,12 @@ public:
 private:
     Patch patch;
     std::set<Device *> neighbors;
+};
+
+class Port {
+private:
+    std::shared_ptr<Device> other_device;
+    Patch patch;
 };
 
 #endif
