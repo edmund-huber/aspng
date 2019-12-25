@@ -21,7 +21,10 @@ std::list<Patch> SourceDevice::all_patches(void) {
     return all_patches;
 }
 
-PortType SourceDevice::link(std::shared_ptr<Patch> patch, std::shared_ptr<Device> other) {
-    // Sources can connect to anything.
-    return SourcePort;
+LinkResult SourceDevice::prelink(std::shared_ptr<Device> other) {
+    if (std::dynamic_pointer_cast<CopperDevice>(other))
+        return CanLink;
+    if (std::dynamic_pointer_cast<BackgroundDevice>(other))
+        return CanTouch;
+    return LinkError;
 }

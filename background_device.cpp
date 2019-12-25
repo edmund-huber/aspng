@@ -25,7 +25,6 @@ std::list<Patch> BackgroundDevice::all_patches(void) {
     return all_patches;
 }
 
-PortType BackgroundDevice::link(std::shared_ptr<Patch> patch, std::shared_ptr<Device> other) {
-    // Backgrounds can connect to anything.
-    return BackgroundPort;
+LinkResult BackgroundDevice::prelink(std::shared_ptr<Device> other) {
+    return CanTouch;
 }

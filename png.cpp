@@ -12,7 +12,9 @@ Png::Png() {}
 // Cribbed from https://gist.github.com/niw/5963798 .
 Png *Png::read(std::string fn) {
     FILE *f = fopen(fn.c_str(), "r");
-    ASSERT(f != NULL);
+    if (f == NULL) {
+        return NULL;
+    }
     png_structp png = png_create_read_struct(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
     ASSERT(png != NULL);
     png_infop info = png_create_info_struct(png);

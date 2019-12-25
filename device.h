@@ -9,12 +9,31 @@
 #include "patch.h"
 #include "png.h"
 
+enum LinkResult {
+    CanTouch,
+    CanLink,
+    LinkError
+};
+
+// At link time, a device determines what the port means to itself, so that
+// later, at simulation time, it knows what to do with a port.
 enum PortType {
-    InvalidPort,
-    BackgroundPort,
-    CopperPort,
-    SourcePort,
-    SinkPort
+    NotAPort, // Only for use by simulator.
+};
+
+class Device;
+
+class Port {
+public:
+    Port(std::shared_ptr<Device> _d1, PortType _d1_port_type, std::shared_ptr<Device> _d2, PortType _d2_port_type) : d1(_d1), d1_port_type(_d1_port_type), d2(_d2), d2_port_type(_d2_port_type) {};
+
+    PortType get_port_type(std::shared_ptr<Device> d1);
+
+private:
+    std::shared_ptr<Device> d1;
+    PortType d1_port_type;
+    std::shared_ptr<Device> d2;
+    PortType d2_port_type;
 };
 
 class Device {
@@ -34,13 +53,16 @@ public:
     // Return the list of pixels that were parsed out, during the method above.
     virtual std::list<Patch> all_patches(void) = 0;
 
-    // Can this device, through the given patch (which is part of this device),
-    // link to this otherother device? If yes, the patch is a port, and return
-    // a value indicating what this port means to this device. Or return
-    // InvalidPort.
-    virtual PortType link(std::shared_ptr<Patch>, std::shared_ptr<Device>) = 0;
+    // `prelink` indicates whether these devices may touch and whether to
+    // create a port. During linking, if `prelink` returns CanLink for both
+    // devices, then `link` will be called on both devices, to actually add the
+    // ports.
+    virtual LinkResult prelink(std::shared_ptr<Device>, PortType &) = 0;
+    void add_port(std::shared_ptr<Port>);
 
 private:
+    std::list<std::shared_ptr<Port>> ports;
+
     static void flood_helper(Png *, size_t, size_t, Rgb, Patch &, Patch &);
     void maybe_neighbor(Device ***, size_t, size_t, size_t, size_t, std::set<Device *> *);
 };
@@ -53,7 +75,7 @@ public:
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
     std::list<Patch> all_patches(void);
-    PortType link(std::shared_ptr<Patch>, std::shared_ptr<Device>);
+    LinkResult prelink(std::shared_ptr<Device>);
     static Rgb color;
 
 private:
@@ -66,12 +88,11 @@ public:
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
     std::list<Patch> all_patches(void);
-    PortType link(std::shared_ptr<Patch>, std::shared_ptr<Device>);
+    LinkResult prelink(std::shared_ptr<Device>);
     static Rgb color;
 
 private:
     Patch patch;
-    std::set<Device *> neighbors;
 };
 
 class SinkDevice : public Device {
@@ -80,12 +101,11 @@ public:
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
     std::list<Patch> all_patches(void);
-    PortType link(std::shared_ptr<Patch>, std::shared_ptr<Device>);
+    LinkResult prelink(std::shared_ptr<Device>);
     static Rgb color;
 
 private:
     Patch patch;
-    std::set<Device *> neighbors;
 };
 
 class SourceDevice : public Device {
@@ -94,17 +114,10 @@ public:
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
     std::list<Patch> all_patches(void);
-    PortType link(std::shared_ptr<Patch>, std::shared_ptr<Device>);
+    LinkResult prelink(std::shared_ptr<Device>);
     static Rgb color;
 
 private:
-    Patch patch;
-    std::set<Device *> neighbors;
-};
-
-class Port {
-private:
-    std::shared_ptr<Device> other_device;
     Patch patch;
 };
 

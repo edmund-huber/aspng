@@ -21,7 +21,6 @@ std::list<Patch> CopperDevice::all_patches(void) {
     return all_patches;
 }
 
-PortType CopperDevice::link(std::shared_ptr<Patch> patch, std::shared_ptr<Device> other) {
-    // Copper can connect to anything.
-    return CopperPort;
+LinkResult CopperDevice::prelink(std::shared_ptr<Device> other) {
+    return CanLink;
 }

@@ -21,7 +21,10 @@ std::list<Patch> SinkDevice::all_patches(void) {
     return all_patches;
 }
 
-PortType SinkDevice::link(std::shared_ptr<Patch> patch, std::shared_ptr<Device> other) {
-    // Sinks can connect to anything.
-    return SinkPort;
+LinkResult SinkDevice::prelink(std::shared_ptr<Device> other) {
+    if (std::dynamic_pointer_cast<CopperDevice>(other))
+        return CanLink;
+    if (std::dynamic_pointer_cast<BackgroundDevice>(other))
+        return CanTouch;
+    return LinkError;
 }
