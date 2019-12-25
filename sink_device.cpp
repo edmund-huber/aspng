@@ -8,7 +8,7 @@ Device *SinkDevice::create(void) {
     return new SinkDevice();
 }
 
-Rgb SinkDevice::color = Rgb(0, 0, 0);
+Rgb SinkDevice::color = Rgb(0x59, 0x59, 0x59);
 
 bool SinkDevice::parse(Png *png, size_t x, size_t y) {
     this->patch = this->flood(png, x, y, SinkDevice::color);

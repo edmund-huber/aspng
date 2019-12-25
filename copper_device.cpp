@@ -8,7 +8,7 @@ std::string CopperDevice::name(void) {
     return "Copper";
 }
 
-Rgb CopperDevice::color = Rgb(0xdb, 0x73, 0);
+Rgb CopperDevice::color = Rgb(0xf8, 0xac, 0x59);
 
 bool CopperDevice::parse(Png *png, size_t x, size_t y) {
     this->patch = this->flood(png, x, y, CopperDevice::color);

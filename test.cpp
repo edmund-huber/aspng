@@ -1,6 +1,5 @@
 #include <iostream>
 #include <functional>
-#include <optional>
 #include <list>
 #include <map>
 #include <memory>
@@ -11,8 +10,8 @@
 
 // Bridge is an intermediate data structure that is used by the linker to track
 // the Patches that will end up being a Port between two devices. When linking
-// is complete, the Bridges will have been converted into Ports, and Bridges
-// are thrown away.
+// is complete, some Bridges will have been converted into Ports, and all
+// Bridges are thrown away.
 class Bridge {
     std::shared_ptr<Device> d1;
     Patch p1;
@@ -23,6 +22,8 @@ public:
     Bridge(std::shared_ptr<Device> _d1, Patch _p1, std::shared_ptr<Device> _d2, Patch _p2) : d1(_d1), p1(_p1), d2(_d2), p2(_p2) {}
 };
 
+// If neighboring Coords are different devices, then return a pointer to a new
+// (single-pixel) bridge, otherwise return nullptr.
 std::shared_ptr<Bridge> single_pixel_bridge(std::map<Coord, std::shared_ptr<Device>> &device_map, Coord coord, size_t x_off, size_t y_off) {
     Coord neighbor = Coord(std::get<0>(coord) + x_off, std::get<1>(coord) + y_off);
     if ((device_map[neighbor] != nullptr) && (device_map[neighbor] != device_map[coord])) {
@@ -35,19 +36,24 @@ std::shared_ptr<Bridge> single_pixel_bridge(std::map<Coord, std::shared_ptr<Devi
     return nullptr;
 }
 
-typedef std::array<char, 4> Weld;
+typedef std::array<char, 4> Bead;
 
 class BridgeWeldingRule {
 public:
-    BridgeWeldingRule(Weld _a, Weld _b, Weld _c, Weld _d) : a(_a), b(_b), c(_c), d(_d) {}
-    BridgeWeldingRule rotated90cw(void);
-    BridgeWeldingRule mirroredx(void);
-    BridgeWeldingRule mirroredy(void);
-    BridgeWeldingRule reassigned(void);
+    BridgeWeldingRule(Bead _a, Bead _b, Bead _c, Bead _d) : a(_a), b(_b), c(_c), d(_d) {}
+    std::list<BridgeWeldingRule> all_variants(void);
 
 private:
-    Weld a, b, c, d;
+    Bead a, b, c, d;
 };
+
+// 
+std::list<BridgeWeldingRule> BridgeWeldingRule::all_variants(void) {
+    std::list<BridgeWeldingRule> list;
+    list.push_back(*this);
+    // rotated90cw * 4, mirroredx, mirroredy, reassignment
+    return list;
+}
 
 // BridgeWeldingRules describe how Bridges can be combined to make a larger
 // Bridge.
@@ -58,14 +64,14 @@ std::list<BridgeWeldingRule> bridge_welding_rules = {
     // 2222   2x22 , 22x2   2222    2222   2xx2   2222
     //        -----------                  ----
     BridgeWeldingRule(
-        Weld({'o', 'x',
+        Bead({'o', ' ',
+              'x', ' '}),
+        Bead({' ', 'o',
+              ' ', 'x'}),
+        Bead({' ', ' ',
               ' ', ' '}),
-        Weld({' ', ' ',
-              'o', 'x'}),
-        Weld({' ', ' ',
-              ' ', ' '}),
-        Weld({'o', 'x',
-              'o', 'x'})
+        Bead({'o', 'o',
+              'x', 'x'})
     ),
     // Combine Bridges that need to round a corner to be contiguous:
     //  11     11     11      11     11      11
@@ -74,13 +80,13 @@ std::list<BridgeWeldingRule> bridge_welding_rules = {
     // -----------           ----
     //                       -----------    ----
     BridgeWeldingRule(
-        Weld({'o', ' ',
-              'x', ' '}),
-        Weld({'o', 'x',
+        Bead({'x', 'o',
               ' ', ' '}),
-        Weld({' ', ' ',
+        Bead({' ', 'o',
               ' ', 'x'}),
-        Weld({'o', 'x',
+        Bead({' ', ' ',
+              'x', ' '}),
+        Bead({'x', 'o',
               'x', 'x'})
     )
 };
@@ -152,15 +158,15 @@ int main(void) {
         }
     }
 
-    // Linking: figure out how devices are touching and set up Ports.
+    // Start linking.
 
     // Create Bridges for every pair of touching pixels between devices, e.g.:
     //  11      11     11     11     11
     // 2112 => xo12 , 2o12 , 21o2 , 21ox
     // 2222    2222   2x22 , 22x2   2222
     std::map<Coord, std::set<std::shared_ptr<Bridge>>> bridge_map;
-    for (size_t x = 0; x < png->get_width(); x++) {
-        for (size_t y = 0; y < png->get_height(); y++) {
+    for (size_t x = 0; x < png->get_width() - 1; x++) {
+        for (size_t y = 0; y < png->get_height() - 1; y++) {
             Coord coord(x, y);
             auto bridge = single_pixel_bridge(device_map, coord, 1, 0);
             if (bridge != nullptr) {
@@ -177,12 +183,39 @@ int main(void) {
 
     // Do passes over bridge_map, attempting to run as many of the
     // BridgeWeldingRules as possible.
+    bool did_combine = true;
+    int passes = 0;
+    while (did_combine) {
+        did_combine = false;
+
+        // Have some sensibly high number allowed of passes. Although all the
+        // welding passes leave fewer bridges than they started with, if a
+        // large number of passes are required, then I feel like I should
+        // revisit how this works.
+        ASSERT(passes++ < 3);
+
+        for (size_t x = 0; x < png->get_width() - 1; x++) {
+            for (size_t y = 0; y < png->get_width() - 1; y++) {
+                for (auto &rule : bridge_welding_rules) {
+                    for (BridgeWeldingRule &variant : rule.all_variants()) {
+                        (void)variant;
+                    }
+                }
+            }
+        }
+
+        // TODO: for the moment, this is not doing anything.
+    }
 
     // For the Bridges we figured out, check to see if the Devices allow those
-    // Bridges to be there.
+    // Bridges to be there. Allowed Bridges become Ports, or get thrown away.
+    // TODO: not actually checking anything atm.
 
-    // Add Ports to the Devices corresponding to the Bridges. (The Bridges
-    // aren't relevant anymore after this.)
+
+    // In Port debug mode, we don't simulate, we just output one (upscaled)
+    // image highlighting all the ports.
+
+    // End of linking. Begin simulation:
 
     return 0;
 }

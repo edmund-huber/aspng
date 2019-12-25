@@ -1,116 +1,85 @@
 aspng: application-specific PNG
 -------------------------------
 
-Have you ever wanted to design a CPU with Paint? Now you can!
+Have you ever wanted to design a CPU with Paint? Well now you can!
 
 `aspng` allows you to draw out digital circuits using pixels, and then simulate
 those circuits.
 
-Parsing
--------
 
-An image has been "parsed" when every pixel in the image has been assigned to
-some device. Including the background -- it's assigned to an inert
-BackgroundDevices. For clarity's sake, the background pixels/devices are left
-out of the figures in this document.
+Examples
+--------
 
-```
-raw                      parsed
----                      ------
+TODO
 
-@@@@@@@@                 11111111
-@@@@@@@@                 11111111
-@@@@@@@@*****            1111111122222
-@@@@@@@@*****            1111111122222
-@@@@@@@@*****      ->    1111111122222
-@@@@@@@@   **            11111111   22
-@@@@@@@@   **            11111111   22
-@@@@@@@@ @@@@@@          11111111 333333
-  # #    @@@@@@            4 5    333333
-  # #    @@@@@@            4 5
- $$$$$                    66666
- $$$$$                    66666
 
-                         id | device type
-                         ----------------
-                         1  | A
-                         2  | B
-                         3  | A
-                         4  | C
-                         5  | C
-                         6  | D
-```
+Design guide
+------------
+[0, 0, 0]        background
+[255, 255, 255]  source
+#595652           sink
+copper 1, 2      copper  (@runtime, either light gray or dark gray, 2x for different types)
+copper 3         bridge  (stays copper @ runtime)
+_purple_         transistor
+_yellow_ _source_   pullup
+_yellow_ _sink_   pulldown
+_coral_/(yellow)  capacitor (@runtime, this color & darker color)
+green            template: LED, clock (also color for bonding)
+(not: red) + (and: greien2, or: blue, xor: cyan)   gates
 
-The `aspng` parser, as implemented, only does one pass over the image. For each
-unclaimed pixel, starting from the top left, the parser asks each Device type D
-to try to parse out a device starting from that pixel. If D is successful, then
-the parser assigns all the pixels that D has claimed to D.
+recommended: aseprite. If you use aseprite, you can use palette.aseprite . It
+has the above palette, laid out in order.
 
-Since this implementation does not consider multiple parse results, the grammar
-must be unambiguous: for any given input, there must be 1 or 0 possible parses.
+capacitance - either "0" or "1" (logical), and no other component (including copper has capacitance)
+  -- how does it work? does it drain?(yes)
+     . provides 0 or 1 voltage
+     . settles to whatever the value of the net is
+... should this just be a behavior of copper?
+   -- no
 
-Linking
--------
+specific components i want to be able to do:
+gates - in NMOS style, in CMOS style
+sram
+dram
+mask rom
+adder
+shift register
+latch
+flipflop
+clock divider
 
-After parsing, we know which devices are in the image. But there is nothing to
-simulate until we know how those devices are connected.
 
-This process is called linking. Considering a subset of the figure from before,
-the result that we want from linking is one "port" between the devices 1 and 2,
-illustrated with # and % signs:
+Goals of `aspng`
+----------------
 
-```
-raw                    parsed                    linked
----                    ------                    ------
+Simulate with tristate logic:
 
-@@@@@@@@               11111111                  11111111
-@@@@@@@@               11111111                  11111111
-@@@@@@@@*****          1111111122222             1111111#%2222
-@@@@@@@@*****          1111111122222             1111111#%2222
-@@@@@@@@*****    ->    1111111122222       ->    1111111#%2222
-@@@@@@@@   **          11111111   22             11111111   22
-@@@@@@@@   **          11111111   22             11111111   22
-@@@@@@@@               11111111                  11111111
+As the name ("aspng") suggests, I want to draw a somewhat direct parallel to
+ASIC design. ASICs are electrical devices, and don't operate exactly as logical
+networks do. They use tristate logic -- so in addition to "0" and "1", there is
+"Z"/"high impedance" -- and the concepts of "pullup" and "pulldown" and
+floating voltages. I feel like I need these concepts to have any (however
+small) sense of authenticity.
 
-                       id | device type
-                       ----------------
-                       1  | A
-                       2  | B
-```
+However! I am not interested in (and not capable of writing a program of)
+simulating power consumption, or switching delay, or parasitic capacitances, or
+leakage, or any of those very real effects that true digital simulators have to
+consider. This is where I drew the line. I view `aspng` as a way to draft up
+and play with imaginary digital circuits, while leaving correct physical
+simulations for other programs.
 
-The # and % signs, taken together, are the "port". The # signs are those pixels
-comprising the port which are contained in device 1, and the % signs are those
-contained in device 2. The reason this distinction is important is that each
-device will decide how to interact with this port based on where the port
-touches the device.
+Be able to simulate the 4004, and 6502.
 
-The way `aspng` does the linking process is by first finding the longest
-contiguous patches where two devices touch. Then, each device is queried to
-find out whether it is legal for it to be touching the other device. If one or
-both devices do not allow the port, then it is a linking error.
+Ultimately, build an entire small computer and OS "in silico".
 
-Simulation
-----------
+It might be fun to put together an "Advent of Code" -like thing for "make a
+little CPU"?
 
-Simulation in `aspng` follows the clock. A simulation step looks like this:
+Clarity of code before speed.
 
-1. Flip the clock value from 0 -> 1 or 1 -> 0.
 
-2. Group all devices into "nets". A device is in the same "net" as another if
-the two devices are reachable through any number of ports (passing through
-other devices). Devices decide how their ports relate to one another -- for
-example, a transistor will connect two ports if and only if the third port (the
-gate) is "+". Note that a device can be in multiple nets.
+Related projects / inspiration
+------------------------------
 
-3. Determine the total value of each net, given the states of the devices
-inside of it:
-* if there is at least one "+",
-** and no "-", then "+",
-** and one or more "-", then error,
-* if there is at least one "-",
-** and no "+", then "-",
-** and one or more "+", then error,
-* otherwise, "float".
-
-4. If any port value changed, return to step 2. If we have done "too many"
-iterations and we don't think the simulation will converge, then error.
+<http://www.visual6502.org/>
+<https://github.com/onidev/TICS>

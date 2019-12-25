@@ -4,7 +4,7 @@ BackgroundDevice::BackgroundDevice(void) {}
 
 BackgroundDevice::~BackgroundDevice(void) {}
 
-Rgb BackgroundDevice::color = Rgb(0x99, 0x99, 0x99);
+Rgb BackgroundDevice::color = Rgb(0, 0, 0);
 
 Device *BackgroundDevice::create(void) {
     return new BackgroundDevice();
