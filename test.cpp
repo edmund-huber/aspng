@@ -4,10 +4,25 @@
 #include <list>
 #include <map>
 #include <memory>
+#include <set>
 
 #include "common.h"
 #include "device.h"
 #include "png.h"
+
+class Net {
+public:
+    Net(std::shared_ptr<Port>);
+    bool contains(std::shared_ptr<Port>);
+};
+
+Net::Net(std::shared_ptr<Port> port) {
+
+}
+
+bool Net::contains(std::shared_ptr<Port> port) {
+    return false;
+}
 
 // If neighboring Coords are different devices, then add ports to both devices
 // (to the other device).
@@ -27,7 +42,7 @@ void maybe_add_ports(std::map<Coord, std::shared_ptr<Device>> &device_map, Coord
             d2->add_port(port);
             std::cout << "link" << std::endl;
         }
-        // TODO: error reporting.
+        // TODO: error reporting when LinkError.
     }
 }
 
@@ -48,7 +63,7 @@ int main(void) {
     registry.push_back(SourceDevice::create);
 
     // Go through all pixels until we find an unassigned pixel ..
-    std::list<std::shared_ptr<Device>> all_devices;
+    std::set<std::shared_ptr<Device>> all_devices;
     for (size_t y = 0; y < png->get_height(); y++) {
         for (size_t x = 0; x < png->get_width(); x++) {
             if (device_map[Coord(x, y)] == nullptr) {
@@ -68,7 +83,7 @@ int main(void) {
                                 Coord coord = *it3;
                                 ASSERT(device_map[coord] == nullptr);
                                 device_map[coord] = d;
-                                all_devices.push_back(d);
+                                all_devices.insert(d);
                             }
                         }
                     }
@@ -99,7 +114,7 @@ int main(void) {
     }
 
     // Linking: for every pair of directly (not diagonally) touching pixels
-    // between devices, add ports.
+    // between devices, add Ports.
     for (size_t x = 0; x < png->get_width(); x++) {
         for (size_t y = 0; y < png->get_height(); y++) {
             Coord coord(x, y);
@@ -110,18 +125,55 @@ int main(void) {
         }
     }
 
-    // Simulation! Start by finding the set of all ports (across all devices).
-    //
-
     for (int i = 0; ; i++) {
         auto png = Png::read("tests/basic_source_sink/" + std::to_string(i) + ".png");
         if (png == nullptr)
             break;
 
-        // Until every port has been captured in a net, start a new net from
-        // any uncaptured port and propagate.
+        // Build Nets for simulation: for each port,
+        std::set<std::shared_ptr<Port>> all_ports;
+        for (auto i = all_devices.begin(); i != all_devices.end(); i++) {
+            auto device = *i;
+            auto ports = device->all_ports();
+            all_ports.insert(ports.begin(), ports.end());
+        }
+        std::list<std::shared_ptr<Net>> nets;
+        for (auto i = all_ports.begin(); i != all_ports.end(); i++) {
+            // .. see if the Port is in a Net already.
+            auto port = *i;
+            bool found = false;
+            for (auto j = nets.begin(); j != nets.end(); j++) {
+                auto net = *j;
+                if (net->contains(port)) {
+                    found = true;
+                    break;
+                }
+            }
+            // If this Port isn't in any Net, then let's start a new Net,
+            // propagating out from this Port.
+            if (!found) {
+                nets.push_back(std::make_shared<Net>(port));
+            }
+        }
 
-        // Now calculate the new value of the nets.
+        // Sanity check: every Port should be contained in exactly one Net.
+        for (auto i = all_ports.begin(); i != all_ports.end(); i++) {
+            auto port = *i;
+            size_t count = 0;
+            for (auto j = nets.begin(); j != nets.end(); j++) {
+                auto net = *j;
+                if (net->contains(port)) {
+                    count++;
+                }
+            }
+            ASSERT(count == 1);
+        }
+
+        // For each net,
+        // .. figure out the new value, and just store it for now (so that we
+        // don't effect the value of other nets).
+
+        // For each net, apply the new values that were calculated.
 
         // TODO: flip the clock value
     }

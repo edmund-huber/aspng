@@ -18,7 +18,7 @@ enum LinkResult {
 // At link time, a device determines what the port means to itself, so that
 // later, at simulation time, it knows what to do with a port.
 enum PortType {
-    NotAPort, // Only for use by simulator.
+    NoSpecialMeaning
 };
 
 class Device;
@@ -59,6 +59,7 @@ public:
     // ports.
     virtual LinkResult prelink(std::shared_ptr<Device>, PortType &) = 0;
     void add_port(std::shared_ptr<Port>);
+    std::list<std::shared_ptr<Port>> all_ports(void);
 
 private:
     std::list<std::shared_ptr<Port>> ports;

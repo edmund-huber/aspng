@@ -4,6 +4,10 @@ void Device::add_port(std::shared_ptr<Port> p) {
     this->ports.push_back(p);
 }
 
+std::list<std::shared_ptr<Port>> Device::all_ports(void) {
+    return this->ports;
+}
+
 Patch Device::flood(Png *png, size_t x, size_t y, Rgb color) {
     Patch patch, visited;
     Device::flood_helper(png, x, y, color, patch, visited);
