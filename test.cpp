@@ -21,6 +21,7 @@ private:
 };
 
 Net::Net(std::shared_ptr<Port> p) {
+    this->ports_in_net.insert(p);
     std::queue<std::shared_ptr<Port>> ports_to_visit;
     ports_to_visit.push(p);
     while (!ports_to_visit.empty()) {
@@ -61,7 +62,6 @@ void maybe_add_ports(std::map<Coord, std::shared_ptr<Device>> &device_map, Coord
             auto port = std::make_shared<Port>(d2, d1_port_type, d2, d2_port_type);
             d1->add_port(port);
             d2->add_port(port);
-            std::cout << "link" << std::endl;
         }
         // TODO: error reporting when LinkError.
     }
@@ -128,7 +128,6 @@ int main(void) {
                     }
                 }
                 png->write("fail.png");
-                std::cout << "couldn't parse" << std::endl;
                 return -1;
             }
         }
@@ -172,9 +171,6 @@ int main(void) {
             }
             // If this Port isn't in any Net, then let's start a new Net,
             // propagating out from this Port.
-            if (found) {
-                std::cout << "AAAA" << std::endl;
-            }
             if (!found) {
                 nets.push_back(std::make_shared<Net>(port));
             }
