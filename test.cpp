@@ -1,5 +1,6 @@
 #include <algorithm>
 #include <functional>
+#include <iostream>
 #include <list>
 #include <queue>
 #include <map>
@@ -171,7 +172,9 @@ int main(void) {
         }
     }
 
+    bool passed = true;
     for (int i = 0; ; i++) {
+        // If there's no further png file, then this test is complete.
         auto png = Png::read("tests/basic_source_sink/" + std::to_string(i) + ".png");
         if (png == nullptr)
             break;
@@ -236,11 +239,25 @@ int main(void) {
             auto device = *i;
             device->draw(&out_png);
         }
-        out_png.write("/tmp/output.png");
+        out_png.write("/tmp/output.png"); // TODO write somewhere more obvious (in directory)
 
         // Compare the output image to the expected image.
-
+        ASSERT(out_png.get_width() == png->get_width());
+        ASSERT(out_png.get_height() == png->get_height());
+        for (size_t x = 0; x < out_png.get_width(); x++) {
+            for (size_t y = 0; y < out_png.get_height(); y++) {
+                if (out_png.get_pixel(x, y) != png->get_pixel(x, y)) {
+                    passed = false;
+                }
+            }
+        }
         // TODO: flip the clock value
+    }
+
+    if (passed) {
+        std::cout << "PASS " << ".. the test name .." << std::endl;
+    } else {
+        std::cout << "FAIL " << ".. the test name .." << std::endl;
     }
 
     return 0;

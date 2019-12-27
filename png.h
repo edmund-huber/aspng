@@ -8,7 +8,8 @@ class Rgb {
 public:
     Rgb() {}
     Rgb(uint8_t _r, uint8_t _g, uint8_t _b) : r(_r), g(_g), b(_b) {}
-    bool operator==(Rgb &);
+    bool operator==(Rgb);
+    bool operator!=(Rgb);
 
     uint8_t r, g, b;
 };

@@ -3,8 +3,12 @@
 #include "common.h"
 #include "png.h"
 
-bool Rgb::operator==(Rgb &other) {
+bool Rgb::operator==(Rgb other) {
     return (this->r == other.r) && (this->g == other.g) && (this->b == other.b);
+}
+
+bool Rgb::operator!=(Rgb other) {
+    return !(*this == other);
 }
 
 Png::Png() {}
@@ -124,11 +128,6 @@ void Png::write(std::string fn) {
 
     png_write_image(png, rows);
     png_write_end(png, NULL);
-
-    for (size_t y = 0; y < height; y++) {
-        free(this->rows[y]);
-    }
-    free(this->rows);
 
     fclose(f);
 
