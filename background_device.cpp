@@ -41,3 +41,7 @@ ElectricalValue BackgroundDevice::get_value_at_port(std::shared_ptr<Port>) {
 void BackgroundDevice::apply_new_value(ElectricalValue) {
     // Deliberately empty.
 }
+
+Rgb BackgroundDevice::get_draw_color(void) {
+    return BackgroundDevice::color;
+}

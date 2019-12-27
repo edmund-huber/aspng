@@ -79,11 +79,15 @@ public:
 
     virtual void apply_new_value(ElectricalValue) = 0;
 
+    void draw(void);
+
 private:
     std::list<std::shared_ptr<Port>> ports;
 
     static void flood_helper(Png *, size_t, size_t, Rgb, Patch &, Patch &);
     void maybe_neighbor(Device ***, size_t, size_t, size_t, size_t, std::set<Device *> *);
+
+    virtual Rgb get_draw_color(void) = 0;
 };
 
 class BackgroundDevice : public Device {
@@ -102,6 +106,8 @@ public:
 
 private:
     Patch patch;
+
+    virtual Rgb get_draw_color(void);
 };
 
 class CopperDevice : public Device {
@@ -118,6 +124,9 @@ public:
 
 private:
     Patch patch;
+    Rgb color_for_drawing;
+
+    virtual Rgb get_draw_color(void);
 };
 
 class SinkDevice : public Device {
@@ -134,6 +143,8 @@ public:
 
 private:
     Patch patch;
+
+    virtual Rgb get_draw_color(void);
 };
 
 class SourceDevice : public Device {
@@ -150,6 +161,8 @@ public:
 
 private:
     Patch patch;
+
+    virtual Rgb get_draw_color(void);
 };
 
 #endif

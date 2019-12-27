@@ -35,6 +35,20 @@ ElectricalValue CopperDevice::get_value_at_port(std::shared_ptr<Port>) {
     return EmptyElectricalValue;
 }
 
-void CopperDevice::apply_new_value(ElectricalValue) {
-    // Deliberately empty.
+void CopperDevice::apply_new_value(ElectricalValue v) {
+    switch (v) {
+    case EmptyElectricalValue:
+        this->color_for_drawing = CopperDevice::color;
+        break;
+    case HiElectricalValue:
+        this->color_for_drawing = Rgb(0xb9, 0xb9, 0xb9);
+        break;
+    case LoElectricalValue:
+        this->color_for_drawing = Rgb(0x99, 0x99, 0x99);
+        break;
+    }
+}
+
+Rgb CopperDevice::get_draw_color(void) {
+    return this->color_for_drawing;
 }

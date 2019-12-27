@@ -42,3 +42,7 @@ ElectricalValue SinkDevice::get_value_at_port(std::shared_ptr<Port>) {
 void SinkDevice::apply_new_value(ElectricalValue) {
     // Deliberately empty.
 }
+
+Rgb SinkDevice::get_draw_color(void) {
+    return BackgroundDevice::color;
+}
