@@ -9,6 +9,14 @@
 #include "patch.h"
 #include "png.h"
 
+enum ElectricalValue {
+    EmptyElectricalValue,
+    HiElectricalValue,
+    LoElectricalValue
+};
+
+ElectricalValue combine_electrical_values(ElectricalValue, ElectricalValue);
+
 enum LinkResult {
     CanTouch,
     CanLink,
@@ -28,6 +36,8 @@ public:
     Port(std::shared_ptr<Device> _d1, PortType _d1_port_type, std::shared_ptr<Device> _d2, PortType _d2_port_type) : d1(_d1), d1_port_type(_d1_port_type), d2(_d2), d2_port_type(_d2_port_type) {};
     PortType get_port_type(std::shared_ptr<Device> d1);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
+    ElectricalValue compute_new_value(std::shared_ptr<Port>);
+    void apply_new_value(ElectricalValue);
 
 private:
     std::shared_ptr<Device> d1;
@@ -65,6 +75,10 @@ public:
     // of the given Port.
     virtual std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>) = 0;
 
+    virtual ElectricalValue get_value_at_port(std::shared_ptr<Port>) = 0;
+
+    virtual void apply_new_value(ElectricalValue) = 0;
+
 private:
     std::list<std::shared_ptr<Port>> ports;
 
@@ -82,6 +96,8 @@ public:
     std::list<Patch> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
+    ElectricalValue get_value_at_port(std::shared_ptr<Port>);
+    void apply_new_value(ElectricalValue);
     static Rgb color;
 
 private:
@@ -96,6 +112,8 @@ public:
     std::list<Patch> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
+    ElectricalValue get_value_at_port(std::shared_ptr<Port>);
+    void apply_new_value(ElectricalValue);
     static Rgb color;
 
 private:
@@ -110,6 +128,8 @@ public:
     std::list<Patch> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
+    ElectricalValue get_value_at_port(std::shared_ptr<Port>);
+    void apply_new_value(ElectricalValue);
     static Rgb color;
 
 private:
@@ -124,6 +144,8 @@ public:
     std::list<Patch> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
+    ElectricalValue get_value_at_port(std::shared_ptr<Port>);
+    void apply_new_value(ElectricalValue);
     static Rgb color;
 
 private:

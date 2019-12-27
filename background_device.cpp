@@ -33,3 +33,11 @@ std::list<std::shared_ptr<Port>> BackgroundDevice::propagate(std::shared_ptr<Por
     std::list<std::shared_ptr<Port>> empty;
     return empty;
 }
+
+ElectricalValue BackgroundDevice::get_value_at_port(std::shared_ptr<Port>) {
+    return EmptyElectricalValue;
+}
+
+void BackgroundDevice::apply_new_value(ElectricalValue) {
+    // Deliberately empty.
+}

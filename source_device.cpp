@@ -34,3 +34,11 @@ std::list<std::shared_ptr<Port>> SourceDevice::propagate(std::shared_ptr<Port> p
     next_ports.remove(port);
     return next_ports;
 }
+
+ElectricalValue SourceDevice::get_value_at_port(std::shared_ptr<Port>) {
+    return HiElectricalValue;
+}
+
+void SourceDevice::apply_new_value(ElectricalValue) {
+    // Deliberately empty.
+}

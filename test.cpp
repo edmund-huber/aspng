@@ -13,15 +13,22 @@
 
 class Net {
 public:
+    Net();
     Net(std::shared_ptr<Port>);
     bool contains(std::shared_ptr<Port>);
+    void compute_new_value(void);
+    void apply_new_value(void);
 
 private:
     std::set<std::shared_ptr<Port>> ports_in_net;
+    ElectricalValue new_value;
 };
 
 Net::Net(std::shared_ptr<Port> p) {
+    // Initialize class members.
     this->ports_in_net.insert(p);
+    this->new_value = EmptyElectricalValue;
+
     std::queue<std::shared_ptr<Port>> ports_to_visit;
     ports_to_visit.push(p);
     while (!ports_to_visit.empty()) {
@@ -42,6 +49,26 @@ Net::Net(std::shared_ptr<Port> p) {
 
 bool Net::contains(std::shared_ptr<Port> port) {
     return this->ports_in_net.find(port) != this->ports_in_net.end();
+}
+
+// The value of a net is a function of the values of the individual
+// Port-Devices in the net.
+void Net::compute_new_value(void) {
+    this->new_value = EmptyElectricalValue;
+    // For each Port in the Net, figure out the new value and combine that
+    // value with what we have so far.
+    for (auto i = this->ports_in_net.begin(); i != this->ports_in_net.end(); i++) {
+        auto port = *i;
+        ElectricalValue v = port->compute_new_value(port);
+        this->new_value = combine_electrical_values(v, this->new_value);
+    }
+}
+
+void Net::apply_new_value(void) {
+    for (auto i = this->ports_in_net.begin(); i != this->ports_in_net.end(); i++) {
+        auto port = *i;
+        port->apply_new_value(this->new_value);
+    }
 }
 
 // If neighboring Coords are different devices, then add ports to both devices
@@ -190,11 +217,23 @@ int main(void) {
             ASSERT(count == 1);
         }
 
-        // For each net,
-        // .. figure out the new value, and just store it for now (so that we
-        // don't effect the value of other nets).
+        // For each net, compute the new value.
+        for (auto i = nets.begin(); i != nets.end(); i++) {
+            auto net = *i;
+            net->compute_new_value();
+        }
 
-        // For each net, apply the new values that were calculated.
+        // For each net, apply the new value. (These steps are separated so
+        // that the new value of one net doesn't affect the new value of the
+        // other nets.)
+        for (auto i = nets.begin(); i != nets.end(); i++) {
+            auto net = *i;
+            net->apply_new_value();
+        }
+
+        // Store the output image.
+
+        // Compare the output image to the expected image.
 
         // TODO: flip the clock value
     }

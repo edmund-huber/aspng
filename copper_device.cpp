@@ -30,3 +30,11 @@ std::list<std::shared_ptr<Port>> CopperDevice::propagate(std::shared_ptr<Port> p
     next_ports.remove(port);
     return next_ports;
 }
+
+ElectricalValue CopperDevice::get_value_at_port(std::shared_ptr<Port>) {
+    return EmptyElectricalValue;
+}
+
+void CopperDevice::apply_new_value(ElectricalValue) {
+    // Deliberately empty.
+}

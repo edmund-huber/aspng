@@ -34,3 +34,11 @@ std::list<std::shared_ptr<Port>> SinkDevice::propagate(std::shared_ptr<Port> por
     next_ports.remove(port);
     return next_ports;
 }
+
+ElectricalValue SinkDevice::get_value_at_port(std::shared_ptr<Port>) {
+    return LoElectricalValue;
+}
+
+void SinkDevice::apply_new_value(ElectricalValue) {
+    // Deliberately empty.
+}

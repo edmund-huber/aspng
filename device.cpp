@@ -1,10 +1,37 @@
+#include "common.h"
 #include "device.h"
+
+ElectricalValue combine_electrical_values(ElectricalValue v1, ElectricalValue v2) {
+    switch (v1) {
+    case EmptyElectricalValue:
+        return v2;
+    case HiElectricalValue:
+        ASSERT(v2 != LoElectricalValue); // TODO error messages
+        return HiElectricalValue;
+    case LoElectricalValue:
+        ASSERT(v2 != HiElectricalValue); // TODO error messages
+        return LoElectricalValue;
+    }
+    ASSERT(false);
+}
 
 std::list<std::shared_ptr<Port>> Port::propagate(std::shared_ptr<Port> self) {
     std::list<std::shared_ptr<Port>> l;
     l.splice(l.end(), this->d1->propagate(self));
     l.splice(l.end(), this->d2->propagate(self));
     return l;
+}
+
+ElectricalValue Port::compute_new_value(std::shared_ptr<Port> self) {
+    return combine_electrical_values(
+        this->d1->get_value_at_port(self),
+        this->d2->get_value_at_port(self)
+    );
+}
+
+void Port::apply_new_value(ElectricalValue v) {
+    this->d1->apply_new_value(v);
+    this->d2->apply_new_value(v);
 }
 
 void Device::add_port(std::shared_ptr<Port> p) {
