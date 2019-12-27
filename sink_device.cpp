@@ -21,10 +21,16 @@ std::list<Patch> SinkDevice::all_patches(void) {
     return all_patches;
 }
 
-LinkResult SinkDevice::prelink(std::shared_ptr<Device> other) {
-    if (std::dynamic_pointer_cast<CopperDevice>(other))
-        return CanLink;
-    if (std::dynamic_pointer_cast<BackgroundDevice>(other))
-        return CanTouch;
-    return LinkError;
+std::tuple<LinkResult, PortType> SinkDevice::prelink(std::shared_ptr<Device> d) {
+    if (std::dynamic_pointer_cast<CopperDevice>(d))
+        return std::make_tuple(CanLink, NoSpecialMeaning);
+    if (std::dynamic_pointer_cast<BackgroundDevice>(d))
+        return std::make_tuple(CanTouch, NoSpecialMeaning);
+    return std::make_tuple(LinkError, NoSpecialMeaning);
+}
+
+std::list<std::shared_ptr<Port>> SinkDevice::propagate(Port *port) {
+    std::list<std::shared_ptr<Port>> next_ports = this->all_ports();
+    next_ports.remove(std::shared_ptr<Port>(port));
+    return next_ports;
 }

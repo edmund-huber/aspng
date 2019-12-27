@@ -26,8 +26,8 @@ class Device;
 class Port {
 public:
     Port(std::shared_ptr<Device> _d1, PortType _d1_port_type, std::shared_ptr<Device> _d2, PortType _d2_port_type) : d1(_d1), d1_port_type(_d1_port_type), d2(_d2), d2_port_type(_d2_port_type) {};
-
     PortType get_port_type(std::shared_ptr<Device> d1);
+    std::list<std::shared_ptr<Port>> propagate(void);
 
 private:
     std::shared_ptr<Device> d1;
@@ -57,9 +57,13 @@ public:
     // create a port. During linking, if `prelink` returns CanLink for both
     // devices, then `link` will be called on both devices, to actually add the
     // ports.
-    virtual LinkResult prelink(std::shared_ptr<Device>, PortType &) = 0;
+    virtual std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>) = 0;
     void add_port(std::shared_ptr<Port>);
     std::list<std::shared_ptr<Port>> all_ports(void);
+
+    // `propagate` should return the list of Ports that are immediate neighbors
+    // of the given Port.
+    virtual std::list<std::shared_ptr<Port>> propagate(Port *) = 0;
 
 private:
     std::list<std::shared_ptr<Port>> ports;
@@ -76,7 +80,8 @@ public:
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
     std::list<Patch> all_patches(void);
-    LinkResult prelink(std::shared_ptr<Device>);
+    std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
+    std::list<std::shared_ptr<Port>> propagate(Port *);
     static Rgb color;
 
 private:
@@ -89,7 +94,8 @@ public:
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
     std::list<Patch> all_patches(void);
-    LinkResult prelink(std::shared_ptr<Device>);
+    std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
+    std::list<std::shared_ptr<Port>> propagate(Port *);
     static Rgb color;
 
 private:
@@ -102,7 +108,8 @@ public:
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
     std::list<Patch> all_patches(void);
-    LinkResult prelink(std::shared_ptr<Device>);
+    std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
+    std::list<std::shared_ptr<Port>> propagate(Port *);
     static Rgb color;
 
 private:
@@ -115,7 +122,8 @@ public:
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
     std::list<Patch> all_patches(void);
-    LinkResult prelink(std::shared_ptr<Device>);
+    std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
+    std::list<std::shared_ptr<Port>> propagate(Port *);
     static Rgb color;
 
 private:

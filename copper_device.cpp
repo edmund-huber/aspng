@@ -21,6 +21,12 @@ std::list<Patch> CopperDevice::all_patches(void) {
     return all_patches;
 }
 
-LinkResult CopperDevice::prelink(std::shared_ptr<Device> other) {
-    return CanLink;
+std::tuple<LinkResult, PortType> CopperDevice::prelink(std::shared_ptr<Device> d) {
+    return std::make_tuple(CanLink, NoSpecialMeaning);
+}
+
+std::list<std::shared_ptr<Port>> CopperDevice::propagate(Port *port) {
+    std::list<std::shared_ptr<Port>> next_ports = this->all_ports();
+    next_ports.remove(std::shared_ptr<Port>(port));
+    return next_ports;
 }

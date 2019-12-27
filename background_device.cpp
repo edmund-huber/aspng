@@ -25,6 +25,11 @@ std::list<Patch> BackgroundDevice::all_patches(void) {
     return all_patches;
 }
 
-LinkResult BackgroundDevice::prelink(std::shared_ptr<Device> other) {
-    return CanTouch;
+std::tuple<LinkResult, PortType> BackgroundDevice::prelink(std::shared_ptr<Device> d) {
+    return std::make_tuple(CanTouch, NoSpecialMeaning);
+}
+
+std::list<std::shared_ptr<Port>> BackgroundDevice::propagate(Port *port) {
+    std::list<std::shared_ptr<Port>> empty;
+    return empty;
 }

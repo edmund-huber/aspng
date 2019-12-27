@@ -2,6 +2,7 @@
 #include <iostream>
 #include <functional>
 #include <list>
+#include <queue>
 #include <map>
 #include <memory>
 #include <set>
@@ -14,18 +15,36 @@ class Net {
 public:
     Net(std::shared_ptr<Port>);
     bool contains(std::shared_ptr<Port>);
+
+private:
+    std::set<std::shared_ptr<Port>> ports_in_net;
 };
 
-Net::Net(std::shared_ptr<Port> port) {
-
+Net::Net(std::shared_ptr<Port> p) {
+    std::queue<std::shared_ptr<Port>> ports_to_visit;
+    ports_to_visit.push(p);
+    while (!ports_to_visit.empty()) {
+        // Take a port off the to_visit queue.
+        auto port = ports_to_visit.front();
+        ports_to_visit.pop();
+        // What (immediate) other ports can be reached through this port?
+        auto more_ports_to_visit = port->propagate();
+        for (auto i = more_ports_to_visit.begin(); i != more_ports_to_visit.end(); i++) {
+            auto port2 = *i;
+            if (this->ports_in_net.find(port2) == this->ports_in_net.end()) {
+                this->ports_in_net.insert(port2);
+                ports_to_visit.push(port2);
+            }
+        }
+    }
 }
 
 bool Net::contains(std::shared_ptr<Port> port) {
-    return false;
+    return this->ports_in_net.find(port) != this->ports_in_net.end();
 }
 
 // If neighboring Coords are different devices, then add ports to both devices
-// (to the other device).
+// (pointing to the other device).
 void maybe_add_ports(std::map<Coord, std::shared_ptr<Device>> &device_map, Coord coord, size_t x_off, size_t y_off) {
     auto d1 = device_map[coord];
     if (d1 == nullptr)
@@ -34,9 +53,11 @@ void maybe_add_ports(std::map<Coord, std::shared_ptr<Device>> &device_map, Coord
     Coord neighbor = Coord(std::get<0>(coord) + x_off, std::get<1>(coord) + y_off);
     auto d2 = device_map[neighbor];
     if ((d2 != nullptr) && (device_map[neighbor] != device_map[coord])) {
-        PortType d1_port_type;
-        PortType d2_port_type;
-        if ((d1->prelink(d2, d2_port_type) == CanLink) && (d2->prelink(d1, d1_port_type) == CanLink)) {
+        LinkResult d1_link_result, d2_link_result;
+        PortType d1_port_type, d2_port_type;
+        std::tie(d1_link_result, d2_port_type) = d1->prelink(d2);
+        std::tie(d2_link_result, d1_port_type) = d2->prelink(d1);
+        if ((d1_link_result == CanLink) && (d2_link_result == CanLink)) {
             auto port = std::make_shared<Port>(d2, d1_port_type, d2, d2_port_type);
             d1->add_port(port);
             d2->add_port(port);
@@ -151,6 +172,9 @@ int main(void) {
             }
             // If this Port isn't in any Net, then let's start a new Net,
             // propagating out from this Port.
+            if (found) {
+                std::cout << "AAAA" << std::endl;
+            }
             if (!found) {
                 nets.push_back(std::make_shared<Net>(port));
             }
@@ -166,6 +190,7 @@ int main(void) {
                     count++;
                 }
             }
+            ASSERT(count > 0);
             ASSERT(count == 1);
         }
 

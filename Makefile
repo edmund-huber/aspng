@@ -1,5 +1,5 @@
 CXX=g++
-CXXFLAGS=-std=c++17 -pedantic -Wall -Werror
+CXXFLAGS=-std=c++17 -pedantic -Wall -Werror -g -O0
 
 test: bin/test
 	./bin/test
