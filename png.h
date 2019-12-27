@@ -15,6 +15,7 @@ public:
 
 class Png {
 public:
+    Png(size_t, size_t);
     static Png *read(std::string);
     void write(std::string);
     size_t get_width();

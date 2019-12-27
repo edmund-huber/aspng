@@ -44,5 +44,5 @@ void SinkDevice::apply_new_value(ElectricalValue) {
 }
 
 Rgb SinkDevice::get_draw_color(void) {
-    return BackgroundDevice::color;
+    return SinkDevice::color;
 }

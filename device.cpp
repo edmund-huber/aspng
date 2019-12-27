@@ -15,6 +15,18 @@ ElectricalValue combine_electrical_values(ElectricalValue v1, ElectricalValue v2
     ASSERT(false);
 }
 
+std::string electrical_value_to_str(ElectricalValue v) {
+    switch (v) {
+    case EmptyElectricalValue:
+        return "Empty";
+    case HiElectricalValue:
+        return "Hi";
+    case LoElectricalValue:
+        return "Lo";
+    }
+    ASSERT(false);
+}
+
 std::list<std::shared_ptr<Port>> Port::propagate(std::shared_ptr<Port> self) {
     std::list<std::shared_ptr<Port>> l;
     l.splice(l.end(), this->d1->propagate(self));
@@ -65,5 +77,16 @@ void Device::flood_helper(Png *png, size_t x, size_t y, Rgb color, Patch &patch,
         Device::flood_helper(png, x + 1, y, color, patch, visited);
         Device::flood_helper(png, x, y - 1, color, patch, visited);
         Device::flood_helper(png, x, y + 1, color, patch, visited);
+    }
+}
+
+void Device::draw(Png *png) {
+    auto patches = this->all_patches();
+    for (auto i = patches.begin(); i != patches.end(); i++) {
+        auto patch = *i;
+        for (auto j = patch.begin(); j != patch.end(); j++) {
+            auto coord = *j;
+            png->set_pixel(std::get<0>(coord), std::get<1>(coord), this->get_draw_color());
+        }
     }
 }

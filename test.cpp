@@ -1,5 +1,4 @@
 #include <algorithm>
-#include <iostream>
 #include <functional>
 #include <list>
 #include <queue>
@@ -86,7 +85,7 @@ void maybe_add_ports(std::map<Coord, std::shared_ptr<Device>> &device_map, Coord
         std::tie(d1_link_result, d2_port_type) = d1->prelink(d2);
         std::tie(d2_link_result, d1_port_type) = d2->prelink(d1);
         if ((d1_link_result == CanLink) && (d2_link_result == CanLink)) {
-            auto port = std::make_shared<Port>(d2, d1_port_type, d2, d2_port_type);
+            auto port = std::make_shared<Port>(d1, d1_port_type, d2, d2_port_type);
             d1->add_port(port);
             d2->add_port(port);
         }
@@ -232,6 +231,12 @@ int main(void) {
         }
 
         // Store the output image.
+        Png out_png(png->get_width(), png->get_height());
+        for (auto i = all_devices.begin(); i != all_devices.end(); i++) {
+            auto device = *i;
+            device->draw(&out_png);
+        }
+        out_png.write("/tmp/output.png");
 
         // Compare the output image to the expected image.
 

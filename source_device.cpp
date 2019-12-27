@@ -44,5 +44,5 @@ void SourceDevice::apply_new_value(ElectricalValue) {
 }
 
 Rgb SourceDevice::get_draw_color(void) {
-    return BackgroundDevice::color;
+    return SourceDevice::color;
 }

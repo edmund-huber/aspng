@@ -16,6 +16,7 @@ enum ElectricalValue {
 };
 
 ElectricalValue combine_electrical_values(ElectricalValue, ElectricalValue);
+std::string electrical_value_to_str(ElectricalValue);
 
 enum LinkResult {
     CanTouch,
@@ -79,7 +80,7 @@ public:
 
     virtual void apply_new_value(ElectricalValue) = 0;
 
-    void draw(void);
+    void draw(Png *);
 
 private:
     std::list<std::shared_ptr<Port>> ports;

@@ -9,6 +9,15 @@ bool Rgb::operator==(Rgb &other) {
 
 Png::Png() {}
 
+Png::Png(size_t w, size_t h) {
+    this->width = w;
+    this->height = h;
+    this->rows = new png_bytep[this->height];
+    for (size_t y = 0; y < this->height; y++) {
+        this->rows[y] = new png_byte[3 * this->width * this->height];
+    }
+}
+
 // Cribbed from https://gist.github.com/niw/5963798 .
 Png *Png::read(std::string fn) {
     FILE *f = fopen(fn.c_str(), "r");
