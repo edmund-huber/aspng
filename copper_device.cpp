@@ -25,8 +25,8 @@ std::tuple<LinkResult, PortType> CopperDevice::prelink(std::shared_ptr<Device> d
     return std::make_tuple(CanLink, NoSpecialMeaning);
 }
 
-std::list<std::shared_ptr<Port>> CopperDevice::propagate(Port *port) {
+std::list<std::shared_ptr<Port>> CopperDevice::propagate(std::shared_ptr<Port> port) {
     std::list<std::shared_ptr<Port>> next_ports = this->all_ports();
-    next_ports.remove(std::shared_ptr<Port>(port));
+    next_ports.remove(port);
     return next_ports;
 }

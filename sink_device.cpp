@@ -29,8 +29,8 @@ std::tuple<LinkResult, PortType> SinkDevice::prelink(std::shared_ptr<Device> d) 
     return std::make_tuple(LinkError, NoSpecialMeaning);
 }
 
-std::list<std::shared_ptr<Port>> SinkDevice::propagate(Port *port) {
+std::list<std::shared_ptr<Port>> SinkDevice::propagate(std::shared_ptr<Port> port) {
     std::list<std::shared_ptr<Port>> next_ports = this->all_ports();
-    next_ports.remove(std::shared_ptr<Port>(port));
+    next_ports.remove(port);
     return next_ports;
 }

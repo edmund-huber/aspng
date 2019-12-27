@@ -29,7 +29,7 @@ std::tuple<LinkResult, PortType> BackgroundDevice::prelink(std::shared_ptr<Devic
     return std::make_tuple(CanTouch, NoSpecialMeaning);
 }
 
-std::list<std::shared_ptr<Port>> BackgroundDevice::propagate(Port *port) {
+std::list<std::shared_ptr<Port>> BackgroundDevice::propagate(std::shared_ptr<Port> port) {
     std::list<std::shared_ptr<Port>> empty;
     return empty;
 }

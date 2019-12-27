@@ -28,7 +28,7 @@ Net::Net(std::shared_ptr<Port> p) {
         auto port = ports_to_visit.front();
         ports_to_visit.pop();
         // What (immediate) other ports can be reached through this port?
-        auto more_ports_to_visit = port->propagate();
+        auto more_ports_to_visit = port->propagate(port);
         for (auto i = more_ports_to_visit.begin(); i != more_ports_to_visit.end(); i++) {
             auto port2 = *i;
             if (this->ports_in_net.find(port2) == this->ports_in_net.end()) {

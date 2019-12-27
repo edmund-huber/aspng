@@ -1,9 +1,9 @@
 #include "device.h"
 
-std::list<std::shared_ptr<Port>> Port::propagate(void) {
+std::list<std::shared_ptr<Port>> Port::propagate(std::shared_ptr<Port> self) {
     std::list<std::shared_ptr<Port>> l;
-    l.splice(l.end(), this->d1->propagate(this));
-    l.splice(l.end(), this->d2->propagate(this));
+    l.splice(l.end(), this->d1->propagate(self));
+    l.splice(l.end(), this->d2->propagate(self));
     return l;
 }
 

@@ -27,7 +27,7 @@ class Port {
 public:
     Port(std::shared_ptr<Device> _d1, PortType _d1_port_type, std::shared_ptr<Device> _d2, PortType _d2_port_type) : d1(_d1), d1_port_type(_d1_port_type), d2(_d2), d2_port_type(_d2_port_type) {};
     PortType get_port_type(std::shared_ptr<Device> d1);
-    std::list<std::shared_ptr<Port>> propagate(void);
+    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
 
 private:
     std::shared_ptr<Device> d1;
@@ -63,7 +63,7 @@ public:
 
     // `propagate` should return the list of Ports that are immediate neighbors
     // of the given Port.
-    virtual std::list<std::shared_ptr<Port>> propagate(Port *) = 0;
+    virtual std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>) = 0;
 
 private:
     std::list<std::shared_ptr<Port>> ports;
@@ -81,7 +81,7 @@ public:
     bool parse(Png *, size_t, size_t);
     std::list<Patch> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
-    std::list<std::shared_ptr<Port>> propagate(Port *);
+    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     static Rgb color;
 
 private:
@@ -95,7 +95,7 @@ public:
     bool parse(Png *, size_t, size_t);
     std::list<Patch> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
-    std::list<std::shared_ptr<Port>> propagate(Port *);
+    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     static Rgb color;
 
 private:
@@ -109,7 +109,7 @@ public:
     bool parse(Png *, size_t, size_t);
     std::list<Patch> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
-    std::list<std::shared_ptr<Port>> propagate(Port *);
+    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     static Rgb color;
 
 private:
@@ -123,7 +123,7 @@ public:
     bool parse(Png *, size_t, size_t);
     std::list<Patch> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
-    std::list<std::shared_ptr<Port>> propagate(Port *);
+    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     static Rgb color;
 
 private:
