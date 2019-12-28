@@ -1,4 +1,5 @@
 #include <algorithm>
+#include <filesystem>
 #include <functional>
 #include <iostream>
 #include <list>
@@ -94,8 +95,8 @@ void maybe_add_ports(std::map<Coord, std::shared_ptr<Device>> &device_map, Coord
     }
 }
 
-int main(void) {
-    auto png = Png::read("tests/basic_source_sink/_.png");
+bool test(std::string path) {
+    auto png = Png::read(path + "/_.png");
 
     std::map<Coord, std::shared_ptr<Device>> device_map;
     for (size_t x = 0; x < png->get_width(); x++) {
@@ -155,7 +156,7 @@ int main(void) {
                     }
                 }
                 png->write("fail.png");
-                return -1;
+                return false;
             }
         }
     }
@@ -222,7 +223,11 @@ int main(void) {
         // For each net, compute the new value.
         for (auto i = nets.begin(); i != nets.end(); i++) {
             auto net = *i;
-            net->compute_new_value();
+            try {
+                net->compute_new_value();
+            } catch (ElectricalValueException &e) {
+                return false;
+            }
         }
 
         // For each net, apply the new value. (These steps are separated so
@@ -254,11 +259,29 @@ int main(void) {
         // TODO: flip the clock value
     }
 
-    if (passed) {
-        std::cout << "PASS " << ".. the test name .." << std::endl;
-    } else {
-        std::cout << "FAIL " << ".. the test name .." << std::endl;
-    }
+    return passed;
+}
 
-    return 0;
+int main(void) {
+    // Run all tests under tests/.
+    int failures = 0;
+    for (auto &entry : std::filesystem::directory_iterator("tests/")) {
+        bool passed = test(entry.path());
+        bool expect_fail = std::filesystem::exists(entry.path().string() + "/expect_fail");
+        std::string status;
+        if (passed) {
+            status = "PASS";
+        } else if (!passed && expect_fail) {
+            status = "PAIL";
+        } else {
+            status = "FAIL";
+            failures++;
+        }
+        std::cout << status << " " << entry << std::endl;
+    }
+    if (failures == 0) {
+        return 0;
+    } else {
+        return 1;
+    }
 }

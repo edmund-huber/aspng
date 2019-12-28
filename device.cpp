@@ -6,10 +6,14 @@ ElectricalValue combine_electrical_values(ElectricalValue v1, ElectricalValue v2
     case EmptyElectricalValue:
         return v2;
     case HiElectricalValue:
-        ASSERT(v2 != LoElectricalValue); // TODO error messages
+        if (v2 == LoElectricalValue) {
+            throw ElectricalValueException();
+        }
         return HiElectricalValue;
     case LoElectricalValue:
-        ASSERT(v2 != HiElectricalValue); // TODO error messages
+        if (v2 == HiElectricalValue) {
+            throw ElectricalValueException();
+        }
         return LoElectricalValue;
     }
     ASSERT(false);

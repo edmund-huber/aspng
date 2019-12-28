@@ -8,7 +8,7 @@ bin:
 	mkdir bin
 
 bin/test: obj/background_device.o obj/copper_device.o obj/device.o obj/patch.o obj/png.o obj/sink_device.o obj/source_device.o obj/test.o | bin
-	$(CXX) $^ -lpng -o $@
+	$(CXX) $^ -lpng -o $@ -lstdc++fs
 
 obj:
 	mkdir obj

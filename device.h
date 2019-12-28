@@ -2,6 +2,7 @@
 #define __DEVICE_H__
 
 #include <cstdlib>
+#include <exception>
 #include <list>
 #include <memory>
 #include <set>
@@ -17,6 +18,12 @@ enum ElectricalValue {
 
 ElectricalValue combine_electrical_values(ElectricalValue, ElectricalValue);
 std::string electrical_value_to_str(ElectricalValue);
+
+class ElectricalValueException : public std::exception {
+    virtual const char *what() const throw() {
+        return "ElectricalValueException";
+    }
+};
 
 enum LinkResult {
     CanTouch,
