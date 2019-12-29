@@ -201,10 +201,7 @@ std::string test(std::string path, std::string test_name) {
 
     std::list<int> output_wrong_at;
     for (int frame_counter = 0; ; frame_counter++) {
-        // If there's no further png file, then this test is complete.
         auto png = Png::read(path + "/" + std::to_string(frame_counter) + ".png");
-        if (png == nullptr)
-            break;
 
         // Build Nets for simulation: for each port,
         std::list<std::shared_ptr<Net>> nets;
@@ -257,6 +254,11 @@ std::string test(std::string path, std::string test_name) {
             auto net = *i;
             net->apply_new_value();
         }
+
+        // If there's no PNG to compare the output against, then the test is
+        // done.
+        if (png == nullptr)
+            break;
 
         // Store the output image.
         Png out_png(png->get_width(), png->get_height());
