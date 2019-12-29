@@ -29,6 +29,10 @@ std::tuple<LinkResult, PortType> SourceDevice::prelink(std::shared_ptr<Device> d
     return std::make_tuple(LinkError, NoSpecialMeaning);
 }
 
+bool SourceDevice::link(void) {
+    return true;
+}
+
 std::list<std::shared_ptr<Port>> SourceDevice::propagate(std::shared_ptr<Port> port) {
     std::list<std::shared_ptr<Port>> next_ports = this->all_ports();
     next_ports.remove(port);

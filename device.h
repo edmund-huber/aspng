@@ -34,24 +34,33 @@ enum LinkResult {
 // At link time, a device determines what the port means to itself, so that
 // later, at simulation time, it knows what to do with a port.
 enum PortType {
-    NoSpecialMeaning
+    NoSpecialMeaning,
+    ToBeResolved,
+    TransistorBridge,
+    TransistorGate
 };
 
 class Device;
 
+struct PortHalf {
+    std::shared_ptr<Device> device;
+    Coord coord;
+    PortType port_type;
+};
+
 class Port {
 public:
-    Port(std::shared_ptr<Device> _d1, PortType _d1_port_type, std::shared_ptr<Device> _d2, PortType _d2_port_type) : d1(_d1), d1_port_type(_d1_port_type), d2(_d2), d2_port_type(_d2_port_type) {};
-    PortType get_port_type(std::shared_ptr<Device> d1);
+    Port(std::shared_ptr<Device>, Coord, PortType, std::shared_ptr<Device>, Coord, PortType);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue compute_new_value(std::shared_ptr<Port>);
     void apply_new_value(ElectricalValue);
+    bool is_resolved(void);
+    PortHalf *get_our_port_half(Device *);
+    PortHalf *get_their_port_half(Device *);
 
 private:
-    std::shared_ptr<Device> d1;
-    PortType d1_port_type;
-    std::shared_ptr<Device> d2;
-    PortType d2_port_type;
+    PortHalf d1_port_half;
+    PortHalf d2_port_half;
 };
 
 class Device {
@@ -78,6 +87,11 @@ public:
     virtual std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>) = 0;
     void add_port(std::shared_ptr<Port>);
     std::list<std::shared_ptr<Port>> all_ports(void);
+
+    // `link` gives each device a chance to finalize the linking process. This
+    // is the earliest time that the device knows all ports that are linking
+    // into it, and it must resolve "ToBeResolved" port types at this time.
+    virtual bool link(void) = 0;
 
     // `propagate` should return the list of Ports that are immediate neighbors
     // of the given Port.
@@ -107,6 +121,7 @@ public:
     bool parse(Png *, size_t, size_t);
     std::list<Patch> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
+    bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
     void apply_new_value(ElectricalValue);
@@ -125,6 +140,7 @@ public:
     bool parse(Png *, size_t, size_t);
     std::list<Patch> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
+    bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
     void apply_new_value(ElectricalValue);
@@ -144,6 +160,7 @@ public:
     bool parse(Png *, size_t, size_t);
     std::list<Patch> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
+    bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
     void apply_new_value(ElectricalValue);
@@ -162,6 +179,7 @@ public:
     bool parse(Png *, size_t, size_t);
     std::list<Patch> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
+    bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
     void apply_new_value(ElectricalValue);
@@ -169,6 +187,27 @@ public:
 
 private:
     Patch patch;
+
+    virtual Rgb get_draw_color(void);
+};
+
+class TransistorDevice : public Device {
+public:
+    TransistorDevice();
+    std::string name(void);
+    static Device *create(void);
+    bool parse(Png *, size_t, size_t);
+    std::list<Patch> all_patches(void);
+    std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
+    bool link(void);
+    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
+    ElectricalValue get_value_at_port(std::shared_ptr<Port>);
+    void apply_new_value(ElectricalValue);
+    static Rgb color;
+
+private:
+    Patch patch;
+    bool passing;
 
     virtual Rgb get_draw_color(void);
 };

@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <filesystem>
 #include <functional>
+#include <fstream>
 #include <iostream>
 #include <list>
 #include <queue>
@@ -74,20 +75,20 @@ void Net::apply_new_value(void) {
 
 // If neighboring Coords are different devices, then add ports to both devices
 // (pointing to the other device).
-void maybe_add_ports(std::map<Coord, std::shared_ptr<Device>> &device_map, Coord coord, size_t x_off, size_t y_off) {
-    auto d1 = device_map[coord];
+void maybe_add_ports(std::map<Coord, std::shared_ptr<Device>> &device_map, Coord d1_coord, size_t x_off, size_t y_off) {
+    auto d1 = device_map[d1_coord];
     if (d1 == nullptr)
         return;
 
-    Coord neighbor = Coord(std::get<0>(coord) + x_off, std::get<1>(coord) + y_off);
-    auto d2 = device_map[neighbor];
-    if ((d2 != nullptr) && (device_map[neighbor] != device_map[coord])) {
+    Coord d2_coord = Coord(std::get<0>(d1_coord) + x_off, std::get<1>(d1_coord) + y_off);
+    auto d2 = device_map[d2_coord];
+    if ((d2 != nullptr) && (d2 != d1)) {
         LinkResult d1_link_result, d2_link_result;
         PortType d1_port_type, d2_port_type;
-        std::tie(d1_link_result, d2_port_type) = d1->prelink(d2);
-        std::tie(d2_link_result, d1_port_type) = d2->prelink(d1);
+        std::tie(d1_link_result, d1_port_type) = d1->prelink(d2);
+        std::tie(d2_link_result, d2_port_type) = d2->prelink(d1);
         if ((d1_link_result == CanLink) && (d2_link_result == CanLink)) {
-            auto port = std::make_shared<Port>(d1, d1_port_type, d2, d2_port_type);
+            auto port = std::make_shared<Port>(d1, d1_coord, d1_port_type, d2, d2_coord, d2_port_type);
             d1->add_port(port);
             d2->add_port(port);
         }
@@ -95,8 +96,10 @@ void maybe_add_ports(std::map<Coord, std::shared_ptr<Device>> &device_map, Coord
     }
 }
 
-bool test(std::string path) {
+std::string test(std::string path, std::string test_name) {
     auto png = Png::read(path + "/_.png");
+    if (png == nullptr)
+        return "missing _.png";
 
     std::map<Coord, std::shared_ptr<Device>> device_map;
     for (size_t x = 0; x < png->get_width(); x++) {
@@ -110,6 +113,7 @@ bool test(std::string path) {
     registry.push_back(CopperDevice::create);
     registry.push_back(SinkDevice::create);
     registry.push_back(SourceDevice::create);
+    registry.push_back(TransistorDevice::create);
 
     // Go through all pixels until we find an unassigned pixel ..
     std::set<std::shared_ptr<Device>> all_devices;
@@ -156,15 +160,15 @@ bool test(std::string path) {
                     }
                 }
                 png->write("fail.png");
-                return false;
+                return "incomplete parse";
             }
         }
     }
 
-    // Linking: for every pair of directly (not diagonally) touching pixels
-    // between devices, add Ports.
+    // Pre-linking: for every pair of directly (not diagonally) touching pixels
+    // between devices, add Ports (or not).
     for (size_t x = 0; x < png->get_width(); x++) {
-        for (size_t y = 0; y < png->get_height(); y++) {
+        for (size_t y = 0; y < png->get_height(); y++) { // TODO .. should be -1 (ditto above)?
             Coord coord(x, y);
             maybe_add_ports(device_map, coord, 1, 0);
             maybe_add_ports(device_map, coord, 0, 1);
@@ -173,20 +177,36 @@ bool test(std::string path) {
         }
     }
 
-    bool passed = true;
-    for (int i = 0; ; i++) {
+    // Link all devices.
+    for (auto i = all_devices.begin(); i != all_devices.end(); i++) {
+        auto device = *i;
+        if (!device->link()) {
+            return "link fail";
+        }
+    }
+
+    // Sanity check: no Ports remain in the ToBeResolved state.
+    std::set<std::shared_ptr<Port>> all_ports;
+    for (auto i = all_devices.begin(); i != all_devices.end(); i++) {
+        auto device = *i;
+        auto ports = device->all_ports();
+        for (auto j = ports.begin(); j != ports.end(); j++) {
+            auto port = *j;
+            if (!port->is_resolved()) {
+                return "unresolved port";
+            }
+            all_ports.insert(port);
+        }
+    }
+
+    std::list<int> output_wrong_at;
+    for (int frame_counter = 0; ; frame_counter++) {
         // If there's no further png file, then this test is complete.
-        auto png = Png::read("tests/basic_source_sink/" + std::to_string(i) + ".png");
+        auto png = Png::read(path + "/" + std::to_string(frame_counter) + ".png");
         if (png == nullptr)
             break;
 
         // Build Nets for simulation: for each port,
-        std::set<std::shared_ptr<Port>> all_ports;
-        for (auto i = all_devices.begin(); i != all_devices.end(); i++) {
-            auto device = *i;
-            auto ports = device->all_ports();
-            all_ports.insert(ports.begin(), ports.end());
-        }
         std::list<std::shared_ptr<Net>> nets;
         for (auto i = all_ports.begin(); i != all_ports.end(); i++) {
             // .. see if the Port is in a Net already.
@@ -226,7 +246,7 @@ bool test(std::string path) {
             try {
                 net->compute_new_value();
             } catch (ElectricalValueException &e) {
-                return false;
+                return "bad electrical value";
             }
         }
 
@@ -244,40 +264,67 @@ bool test(std::string path) {
             auto device = *i;
             device->draw(&out_png);
         }
-        out_png.write("/tmp/output.png"); // TODO write somewhere more obvious (in directory)
+        std::filesystem::create_directory("tests_output");
+        std::filesystem::create_directory("tests_output/" + test_name);
+        out_png.write("tests_output/" + test_name + "/" + std::to_string(frame_counter) + ".png");
 
         // Compare the output image to the expected image.
         ASSERT(out_png.get_width() == png->get_width());
         ASSERT(out_png.get_height() == png->get_height());
+        bool wrong = false;
         for (size_t x = 0; x < out_png.get_width(); x++) {
             for (size_t y = 0; y < out_png.get_height(); y++) {
                 if (out_png.get_pixel(x, y) != png->get_pixel(x, y)) {
-                    passed = false;
+                    wrong = true;
+                    break;
                 }
             }
         }
+        if (wrong) {
+            output_wrong_at.push_back(frame_counter);
+        }
+
         // TODO: flip the clock value
     }
 
-    return passed;
+    if (!output_wrong_at.empty()) {
+        std::string fail_reason = "output wrong at";
+        for (auto i = output_wrong_at.begin(); i != output_wrong_at.end(); i++) {
+            fail_reason += " " + std::to_string(*i);
+        }
+        return fail_reason;
+    }
+
+    return "";
 }
 
 int main(void) {
     // Run all tests under tests/.
     int failures = 0;
     for (auto &entry : std::filesystem::directory_iterator("tests/")) {
-        bool passed = test(entry.path());
-        bool expect_fail = std::filesystem::exists(entry.path().string() + "/expect_fail");
+        auto test_name = *(--entry.path().end());
+        std::cout << test_name << " .. ";
+        auto fail_reason = test(entry.path(), test_name);
+        std::string expect_fail_reason = "";
+        auto expect_fail_path = entry.path().string() + "/expect_fail";
+        if (std::filesystem::exists(expect_fail_path)) {
+            std::ifstream f(expect_fail_path);
+            std::stringstream buffer;
+            buffer << f.rdbuf();
+            expect_fail_reason = buffer.str();
+            if (expect_fail_reason != "") {
+                expect_fail_reason.pop_back();
+            }
+        }
         std::string status;
-        if (passed) {
-            status = "PASS";
-        } else if (!passed && expect_fail) {
-            status = "PAIL";
+        if ((fail_reason == "") && (expect_fail_reason == "")) {
+            std::cout << "PASS" << std::endl;
+        } else if (fail_reason == expect_fail_reason) {
+            std::cout << "PAIL" << std::endl;
         } else {
-            status = "FAIL";
+            std::cout << "FAIL - got \"" << fail_reason << "\", expected: \"" << expect_fail_reason << "\"" << std::endl;
             failures++;
         }
-        std::cout << status << " " << entry << std::endl;
     }
     if (failures == 0) {
         return 0;
