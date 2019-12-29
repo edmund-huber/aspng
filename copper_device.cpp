@@ -45,10 +45,10 @@ void CopperDevice::apply_new_value(ElectricalValue v) {
         this->color_for_drawing = CopperDevice::color;
         break;
     case HiElectricalValue:
-        this->color_for_drawing = Rgb(0xb9, 0xb9, 0xb9);
+        this->color_for_drawing = Rgb(0xc0, 0xc0, 0xc0);
         break;
     case LoElectricalValue:
-        this->color_for_drawing = Rgb(0x99, 0x99, 0x99);
+        this->color_for_drawing = Rgb(0x60, 0x60, 0x60);
         break;
     }
 }
