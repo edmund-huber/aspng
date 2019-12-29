@@ -302,7 +302,8 @@ std::string test(std::string path, std::string test_name) {
 
 int main(void) {
     // Run all tests under tests/.
-    int failures = 0;
+    int pass = 0;
+    int fail = 0;
     for (auto &entry : std::filesystem::directory_iterator("tests/")) {
         auto test_name = *(--entry.path().end());
         std::cout << test_name << " .. ";
@@ -321,14 +322,19 @@ int main(void) {
         std::string status;
         if ((fail_reason == "") && (expect_fail_reason == "")) {
             std::cout << "PASS" << std::endl;
+            pass++;
         } else if (fail_reason == expect_fail_reason) {
             std::cout << "PAIL" << std::endl;
+            pass++;
         } else {
             std::cout << "FAIL - got \"" << fail_reason << "\", expected: \"" << expect_fail_reason << "\"" << std::endl;
-            failures++;
+            fail++;
         }
     }
-    if (failures == 0) {
+
+    std::cout << "pass: " << pass << ", fail: " << fail << std::endl;
+
+    if (fail == 0) {
         return 0;
     } else {
         return 1;
