@@ -1,9 +1,5 @@
 #include "device.h"
 
-std::string SinkDevice::name(void) {
-    return "Sink";
-}
-
 Device *SinkDevice::create(void) {
     return new SinkDevice();
 }

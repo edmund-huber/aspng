@@ -1,9 +1,5 @@
 #include "device.h"
 
-std::string SourceDevice::name(void) {
-    return "Source";
-}
-
 Rgb SourceDevice::color = Rgb(0xff, 0xff, 0xff);
 
 Device *SourceDevice::create(void) {

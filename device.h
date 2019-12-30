@@ -67,8 +67,6 @@ class Device {
 public:
     virtual ~Device(void) {};
 
-    virtual std::string name(void) = 0;
-
     // Given an image, can a device of this type be parsed, starting from a
     // given coordinate? (The device is responsible for remembering which
     // pixels it parsed out.) Note that this is separate from "linking" -- we
@@ -117,7 +115,6 @@ class BackgroundDevice : public Device {
 public:
     BackgroundDevice(void);
     ~BackgroundDevice(void);
-    std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
     std::list<Patch> all_patches(void);
@@ -136,7 +133,6 @@ private:
 
 class CopperDevice : public Device {
 public:
-    std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
     std::list<Patch> all_patches(void);
@@ -156,7 +152,6 @@ private:
 
 class SinkDevice : public Device {
 public:
-    std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
     std::list<Patch> all_patches(void);
@@ -175,7 +170,6 @@ private:
 
 class SourceDevice : public Device {
 public:
-    std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
     std::list<Patch> all_patches(void);
@@ -195,7 +189,6 @@ private:
 class TransistorDevice : public Device {
 public:
     TransistorDevice();
-    std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
     std::list<Patch> all_patches(void);
