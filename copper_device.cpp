@@ -39,7 +39,7 @@ ElectricalValue CopperDevice::get_value_at_port(std::shared_ptr<Port>) {
     return EmptyElectricalValue;
 }
 
-void CopperDevice::apply_new_value(ElectricalValue v) {
+void CopperDevice::apply_new_value(Port *, ElectricalValue v) {
     switch (v) {
     case EmptyElectricalValue:
         this->color_for_drawing = CopperDevice::color;

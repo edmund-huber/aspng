@@ -99,9 +99,10 @@ public:
 
     virtual ElectricalValue get_value_at_port(std::shared_ptr<Port>) = 0;
 
-    virtual void apply_new_value(ElectricalValue) = 0;
+    virtual void apply_new_value(Port *, ElectricalValue) = 0;
 
-    void draw(Png *);
+    virtual void draw(Png *);
+    virtual void draw_debug(Png *);
 
 private:
     std::list<std::shared_ptr<Port>> ports;
@@ -124,7 +125,7 @@ public:
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(ElectricalValue);
+    void apply_new_value(Port *, ElectricalValue);
     static Rgb color;
 
 private:
@@ -143,7 +144,7 @@ public:
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(ElectricalValue);
+    void apply_new_value(Port *, ElectricalValue);
     static Rgb color;
 
 private:
@@ -163,7 +164,7 @@ public:
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(ElectricalValue);
+    void apply_new_value(Port *, ElectricalValue);
     static Rgb color;
 
 private:
@@ -182,7 +183,7 @@ public:
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(ElectricalValue);
+    void apply_new_value(Port *, ElectricalValue);
     static Rgb color;
 
 private:
@@ -202,8 +203,9 @@ public:
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(ElectricalValue);
+    void apply_new_value(Port *, ElectricalValue);
     static Rgb color;
+    void draw_debug(Png *);
 
 private:
     Patch patch;

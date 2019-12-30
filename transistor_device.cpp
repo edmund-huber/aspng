@@ -1,3 +1,6 @@
+#include <iostream>
+#include <set>
+
 #include "common.h"
 #include "device.h"
 
@@ -37,7 +40,7 @@ std::tuple<LinkResult, PortType> TransistorDevice::prelink(std::shared_ptr<Devic
 bool TransistorDevice::link(void) {
     // For our end of each port, figure out if it's a bridge: bridge ports
     // always lie on the same axis.
-    int bridge_count = 0;
+    std::set<PortType *> bridges;
     auto all_ports = this->all_ports();
     for (auto i = all_ports.begin(); i != all_ports.end(); i++) {
         auto port1 = *i;
@@ -54,24 +57,24 @@ bool TransistorDevice::link(void) {
             std::tie(c2_x, c2_y) = port2_their_half->coord;
             if ((c1_x == c2_x) || (c1_y == c2_y)) {
                 port1_our_half->port_type = TransistorBridge;
-                bridge_count++;
+                bridges.insert(&(port1_our_half->port_type));
             }
         }
     }
 
     // The remaining port must be the gate.
-    int gate_count = 0;
+    std::set<PortType *> gates;
     for (auto i = all_ports.begin(); i != all_ports.end(); i++) {
         auto port = *i;
         auto port_our_half = port->get_our_port_half(this);
         if (port_our_half->port_type == ToBeResolved) {
             port_our_half->port_type = TransistorGate;
-            gate_count++;
+            gates.insert(&(port_our_half->port_type));
         }
     }
 
     // We must have exactly 1 gate and 2 bridges.
-    return (gate_count == 1) && (bridge_count == 2);
+    return (gates.size() == 1) && (bridges.size() == 2);
 }
 
 std::list<std::shared_ptr<Port>> TransistorDevice::propagate(std::shared_ptr<Port> port) {
@@ -103,18 +106,41 @@ ElectricalValue TransistorDevice::get_value_at_port(std::shared_ptr<Port>) {
     return EmptyElectricalValue;
 }
 
-void TransistorDevice::apply_new_value(ElectricalValue v) {
-    switch (v) {
-    case EmptyElectricalValue:
-    case LoElectricalValue:
-        this->passing = false;
-        break;
-    case HiElectricalValue:
-        this->passing = true;
-        break;
+void TransistorDevice::apply_new_value(Port *port, ElectricalValue v) {
+    auto port_our_half = port->get_our_port_half(this);
+    if (port_our_half->port_type == TransistorGate) {
+        switch (v) {
+        case EmptyElectricalValue:
+        case LoElectricalValue:
+            this->passing = false;
+            break;
+        case HiElectricalValue:
+            this->passing = true;
+            break;
+        }
     }
 }
 
 Rgb TransistorDevice::get_draw_color(void) {
     return TransistorDevice::color;
+}
+
+void TransistorDevice::draw_debug(Png *png) {
+    return;
+    auto all_ports = this->all_ports();
+    for (auto i = all_ports.begin(); i != all_ports.end(); i++) {
+        auto port = *i;
+        auto port_their_half = port->get_their_port_half(this);
+        size_t x, y;
+        std::tie(x, y) = port_their_half->coord;
+        auto port_our_half = port->get_our_port_half(this);
+        if (port_our_half->port_type == TransistorBridge) {
+            png->set_pixel(x, y, Rgb(0, 0, 0xff));
+        } else if (port_our_half->port_type == TransistorGate) {
+            png->set_pixel(x, y, Rgb(0xff, 0, 0));
+        } else {
+            ASSERT(0);
+        }
+    }
+    ASSERT(all_ports.size() == 3);
 }

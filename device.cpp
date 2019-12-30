@@ -55,8 +55,8 @@ Port::Port(std::shared_ptr<Device> d1, Coord d1_coord, PortType d1_port_type, st
 }
 
 void Port::apply_new_value(ElectricalValue v) {
-    this->d1_port_half.device->apply_new_value(v);
-    this->d2_port_half.device->apply_new_value(v);
+    this->d1_port_half.device->apply_new_value(this, v);
+    this->d2_port_half.device->apply_new_value(this, v);
 }
 
 bool Port::is_resolved(void) {
@@ -127,3 +127,5 @@ void Device::draw(Png *png) {
         }
     }
 }
+
+void Device::draw_debug(Png *png) {}

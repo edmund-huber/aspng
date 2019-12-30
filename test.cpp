@@ -266,6 +266,10 @@ std::string test(std::string path, std::string test_name) {
             auto device = *i;
             device->draw(&out_png);
         }
+        for (auto i = all_devices.begin(); i != all_devices.end(); i++) {
+            auto device = *i;
+            device->draw_debug(&out_png);
+        }
         std::filesystem::create_directory("tests_output");
         std::filesystem::create_directory("tests_output/" + test_name);
         out_png.write("tests_output/" + test_name + "/" + std::to_string(frame_counter) + ".png");
