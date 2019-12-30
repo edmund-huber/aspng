@@ -111,6 +111,7 @@ std::string test(std::string path, std::string test_name) {
     std::list<std::function<Device *(void)>> registry;
     registry.push_back(BackgroundDevice::create);
     registry.push_back(CopperDevice::create);
+    registry.push_back(PullDevice::create);
     registry.push_back(SinkDevice::create);
     registry.push_back(SourceDevice::create);
     registry.push_back(TransistorDevice::create);

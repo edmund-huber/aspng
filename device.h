@@ -13,7 +13,9 @@
 enum ElectricalValue {
     EmptyElectricalValue,
     HiElectricalValue,
-    LoElectricalValue
+    LoElectricalValue,
+    PullHiElectricalValue,
+    PullLoElectricalValue
 };
 
 ElectricalValue combine_electrical_values(ElectricalValue, ElectricalValue);
@@ -146,6 +148,29 @@ public:
 private:
     Patch patch;
     Rgb color_for_drawing;
+
+    virtual Rgb get_draw_color(void);
+};
+
+class PullDevice : public Device {
+public:
+    static Device *create(void);
+    bool parse(Png *, size_t, size_t);
+    std::list<Patch> all_patches(void);
+    std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
+    bool link(void);
+    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
+    ElectricalValue get_value_at_port(std::shared_ptr<Port>);
+    void apply_new_value(Port *, ElectricalValue);
+    static Rgb yellow;
+
+private:
+    Patch patch_source_or_sink;
+    Patch patch_yellow;
+    enum {
+        PullHi,
+        PullLo
+    } pull_type;
 
     virtual Rgb get_draw_color(void);
 };

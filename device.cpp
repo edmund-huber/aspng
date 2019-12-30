@@ -15,6 +15,18 @@ ElectricalValue combine_electrical_values(ElectricalValue v1, ElectricalValue v2
             throw ElectricalValueException();
         }
         return LoElectricalValue;
+    case PullLoElectricalValue:
+        if (v2 == HiElectricalValue) {
+            return HiElectricalValue;
+        } else {
+            return PullLoElectricalValue;
+        }
+    case PullHiElectricalValue:
+        if (v2 == LoElectricalValue) {
+            return LoElectricalValue;
+        } else {
+            return PullHiElectricalValue;
+        }
     }
     ASSERT(false);
 }
@@ -27,6 +39,10 @@ std::string electrical_value_to_str(ElectricalValue v) {
         return "Hi";
     case LoElectricalValue:
         return "Lo";
+    case PullHiElectricalValue:
+        return "PullHi";
+    case PullLoElectricalValue:
+        return "PullLo";
     }
     ASSERT(false);
 }

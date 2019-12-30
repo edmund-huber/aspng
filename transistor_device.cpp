@@ -107,9 +107,11 @@ void TransistorDevice::apply_new_value(Port *port, ElectricalValue v) {
         switch (v) {
         case EmptyElectricalValue:
         case LoElectricalValue:
+        case PullLoElectricalValue:
             this->passing = false;
             break;
         case HiElectricalValue:
+        case PullHiElectricalValue:
             this->passing = true;
             break;
         }
