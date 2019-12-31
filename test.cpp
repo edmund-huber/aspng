@@ -145,7 +145,6 @@ std::string test(std::string path, std::string test_name) {
                         for (auto it2 = d_combined.begin(); it2 != d_combined.end(); it2++) {
                             Coord coord = *it2;
                             if (device_map[coord] != nullptr) {
-                                std::cout << "buh, " << d->name() << " conflicts with " << device_map[coord]->name() << std::endl;
                                 conflicting_devices.insert(device_map[coord]);
                             }
                         }
