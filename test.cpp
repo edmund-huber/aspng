@@ -75,10 +75,10 @@ void Net::apply_new_value(void) {
 
 // If neighboring Coords are different devices, then add ports to both devices
 // (pointing to the other device).
-void maybe_add_ports(std::map<Coord, std::shared_ptr<Device>> &device_map, Coord d1_coord, size_t x_off, size_t y_off) {
+bool maybe_add_ports(std::map<Coord, std::shared_ptr<Device>> &device_map, Coord d1_coord, size_t x_off, size_t y_off) {
     auto d1 = device_map[d1_coord];
     if (d1 == nullptr)
-        return;
+        return false;
 
     Coord d2_coord = Coord(std::get<0>(d1_coord) + x_off, std::get<1>(d1_coord) + y_off);
     auto d2 = device_map[d2_coord];
@@ -87,15 +87,22 @@ void maybe_add_ports(std::map<Coord, std::shared_ptr<Device>> &device_map, Coord
         PortType d1_port_type, d2_port_type;
         auto d1_patch = d1->find_patch_containing(d1_coord);
         std::tie(d1_link_result, d1_port_type) = d1->prelink(d1_patch, d2);
+        if (d1_link_result == LinkError) {
+            return false;
+        }
         auto d2_patch = d2->find_patch_containing(d2_coord);
         std::tie(d2_link_result, d2_port_type) = d2->prelink(d2_patch, d1);
+        if (d2_link_result == LinkError) {
+            return false;
+        }
         if ((d1_link_result == CanLink) && (d2_link_result == CanLink)) {
             auto port = std::make_shared<Port>(d1, d1_coord, d1_port_type, d2, d2_coord, d2_port_type);
             d1->add_port(port);
             d2->add_port(port);
         }
-        // TODO: error reporting when LinkError.
     }
+
+    return true;
 }
 
 template<typename T>
@@ -209,8 +216,12 @@ std::string test(std::string path, std::string test_name) {
     for (size_t x = 0; x < png->get_width(); x++) {
         for (size_t y = 0; y < png->get_height(); y++) { // TODO .. should be -1 (ditto above)?
             Coord coord(x, y);
-            maybe_add_ports(device_map, coord, 1, 0);
-            maybe_add_ports(device_map, coord, 0, 1);
+            if (!maybe_add_ports(device_map, coord, 1, 0)) {
+                return "prelink fail";
+            }
+            if (!maybe_add_ports(device_map, coord, 0, 1)) {
+                return "prelink fail";
+            }
             // Note: I'm only considering right and up so that I'm not adding
             // duplicate ports.
         }
