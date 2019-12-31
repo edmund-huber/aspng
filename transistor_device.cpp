@@ -11,6 +11,10 @@ Device *TransistorDevice::create(void) {
     return new TransistorDevice();
 }
 
+std::string TransistorDevice::name(void) {
+    return "Transistor";
+}
+
 Rgb TransistorDevice::color = Rgb(0xff, 0, 0xf2);
 
 bool TransistorDevice::parse(Png *png, size_t x, size_t y) {

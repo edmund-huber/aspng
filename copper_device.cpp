@@ -4,6 +4,10 @@ Device *CopperDevice::create(void) {
     return new CopperDevice();
 }
 
+std::string CopperDevice::name(void) {
+    return "Copper";
+}
+
 Rgb CopperDevice::color = Rgb(0xf8, 0xac, 0x59);
 
 bool CopperDevice::parse(Png *png, size_t x, size_t y) {
