@@ -125,17 +125,50 @@ std::string test(std::string path, std::string test_name) {
                 for (auto it1 = registry.begin(); it1 != registry.end(); it1++) {
                     std::shared_ptr<Device> d((*it1)());
                     if (d->parse(png, x, y)) {
-                        // To complete the parse, the device should claim all
-                        // those pixels.
+                        // Lets find all pixels where we have a parse conflict.
+                        std::set<std::shared_ptr<Device>> conflicting_devices;
                         for (auto it2 = d->patch.begin(); it2 != d->patch.end(); it2++) {
-                            // If this assert fails, it suggests that
-                            // greedy parsing rules are overlapping, (they
-                            // shouldn't).
                             Coord coord = *it2;
-                            ASSERT(device_map[coord] == nullptr);
-                            device_map[coord] = d;
-                            all_devices.insert(d);
+                            if (device_map[coord] != nullptr) {
+                                std::cout << "buh, " << d->name() << " conflicts with " << device_map[coord]->name() << std::endl;
+                                conflicting_devices.insert(device_map[coord]);
+                            }
                         }
+                        // If any of the pixels are owned by some other
+                        // devices, then this device needs to contain all the
+                        // other devices' pixels, otherwise it's a parse
+                        // failure.
+                        if (conflicting_devices.size() > 0) {
+                            for (auto it2 = conflicting_devices.begin(); it2 != conflicting_devices.end(); it2++) {
+                                auto other = *it2;
+                                for (auto it3 = other->patch.begin(); it3 != other->patch.end(); it3++) {
+                                    auto coord = *it3;
+                                    if (d->patch.find(coord) == d->patch.end()) {
+                                        std::cout << "aaaaa" << std::endl;
+                                        std::cout << d->name() << std::endl;
+                                        for (auto z = d->patch.begin(); z != d->patch.end(); z++) {
+                                            std::tie(x, y) = *z;
+                                            std::cout << x << ", " << y << std::endl;
+                                        }
+                                        std::cout << "bbbbb" << std::endl;
+                                        std::cout << other->name() << std::endl;
+                                        for (auto z = other->patch.begin(); z != other->patch.end(); z++) {
+                                            std::tie(x, y) = *z;
+                                            std::cout << x << ", " << y << std::endl;
+                                        }
+                                        return "incomplete-able parse";
+                                    }
+                                }
+                                ASSERT(all_devices.erase(other) == 1);
+                            }
+                        }
+                        // To complete the parse, the device should claim all
+                        // of its pixels.
+                        for (auto it2 = d->patch.begin(); it2 != d->patch.end(); it2++) {
+                            Coord coord = *it2;
+                            device_map[coord] = d;
+                        }
+                        all_devices.insert(d);
                     }
                 }
             }

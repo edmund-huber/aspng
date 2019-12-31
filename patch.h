@@ -10,8 +10,8 @@ class Patch : private std::set<Coord> {
 public:
     using std::set<Coord>::begin;
     using std::set<Coord>::end;
-    using std::set<Coord>::size;
     using std::set<Coord>::find;
+    using std::set<Coord>::size;
 
     void insert(const Coord &);
 };

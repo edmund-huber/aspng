@@ -7,6 +7,10 @@ Device *PullDevice::create(void) {
     return new PullDevice();
 }
 
+std::string PullDevice::name(void) {
+    return "PullDevice";
+}
+
 bool PullDevice::parse(Png *png, size_t x, size_t y) {
     // Let's look for a source or sink pixel.
     this->parse_flood(png, x, y, SourceDevice::color);

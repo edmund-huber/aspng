@@ -152,6 +152,7 @@ private:
 
 class PullDevice : public Device {
 public:
+    std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
     std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
