@@ -1,5 +1,3 @@
-#include <iostream>
-
 #include "common.h"
 #include "patch.h"
 
@@ -19,15 +17,5 @@ void Patch::insert(const Coord &coord) {
             || (this->find(Coord(std::get<0>(coord), std::get<1>(coord) + 1)) != this->end())
             || (this->find(Coord(std::get<0>(coord), std::get<1>(coord) - 1)) != this->end());
     }
-
-    // TODO
-    if (!is_contiguous) {
-        for (auto i = this->begin(); i != this->end(); i++) {
-            size_t x, y;
-            std::tie(x, y) = *i;
-            std::cout << x << ", " << y << std::endl;
-        }
-    }
-
     ASSERT(is_contiguous);
 }

@@ -11,8 +11,14 @@ Device *SourceDevice::create(void) {
 }
 
 bool SourceDevice::parse(Png *png, size_t x, size_t y) {
-    this->parse_flood(png, x, y, SourceDevice::color);
+    this->patch = this->flood(png, x, y, SourceDevice::color);
     return this->patch.size() == 1;
+}
+
+std::list<Patch> SourceDevice::all_patches(void) {
+    std::list<Patch> all_patches;
+    all_patches.push_back(this->patch);
+    return all_patches;
 }
 
 std::tuple<LinkResult, PortType> SourceDevice::prelink(std::shared_ptr<Device> d) {

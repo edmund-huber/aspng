@@ -67,8 +67,6 @@ private:
 
 class Device {
 public:
-    Patch patch;
-
     virtual ~Device(void) {};
 
     virtual std::string name(void) = 0;
@@ -79,8 +77,10 @@ public:
     // do not decide here whether the device can exist in the context of the
     // pixels (and devices) surrounding it.
     virtual bool parse(Png *, size_t, size_t) = 0;
-    void parse_flood(Png *, size_t, size_t, Rgb);
-    void parse_flood_neighbors(Png *, Rgb);
+    Patch flood(Png *, size_t, size_t, Rgb);
+
+    // Return the list of pixels that were parsed out, during the method above.
+    virtual std::list<Patch> all_patches(void) = 0;
 
     // `prelink` indicates whether these devices may touch and whether to
     // create a port. During linking, if `prelink` returns CanLink for both
@@ -109,8 +109,9 @@ public:
 private:
     std::list<std::shared_ptr<Port>> ports;
 
-    void parse_flood_helper(Png *, size_t, size_t, Rgb, Patch &);
-    void parse_flood_neighbors_helper(Png *, size_t, size_t, Rgb, Patch &);
+    static void flood_helper(Png *, size_t, size_t, Rgb, Patch &, Patch &);
+    void maybe_neighbor(Device ***, size_t, size_t, size_t, size_t, std::set<Device *> *);
+
     virtual Rgb get_draw_color(void) = 0;
 };
 
@@ -121,6 +122,7 @@ public:
     std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
+    std::list<Patch> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
@@ -129,6 +131,8 @@ public:
     static Rgb color;
 
 private:
+    Patch patch;
+
     virtual Rgb get_draw_color(void);
 };
 
@@ -137,6 +141,7 @@ public:
     std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
+    std::list<Patch> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
@@ -145,6 +150,7 @@ public:
     static Rgb color;
 
 private:
+    Patch patch;
     Rgb color_for_drawing;
 
     virtual Rgb get_draw_color(void);
@@ -155,6 +161,7 @@ public:
     std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
+    std::list<Patch> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
@@ -163,6 +170,8 @@ public:
     static Rgb yellow;
 
 private:
+    Patch patch_source_or_sink;
+    Patch patch_yellow;
     enum {
         PullHi,
         PullLo
@@ -176,6 +185,7 @@ public:
     std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
+    std::list<Patch> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
@@ -184,6 +194,8 @@ public:
     static Rgb color;
 
 private:
+    Patch patch;
+
     virtual Rgb get_draw_color(void);
 };
 
@@ -192,6 +204,7 @@ public:
     std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
+    std::list<Patch> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
@@ -200,6 +213,8 @@ public:
     static Rgb color;
 
 private:
+    Patch patch;
+
     virtual Rgb get_draw_color(void);
 };
 
@@ -209,6 +224,7 @@ public:
     std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
+    std::list<Patch> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
@@ -218,6 +234,7 @@ public:
     void draw_debug(Png *);
 
 private:
+    Patch patch;
     bool passing;
 
     virtual Rgb get_draw_color(void);

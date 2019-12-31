@@ -12,20 +12,31 @@ std::string PullDevice::name(void) {
 }
 
 bool PullDevice::parse(Png *png, size_t x, size_t y) {
-    // Let's look for a source or sink pixel.
-    this->parse_flood(png, x, y, SourceDevice::color);
-    if (this->patch.size() == 0) {
-        this->parse_flood(png, x, y, SinkDevice::color);
+    // Let's look for a source pixel ..
+    this->patch_source_or_sink = this->flood(png, x, y, SourceDevice::color);
+    if (this->patch_source_or_sink.size() == 0) {
+        // .. if no source, let's look for a sink.
+        this->patch_source_or_sink = this->flood(png, x, y, SinkDevice::color);
     }
     // If we found a source or a sink pixel, let's look for the yellow pixel
     // next to it.
-    if (this->patch.size() == 1) {
-        this->parse_flood_neighbors(png, PullDevice::yellow);
-        if (this->patch.size() == 2) {
-            return true;
+    if (this->patch_source_or_sink.size() == 1) {
+        int offs[4][2] = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
+        for (int i = 0; i < 4; i++) {
+            this->patch_yellow = this->flood(png, x + offs[i][0], y + offs[i][1], PullDevice::yellow);
+            if (this->patch_yellow.size() == 1) {
+                return true;
+            }
         }
     }
     return false;
+}
+
+std::list<Patch> PullDevice::all_patches(void) {
+    std::list<Patch> all_patches;
+    all_patches.push_back(this->patch_source_or_sink);
+    all_patches.push_back(this->patch_yellow);
+    return all_patches;
 }
 
 std::tuple<LinkResult, PortType> PullDevice::prelink(std::shared_ptr<Device> d) {

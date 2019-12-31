@@ -103,32 +103,13 @@ std::list<std::shared_ptr<Port>> Device::all_ports(void) {
     return this->ports;
 }
 
-void Device::parse_flood(Png *png, size_t x, size_t y, Rgb color) {
-    ASSERT(this->patch.size() == 0);
-    Patch visited;
-    this->parse_flood_helper(png, x, y, color, visited);
+Patch Device::flood(Png *png, size_t x, size_t y, Rgb color) {
+    Patch patch, visited;
+    Device::flood_helper(png, x, y, color, patch, visited);
+    return patch;
 }
 
-void Device::parse_flood_neighbors(Png *png, Rgb color) {
-    ASSERT(this->patch.size() > 0);
-    Patch visited;
-    for (auto i = this->patch.begin(); i != this->patch.end(); i++) {
-        auto coord = *i;
-        visited.insert(coord);
-        size_t x, y;
-        std::tie(x, y) = coord;
-        this->parse_flood_neighbors_helper(png, x, y, color, visited);
-    }
-}
-
-void Device::parse_flood_neighbors_helper(Png *png, size_t x, size_t y, Rgb color, Patch &visited) {
-    this->parse_flood_helper(png, x - 1, y, color, visited);
-    this->parse_flood_helper(png, x + 1, y, color, visited);
-    this->parse_flood_helper(png, x, y - 1, color, visited);
-    this->parse_flood_helper(png, x, y + 1, color, visited);
-}
-
-void Device::parse_flood_helper(Png *png, size_t x, size_t y, Rgb color, Patch &visited) {
+void Device::flood_helper(Png *png, size_t x, size_t y, Rgb color, Patch &patch, Patch &visited) {
     if ((x < 0) || (x >= png->get_width())) {
         return;
     }
@@ -140,19 +121,26 @@ void Device::parse_flood_helper(Png *png, size_t x, size_t y, Rgb color, Patch &
     }
     visited.insert(Coord(x, y));
     if (png->get_pixel(x, y) == color) {
-        this->patch.insert(Coord(x, y));
-        this->parse_flood_neighbors_helper(png, x, y, color, visited);
+        patch.insert(Coord(x, y));
+        Device::flood_helper(png, x - 1, y, color, patch, visited);
+        Device::flood_helper(png, x + 1, y, color, patch, visited);
+        Device::flood_helper(png, x, y - 1, color, patch, visited);
+        Device::flood_helper(png, x, y + 1, color, patch, visited);
     }
 }
 
 void Device::draw(Png *png) {
-    for (auto i = this->patch.begin(); i != this->patch.end(); i++) {
-        auto coord = *i;
-        size_t x, y;
-        std::tie(x, y) = coord;
-        ASSERT((x >= 0) && (x < png->get_width()));
-        ASSERT((y >= 0) && (y < png->get_height()));
-        png->set_pixel(x, y, this->get_draw_color());
+    auto patches = this->all_patches();
+    for (auto i = patches.begin(); i != patches.end(); i++) {
+        auto patch = *i;
+        for (auto j = patch.begin(); j != patch.end(); j++) {
+            auto coord = *j;
+            size_t x, y;
+            std::tie(x, y) = coord;
+            ASSERT((x >= 0) && (x < png->get_width()));
+            ASSERT((y >= 0) && (y < png->get_height()));
+            png->set_pixel(x, y, this->get_draw_color());
+        }
     }
 }
 

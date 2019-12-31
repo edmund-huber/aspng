@@ -11,8 +11,14 @@ Device *SinkDevice::create(void) {
 Rgb SinkDevice::color = Rgb(0x30, 0x30, 0x30);
 
 bool SinkDevice::parse(Png *png, size_t x, size_t y) {
-    this->parse_flood(png, x, y, SinkDevice::color);
+    this->patch = this->flood(png, x, y, SinkDevice::color);
     return this->patch.size() == 1;
+}
+
+std::list<Patch> SinkDevice::all_patches(void) {
+    std::list<Patch> all_patches;
+    all_patches.push_back(this->patch);
+    return all_patches;
 }
 
 std::tuple<LinkResult, PortType> SinkDevice::prelink(std::shared_ptr<Device> d) {
