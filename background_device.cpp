@@ -19,13 +19,13 @@ bool BackgroundDevice::parse(Png *png, size_t x, size_t y) {
     return this->patch.size() >= 1;
 }
 
-std::list<Patch> BackgroundDevice::all_patches(void) {
-    std::list<Patch> all_patches;
-    all_patches.push_back(this->patch);
+std::list<Patch *> BackgroundDevice::all_patches(void) {
+    std::list<Patch *> all_patches;
+    all_patches.push_back(&(this->patch));
     return all_patches;
 }
 
-std::tuple<LinkResult, PortType> BackgroundDevice::prelink(std::shared_ptr<Device> d) {
+std::tuple<LinkResult, PortType> BackgroundDevice::prelink(Patch *, std::shared_ptr<Device> d) {
     return std::make_tuple(CanTouch, NoSpecialMeaning);
 }
 
@@ -46,6 +46,6 @@ void BackgroundDevice::apply_new_value(Port *, ElectricalValue) {
     // Deliberately empty.
 }
 
-Rgb BackgroundDevice::get_draw_color(void) {
+Rgb BackgroundDevice::get_draw_color(Patch *) {
     return BackgroundDevice::color;
 }

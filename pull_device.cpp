@@ -14,9 +14,11 @@ std::string PullDevice::name(void) {
 bool PullDevice::parse(Png *png, size_t x, size_t y) {
     // Let's look for a source pixel ..
     this->patch_source_or_sink = this->flood(png, x, y, SourceDevice::color);
+    this->pull_type = PullHi;
     if (this->patch_source_or_sink.size() == 0) {
         // .. if no source, let's look for a sink.
         this->patch_source_or_sink = this->flood(png, x, y, SinkDevice::color);
+        this->pull_type = PullLo;
     }
     // If we found a source or a sink pixel, let's look for the yellow pixel
     // next to it.
@@ -32,21 +34,25 @@ bool PullDevice::parse(Png *png, size_t x, size_t y) {
     return false;
 }
 
-std::list<Patch> PullDevice::all_patches(void) {
-    std::list<Patch> all_patches;
-    all_patches.push_back(this->patch_source_or_sink);
-    all_patches.push_back(this->patch_yellow);
+std::list<Patch *> PullDevice::all_patches(void) {
+    std::list<Patch *> all_patches;
+    all_patches.push_back(&(this->patch_source_or_sink));
+    all_patches.push_back(&(this->patch_yellow));
     return all_patches;
 }
 
-std::tuple<LinkResult, PortType> PullDevice::prelink(std::shared_ptr<Device> d) {
-    ASSERT(0);
-    // need to only allow ports on the yellow bit to copper (and touch background)
-    // source can only touch background
-    if (std::dynamic_pointer_cast<CopperDevice>(d))
-        return std::make_tuple(CanLink, NoSpecialMeaning);
-    if (std::dynamic_pointer_cast<BackgroundDevice>(d))
-        return std::make_tuple(CanTouch, NoSpecialMeaning);
+std::tuple<LinkResult, PortType> PullDevice::prelink(Patch *patch, std::shared_ptr<Device> d) {
+    if (patch == &(this->patch_yellow)) {
+        // The yellow bit can only touch copper and the background.
+        if (std::dynamic_pointer_cast<CopperDevice>(d))
+            return std::make_tuple(CanLink, NoSpecialMeaning);
+        if (std::dynamic_pointer_cast<BackgroundDevice>(d))
+            return std::make_tuple(CanTouch, NoSpecialMeaning);
+    } else if (patch == &(this->patch_source_or_sink)) {
+        // The source/sink can only touch background.
+        if (std::dynamic_pointer_cast<BackgroundDevice>(d))
+            return std::make_tuple(CanTouch, NoSpecialMeaning);
+    }
     return std::make_tuple(LinkError, NoSpecialMeaning);
 }
 
@@ -74,6 +80,16 @@ void PullDevice::apply_new_value(Port *, ElectricalValue v) {
     // Deliberately empty.
 }
 
-Rgb PullDevice::get_draw_color(void) {
+Rgb PullDevice::get_draw_color(Patch *patch) {
+    if (patch == &(this->patch_yellow)) {
+        return PullDevice::yellow;
+    } else if (patch == &(this->patch_source_or_sink)) {
+        switch (this->pull_type) {
+        case PullHi:
+            return SourceDevice::color;
+        case PullLo:
+            return SinkDevice::color;
+        }
+    }
     ASSERT(0);
 }

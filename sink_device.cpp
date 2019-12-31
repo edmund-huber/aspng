@@ -15,13 +15,13 @@ bool SinkDevice::parse(Png *png, size_t x, size_t y) {
     return this->patch.size() == 1;
 }
 
-std::list<Patch> SinkDevice::all_patches(void) {
-    std::list<Patch> all_patches;
-    all_patches.push_back(this->patch);
+std::list<Patch *> SinkDevice::all_patches(void) {
+    std::list<Patch *> all_patches;
+    all_patches.push_back(&(this->patch));
     return all_patches;
 }
 
-std::tuple<LinkResult, PortType> SinkDevice::prelink(std::shared_ptr<Device> d) {
+std::tuple<LinkResult, PortType> SinkDevice::prelink(Patch *, std::shared_ptr<Device> d) {
     if (std::dynamic_pointer_cast<CopperDevice>(d))
         return std::make_tuple(CanLink, NoSpecialMeaning);
     if (std::dynamic_pointer_cast<BackgroundDevice>(d))
@@ -47,6 +47,6 @@ void SinkDevice::apply_new_value(Port *, ElectricalValue) {
     // Deliberately empty.
 }
 
-Rgb SinkDevice::get_draw_color(void) {
+Rgb SinkDevice::get_draw_color(Patch *) {
     return SinkDevice::color;
 }

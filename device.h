@@ -80,13 +80,15 @@ public:
     Patch flood(Png *, size_t, size_t, Rgb);
 
     // Return the list of pixels that were parsed out, during the method above.
-    virtual std::list<Patch> all_patches(void) = 0;
+    virtual std::list<Patch *> all_patches(void) = 0;
+    std::set<Coord> all_patches_combined(void);
+    Patch *find_patch_containing(Coord);
 
     // `prelink` indicates whether these devices may touch and whether to
     // create a port. During linking, if `prelink` returns CanLink for both
     // devices, then `link` will be called on both devices, to actually add the
     // ports.
-    virtual std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>) = 0;
+    virtual std::tuple<LinkResult, PortType> prelink(Patch *, std::shared_ptr<Device>) = 0;
     void add_port(std::shared_ptr<Port>);
     std::list<std::shared_ptr<Port>> all_ports(void);
 
@@ -112,7 +114,7 @@ private:
     static void flood_helper(Png *, size_t, size_t, Rgb, Patch &, Patch &);
     void maybe_neighbor(Device ***, size_t, size_t, size_t, size_t, std::set<Device *> *);
 
-    virtual Rgb get_draw_color(void) = 0;
+    virtual Rgb get_draw_color(Patch *) = 0;
 };
 
 class BackgroundDevice : public Device {
@@ -122,8 +124,8 @@ public:
     std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
-    std::list<Patch> all_patches(void);
-    std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
+    std::list<Patch *> all_patches(void);
+    std::tuple<LinkResult, PortType> prelink(Patch *, std::shared_ptr<Device>);
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
@@ -133,7 +135,7 @@ public:
 private:
     Patch patch;
 
-    virtual Rgb get_draw_color(void);
+    virtual Rgb get_draw_color(Patch *);
 };
 
 class CopperDevice : public Device {
@@ -141,8 +143,8 @@ public:
     std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
-    std::list<Patch> all_patches(void);
-    std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
+    std::list<Patch *> all_patches(void);
+    std::tuple<LinkResult, PortType> prelink(Patch *, std::shared_ptr<Device>);
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
@@ -153,7 +155,7 @@ private:
     Patch patch;
     Rgb color_for_drawing;
 
-    virtual Rgb get_draw_color(void);
+    virtual Rgb get_draw_color(Patch *);
 };
 
 class PullDevice : public Device {
@@ -161,8 +163,8 @@ public:
     std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
-    std::list<Patch> all_patches(void);
-    std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
+    std::list<Patch *> all_patches(void);
+    std::tuple<LinkResult, PortType> prelink(Patch *, std::shared_ptr<Device>);
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
@@ -177,7 +179,7 @@ private:
         PullLo
     } pull_type;
 
-    virtual Rgb get_draw_color(void);
+    virtual Rgb get_draw_color(Patch *);
 };
 
 class SinkDevice : public Device {
@@ -185,8 +187,8 @@ public:
     std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
-    std::list<Patch> all_patches(void);
-    std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
+    std::list<Patch *> all_patches(void);
+    std::tuple<LinkResult, PortType> prelink(Patch *, std::shared_ptr<Device>);
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
@@ -196,7 +198,7 @@ public:
 private:
     Patch patch;
 
-    virtual Rgb get_draw_color(void);
+    virtual Rgb get_draw_color(Patch *);
 };
 
 class SourceDevice : public Device {
@@ -204,8 +206,8 @@ public:
     std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
-    std::list<Patch> all_patches(void);
-    std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
+    std::list<Patch *> all_patches(void);
+    std::tuple<LinkResult, PortType> prelink(Patch *, std::shared_ptr<Device>);
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
@@ -215,7 +217,7 @@ public:
 private:
     Patch patch;
 
-    virtual Rgb get_draw_color(void);
+    virtual Rgb get_draw_color(Patch *);
 };
 
 class TransistorDevice : public Device {
@@ -224,8 +226,8 @@ public:
     std::string name(void);
     static Device *create(void);
     bool parse(Png *, size_t, size_t);
-    std::list<Patch> all_patches(void);
-    std::tuple<LinkResult, PortType> prelink(std::shared_ptr<Device>);
+    std::list<Patch *> all_patches(void);
+    std::tuple<LinkResult, PortType> prelink(Patch *, std::shared_ptr<Device>);
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
@@ -237,7 +239,7 @@ private:
     Patch patch;
     bool passing;
 
-    virtual Rgb get_draw_color(void);
+    virtual Rgb get_draw_color(Patch *);
 };
 
 #endif

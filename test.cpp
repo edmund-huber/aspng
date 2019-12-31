@@ -85,8 +85,10 @@ void maybe_add_ports(std::map<Coord, std::shared_ptr<Device>> &device_map, Coord
     if ((d2 != nullptr) && (d2 != d1)) {
         LinkResult d1_link_result, d2_link_result;
         PortType d1_port_type, d2_port_type;
-        std::tie(d1_link_result, d1_port_type) = d1->prelink(d2);
-        std::tie(d2_link_result, d2_port_type) = d2->prelink(d1);
+        auto d1_patch = d1->find_patch_containing(d1_coord);
+        std::tie(d1_link_result, d1_port_type) = d1->prelink(d1_patch, d2);
+        auto d2_patch = d2->find_patch_containing(d2_coord);
+        std::tie(d2_link_result, d2_port_type) = d2->prelink(d2_patch, d1);
         if ((d1_link_result == CanLink) && (d2_link_result == CanLink)) {
             auto port = std::make_shared<Port>(d1, d1_coord, d1_port_type, d2, d2_coord, d2_port_type);
             d1->add_port(port);
@@ -94,6 +96,16 @@ void maybe_add_ports(std::map<Coord, std::shared_ptr<Device>> &device_map, Coord
         }
         // TODO: error reporting when LinkError.
     }
+}
+
+template<typename T>
+bool is_subset(std::set<T> set_a, std::set<T> set_b) {
+    for (auto i = set_a.begin(); i != set_a.end(); i++) {
+        if (set_b.find(*i) == set_b.end()) {
+            return false;
+        }
+    }
+    return true;
 }
 
 std::string test(std::string path, std::string test_name) {
@@ -125,50 +137,48 @@ std::string test(std::string path, std::string test_name) {
                 for (auto it1 = registry.begin(); it1 != registry.end(); it1++) {
                     std::shared_ptr<Device> d((*it1)());
                     if (d->parse(png, x, y)) {
+                        bool d_is_valid = true;
+
                         // Lets find all pixels where we have a parse conflict.
                         std::set<std::shared_ptr<Device>> conflicting_devices;
-                        for (auto it2 = d->patch.begin(); it2 != d->patch.end(); it2++) {
+                        auto d_combined = d->all_patches_combined();
+                        for (auto it2 = d_combined.begin(); it2 != d_combined.end(); it2++) {
                             Coord coord = *it2;
                             if (device_map[coord] != nullptr) {
                                 std::cout << "buh, " << d->name() << " conflicts with " << device_map[coord]->name() << std::endl;
                                 conflicting_devices.insert(device_map[coord]);
                             }
                         }
+
                         // If any of the pixels are owned by some other
                         // devices, then this device needs to contain all the
-                        // other devices' pixels, otherwise it's a parse
-                        // failure.
+                        // other devices' pixels (or vice versa), otherwise
+                        // it's a parsing error by our standards.
                         if (conflicting_devices.size() > 0) {
                             for (auto it2 = conflicting_devices.begin(); it2 != conflicting_devices.end(); it2++) {
                                 auto other = *it2;
-                                for (auto it3 = other->patch.begin(); it3 != other->patch.end(); it3++) {
-                                    auto coord = *it3;
-                                    if (d->patch.find(coord) == d->patch.end()) {
-                                        std::cout << "aaaaa" << std::endl;
-                                        std::cout << d->name() << std::endl;
-                                        for (auto z = d->patch.begin(); z != d->patch.end(); z++) {
-                                            std::tie(x, y) = *z;
-                                            std::cout << x << ", " << y << std::endl;
-                                        }
-                                        std::cout << "bbbbb" << std::endl;
-                                        std::cout << other->name() << std::endl;
-                                        for (auto z = other->patch.begin(); z != other->patch.end(); z++) {
-                                            std::tie(x, y) = *z;
-                                            std::cout << x << ", " << y << std::endl;
-                                        }
-                                        return "incomplete-able parse";
-                                    }
+                                auto other_combined = other->all_patches_combined();
+                                if (is_subset(d_combined, other_combined)) {
+                                    // We won't continue with `d`.
+                                    d_is_valid = false;
+                                    break;
+                                } else if (is_subset(other_combined, d_combined)) {
+                                    // The other parse isn't maximal, remove it.
+                                    ASSERT(all_devices.erase(other) == 1);
+                                } else {
+                                    return "incompletable parse";
                                 }
-                                ASSERT(all_devices.erase(other) == 1);
                             }
                         }
                         // To complete the parse, the device should claim all
                         // of its pixels.
-                        for (auto it2 = d->patch.begin(); it2 != d->patch.end(); it2++) {
-                            Coord coord = *it2;
-                            device_map[coord] = d;
+                        if (d_is_valid) {
+                            for (auto it2 = d_combined.begin(); it2 != d_combined.end(); it2++) {
+                                Coord coord = *it2;
+                                device_map[coord] = d;
+                            }
+                            all_devices.insert(d);
                         }
-                        all_devices.insert(d);
                     }
                 }
             }

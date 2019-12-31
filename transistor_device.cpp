@@ -22,13 +22,13 @@ bool TransistorDevice::parse(Png *png, size_t x, size_t y) {
     return this->patch.size() == 1;
 }
 
-std::list<Patch> TransistorDevice::all_patches(void) {
-    std::list<Patch> all_patches;
-    all_patches.push_back(this->patch);
+std::list<Patch *> TransistorDevice::all_patches(void) {
+    std::list<Patch *> all_patches;
+    all_patches.push_back(&(this->patch));
     return all_patches;
 }
 
-std::tuple<LinkResult, PortType> TransistorDevice::prelink(std::shared_ptr<Device> d) {
+std::tuple<LinkResult, PortType> TransistorDevice::prelink(Patch *, std::shared_ptr<Device> d) {
     if (std::dynamic_pointer_cast<BackgroundDevice>(d))
         return std::make_tuple(CanTouch, NoSpecialMeaning);
     if (std::dynamic_pointer_cast<CopperDevice>(d))
@@ -122,7 +122,7 @@ void TransistorDevice::apply_new_value(Port *port, ElectricalValue v) {
     }
 }
 
-Rgb TransistorDevice::get_draw_color(void) {
+Rgb TransistorDevice::get_draw_color(Patch *) {
     return TransistorDevice::color;
 }
 

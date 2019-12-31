@@ -129,17 +129,41 @@ void Device::flood_helper(Png *png, size_t x, size_t y, Rgb color, Patch &patch,
     }
 }
 
+std::set<Coord> Device::all_patches_combined(void) {
+    auto all_patches = this->all_patches();
+    std::set<Coord> all_patches_combined;
+    for (auto i = all_patches.begin(); i != all_patches.end(); i++) {
+        auto patch = *i;
+        for (auto j = patch->begin(); j != patch->end(); j++) {
+            auto coord = *j;
+            all_patches_combined.insert(coord);
+        }
+    }
+    return all_patches_combined;
+}
+
+Patch *Device::find_patch_containing(Coord coord) {
+    auto all_patches = this->all_patches();
+    for (auto i = all_patches.begin(); i != all_patches.end(); i++) {
+        auto patch = *i;
+        if (patch->find(coord) != patch->end()) {
+            return patch;
+        }
+    }
+    ASSERT(0);
+}
+
 void Device::draw(Png *png) {
     auto patches = this->all_patches();
     for (auto i = patches.begin(); i != patches.end(); i++) {
         auto patch = *i;
-        for (auto j = patch.begin(); j != patch.end(); j++) {
+        for (auto j = patch->begin(); j != patch->end(); j++) {
             auto coord = *j;
             size_t x, y;
             std::tie(x, y) = coord;
             ASSERT((x >= 0) && (x < png->get_width()));
             ASSERT((y >= 0) && (y < png->get_height()));
-            png->set_pixel(x, y, this->get_draw_color());
+            png->set_pixel(x, y, this->get_draw_color(patch));
         }
     }
 }

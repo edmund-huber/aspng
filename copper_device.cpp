@@ -15,13 +15,13 @@ bool CopperDevice::parse(Png *png, size_t x, size_t y) {
     return this->patch.size() == 1;
 }
 
-std::list<Patch> CopperDevice::all_patches(void) {
-    std::list<Patch> all_patches;
-    all_patches.push_back(this->patch);
+std::list<Patch *> CopperDevice::all_patches(void) {
+    std::list<Patch *> all_patches;
+    all_patches.push_back(&(this->patch));
     return all_patches;
 }
 
-std::tuple<LinkResult, PortType> CopperDevice::prelink(std::shared_ptr<Device> d) {
+std::tuple<LinkResult, PortType> CopperDevice::prelink(Patch *, std::shared_ptr<Device> d) {
     return std::make_tuple(CanLink, NoSpecialMeaning);
 }
 
@@ -55,6 +55,6 @@ void CopperDevice::apply_new_value(Port *, ElectricalValue v) {
     }
 }
 
-Rgb CopperDevice::get_draw_color(void) {
+Rgb CopperDevice::get_draw_color(Patch *) {
     return this->color_for_drawing;
 }
