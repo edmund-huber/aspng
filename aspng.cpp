@@ -5,7 +5,7 @@
 int main(int argc, char **argv) {
     // Create the SDL window and renderer.
     ASSERT(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) == 0);
-    SDL_Window *sdl_window = SDL_CreateWindow("aspng", 0, 0, 100, 100, 0);
+    SDL_Window *sdl_window = SDL_CreateWindow("aspng", 0, 0, 100, 100, SDL_WINDOW_RESIZABLE);
     ASSERT(sdl_window != nullptr);
     SDL_Renderer *sdl_renderer = SDL_CreateRenderer(sdl_window, -1, SDL_RENDERER_ACCELERATED);
     ASSERT(sdl_renderer != nullptr);
