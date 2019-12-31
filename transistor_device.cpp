@@ -14,14 +14,8 @@ Device *TransistorDevice::create(void) {
 Rgb TransistorDevice::color = Rgb(0xff, 0, 0xf2);
 
 bool TransistorDevice::parse(Png *png, size_t x, size_t y) {
-    this->patch = this->flood(png, x, y, TransistorDevice::color);
+    this->parse_flood(png, x, y, TransistorDevice::color);
     return this->patch.size() == 1;
-}
-
-std::list<Patch> TransistorDevice::all_patches(void) {
-    std::list<Patch> all_patches;
-    all_patches.push_back(this->patch);
-    return all_patches;
 }
 
 std::tuple<LinkResult, PortType> TransistorDevice::prelink(std::shared_ptr<Device> d) {

@@ -125,20 +125,16 @@ std::string test(std::string path, std::string test_name) {
                 for (auto it1 = registry.begin(); it1 != registry.end(); it1++) {
                     std::shared_ptr<Device> d((*it1)());
                     if (d->parse(png, x, y)) {
-                        // If parsing succeeded, the device claims all those
-                        // pixels.
-                        auto all_patches = d->all_patches();
-                        for (auto it2 = all_patches.begin(); it2 != all_patches.end(); it2++) {
-                            Patch patch = *it2;
-                            for (auto it3 = patch.begin(); it3 != patch.end(); it3++) {
-                                // If this assert fails, it suggests that
-                                // greedy parsing rules are overlapping, (they
-                                // shouldn't).
-                                Coord coord = *it3;
-                                ASSERT(device_map[coord] == nullptr);
-                                device_map[coord] = d;
-                                all_devices.insert(d);
-                            }
+                        // To complete the parse, the device should claim all
+                        // those pixels.
+                        for (auto it2 = d->patch.begin(); it2 != d->patch.end(); it2++) {
+                            // If this assert fails, it suggests that
+                            // greedy parsing rules are overlapping, (they
+                            // shouldn't).
+                            Coord coord = *it2;
+                            ASSERT(device_map[coord] == nullptr);
+                            device_map[coord] = d;
+                            all_devices.insert(d);
                         }
                     }
                 }
