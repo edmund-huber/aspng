@@ -13,7 +13,7 @@ bin:
 bin/test: obj/test.o $(CORE_OBJECTS) | bin
 	$(CXX) $^ -lpng -o $@ -lstdc++fs
 
-bin/aspng: obj/aspng.o $(CORE_OBJECTS) | bin
+bin/aspng: obj/gui.o $(CORE_OBJECTS) | bin
 	$(CXX) $^ -lpng -o $@ -lstdc++fs -lSDL2
 
 obj:
