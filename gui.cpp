@@ -16,6 +16,7 @@ int main(int argc, char **argv) {
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
             switch (e.type) {
+
             case SDL_KEYDOWN:
                 switch(e.key.keysym.sym) {
                 case SDLK_ESCAPE:

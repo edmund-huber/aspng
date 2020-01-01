@@ -17,8 +17,8 @@ std::string TransistorDevice::name(void) {
 
 Rgb TransistorDevice::color = Rgb(0xff, 0, 0xf2);
 
-bool TransistorDevice::parse(Png *png, size_t x, size_t y) {
-    this->patch = this->flood(png, x, y, TransistorDevice::color);
+bool TransistorDevice::parse(AspngSurface *surface, size_t x, size_t y) {
+    this->patch = this->flood(surface, x, y, TransistorDevice::color);
     return this->patch.size() == 1;
 }
 
@@ -126,7 +126,7 @@ Rgb TransistorDevice::get_draw_color(Patch *) {
     return TransistorDevice::color;
 }
 
-void TransistorDevice::draw_debug(Png *png) {
+void TransistorDevice::draw_debug(AspngSurface *surface) {
     return;
     auto all_ports = this->all_ports();
     for (auto i = all_ports.begin(); i != all_ports.end(); i++) {
@@ -136,9 +136,9 @@ void TransistorDevice::draw_debug(Png *png) {
         std::tie(x, y) = port_their_half->coord;
         auto port_our_half = port->get_our_port_half(this);
         if (port_our_half->port_type == TransistorBridge) {
-            png->set_pixel(x, y, Rgb(0, 0, 0xff));
+            surface->set_pixel(x, y, Rgb(0, 0, 0xff));
         } else if (port_our_half->port_type == TransistorGate) {
-            png->set_pixel(x, y, Rgb(0xff, 0, 0));
+            surface->set_pixel(x, y, Rgb(0xff, 0, 0));
         } else {
             ASSERT(0);
         }

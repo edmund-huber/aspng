@@ -11,13 +11,13 @@ std::string PullDevice::name(void) {
     return "PullDevice";
 }
 
-bool PullDevice::parse(Png *png, size_t x, size_t y) {
+bool PullDevice::parse(AspngSurface *surface, size_t x, size_t y) {
     // Let's look for a source pixel ..
-    this->patch_source_or_sink = this->flood(png, x, y, SourceDevice::color);
+    this->patch_source_or_sink = this->flood(surface, x, y, SourceDevice::color);
     this->pull_type = PullHi;
     if (this->patch_source_or_sink.size() == 0) {
         // .. if no source, let's look for a sink.
-        this->patch_source_or_sink = this->flood(png, x, y, SinkDevice::color);
+        this->patch_source_or_sink = this->flood(surface, x, y, SinkDevice::color);
         this->pull_type = PullLo;
     }
     // If we found a source or a sink pixel, let's look for the yellow pixel
@@ -25,7 +25,7 @@ bool PullDevice::parse(Png *png, size_t x, size_t y) {
     if (this->patch_source_or_sink.size() == 1) {
         int offs[4][2] = { { 0, 1 }, { 1, 0 }, { 0, -1 }, { -1, 0 } };
         for (int i = 0; i < 4; i++) {
-            this->patch_yellow = this->flood(png, x + offs[i][0], y + offs[i][1], PullDevice::yellow);
+            this->patch_yellow = this->flood(surface, x + offs[i][0], y + offs[i][1], PullDevice::yellow);
             if (this->patch_yellow.size() == 1) {
                 return true;
             }

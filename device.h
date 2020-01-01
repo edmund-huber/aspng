@@ -9,60 +9,12 @@
 
 #include "patch.h"
 #include "png.h"
-
-enum ElectricalValue {
-    EmptyElectricalValue,
-    HiElectricalValue,
-    LoElectricalValue,
-    PullHiElectricalValue,
-    PullLoElectricalValue
-};
-
-ElectricalValue combine_electrical_values(ElectricalValue, ElectricalValue);
-std::string electrical_value_to_str(ElectricalValue);
-
-class ElectricalValueException : public std::exception {
-    virtual const char *what() const throw() {
-        return "ElectricalValueException";
-    }
-};
+#include "port.h"
 
 enum LinkResult {
     CanTouch,
     CanLink,
     LinkError
-};
-
-// At link time, a device determines what the port means to itself, so that
-// later, at simulation time, it knows what to do with a port.
-enum PortType {
-    NoSpecialMeaning,
-    ToBeResolved,
-    TransistorBridge,
-    TransistorGate
-};
-
-class Device;
-
-struct PortHalf {
-    std::shared_ptr<Device> device;
-    Coord coord;
-    PortType port_type;
-};
-
-class Port {
-public:
-    Port(std::shared_ptr<Device>, Coord, PortType, std::shared_ptr<Device>, Coord, PortType);
-    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
-    ElectricalValue compute_new_value(std::shared_ptr<Port>);
-    void apply_new_value(ElectricalValue);
-    bool is_resolved(void);
-    PortHalf *get_our_port_half(Device *);
-    PortHalf *get_their_port_half(Device *);
-
-private:
-    PortHalf d1_port_half;
-    PortHalf d2_port_half;
 };
 
 class Device {
@@ -76,8 +28,8 @@ public:
     // pixels it parsed out.) Note that this is separate from "linking" -- we
     // do not decide here whether the device can exist in the context of the
     // pixels (and devices) surrounding it.
-    virtual bool parse(Png *, size_t, size_t) = 0;
-    Patch flood(Png *, size_t, size_t, Rgb);
+    virtual bool parse(AspngSurface *, size_t, size_t) = 0;
+    Patch flood(AspngSurface *, size_t, size_t, Rgb);
 
     // Return the list of pixels that were parsed out, during the method above.
     virtual std::list<Patch *> all_patches(void) = 0;
@@ -105,13 +57,13 @@ public:
 
     virtual void apply_new_value(Port *, ElectricalValue) = 0;
 
-    virtual void draw(Png *);
-    virtual void draw_debug(Png *);
+    virtual void draw(AspngSurface *);
+    virtual void draw_debug(AspngSurface *);
 
 private:
     std::list<std::shared_ptr<Port>> ports;
 
-    static void flood_helper(Png *, size_t, size_t, Rgb, Patch &, Patch &);
+    static void flood_helper(AspngSurface *, size_t, size_t, Rgb, Patch &, Patch &);
     void maybe_neighbor(Device ***, size_t, size_t, size_t, size_t, std::set<Device *> *);
 
     virtual Rgb get_draw_color(Patch *) = 0;
@@ -123,7 +75,7 @@ public:
     ~BackgroundDevice(void);
     std::string name(void);
     static Device *create(void);
-    bool parse(Png *, size_t, size_t);
+    bool parse(AspngSurface *, size_t, size_t);
     std::list<Patch *> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(Patch *, std::shared_ptr<Device>);
     bool link(void);
@@ -142,7 +94,7 @@ class CopperDevice : public Device {
 public:
     std::string name(void);
     static Device *create(void);
-    bool parse(Png *, size_t, size_t);
+    bool parse(AspngSurface *, size_t, size_t);
     std::list<Patch *> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(Patch *, std::shared_ptr<Device>);
     bool link(void);
@@ -162,7 +114,7 @@ class PullDevice : public Device {
 public:
     std::string name(void);
     static Device *create(void);
-    bool parse(Png *, size_t, size_t);
+    bool parse(AspngSurface *, size_t, size_t);
     std::list<Patch *> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(Patch *, std::shared_ptr<Device>);
     bool link(void);
@@ -186,7 +138,7 @@ class SinkDevice : public Device {
 public:
     std::string name(void);
     static Device *create(void);
-    bool parse(Png *, size_t, size_t);
+    bool parse(AspngSurface *, size_t, size_t);
     std::list<Patch *> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(Patch *, std::shared_ptr<Device>);
     bool link(void);
@@ -205,7 +157,7 @@ class SourceDevice : public Device {
 public:
     std::string name(void);
     static Device *create(void);
-    bool parse(Png *, size_t, size_t);
+    bool parse(AspngSurface *, size_t, size_t);
     std::list<Patch *> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(Patch *, std::shared_ptr<Device>);
     bool link(void);
@@ -225,7 +177,7 @@ public:
     TransistorDevice();
     std::string name(void);
     static Device *create(void);
-    bool parse(Png *, size_t, size_t);
+    bool parse(AspngSurface *, size_t, size_t);
     std::list<Patch *> all_patches(void);
     std::tuple<LinkResult, PortType> prelink(Patch *, std::shared_ptr<Device>);
     bool link(void);
@@ -233,7 +185,7 @@ public:
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
     void apply_new_value(Port *, ElectricalValue);
     static Rgb color;
-    void draw_debug(Png *);
+    void draw_debug(AspngSurface *);
 
 private:
     Patch patch;

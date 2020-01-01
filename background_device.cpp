@@ -14,8 +14,8 @@ std::string BackgroundDevice::name(void) {
     return "Background";
 }
 
-bool BackgroundDevice::parse(Png *png, size_t x, size_t y) {
-    this->patch = this->flood(png, x, y, BackgroundDevice::color);
+bool BackgroundDevice::parse(AspngSurface *surface, size_t x, size_t y) {
+    this->patch = this->flood(surface, x, y, BackgroundDevice::color);
     return this->patch.size() >= 1;
 }
 
