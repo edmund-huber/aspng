@@ -88,6 +88,9 @@ int main(int argc, char **argv) {
         return -1;
 
     // Event loop!
+    double pan_x = 0;
+    double pan_y = 0;
+    int32_t zoom_level = 2;
     bool do_quit = false;
     while (!do_quit) {
         SDL_Event e;
@@ -105,6 +108,22 @@ int main(int argc, char **argv) {
                 }
                 break;
 
+            case SDL_MOUSEMOTION:
+                switch (e.motion.state) {
+                case SDL_BUTTON_RMASK:
+                    pan_x += e.motion.xrel;
+                    pan_y += e.motion.yrel;
+                    break;
+
+                default:
+                    break;
+                }
+                break;
+
+            case SDL_MOUSEWHEEL:
+                zoom_level += e.wheel.y;
+                break;
+
             case SDL_QUIT:
                 do_quit = true;
                 break;
@@ -117,21 +136,24 @@ int main(int argc, char **argv) {
         SDL_SetRenderDrawColor(sdl_renderer, 255, 0, 255, 255);
         SDL_RenderClear(sdl_renderer);
         aspng.draw(&sdl_aspng_surface);
+        aspng.step();
 
         SDL_Rect sdl_rect_src;
         sdl_rect_src.w = sdl_aspng_surface.get_width();
         sdl_rect_src.h = sdl_aspng_surface.get_height();
         sdl_rect_src.x = 0;
         sdl_rect_src.y = 0;
+        double zoom = zoom_level * 5.;
         SDL_Rect sdl_rect_dst;
-        sdl_rect_dst.w = sdl_aspng_surface.get_width() * 8;
-        sdl_rect_dst.h = sdl_aspng_surface.get_height() * 8;
-        sdl_rect_dst.x = 64;
-        sdl_rect_dst.y = 64;
+        sdl_rect_dst.w = sdl_aspng_surface.get_width() * zoom;
+        sdl_rect_dst.h = sdl_aspng_surface.get_height() * zoom;
+        sdl_rect_dst.x = pan_x * zoom;
+        sdl_rect_dst.y = pan_y * zoom;
         SDL_RenderCopy(sdl_renderer, sdl_aspng_surface.get_texture(), &sdl_rect_src, &sdl_rect_dst);
         SDL_RenderPresent(sdl_renderer);
 
-        SDL_Delay(100);
+        // TODO
+        SDL_Delay(5);
     }
 
     SDL_Quit();
