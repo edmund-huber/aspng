@@ -1,9 +1,10 @@
-#include <iostream>  //////// TODO
+#include <iostream>
 #include <SDL2/SDL.h>
 
 #include "aspng.h"
 #include "common.h"
 #include "png.h"
+#include "simple_aspng_surface.h"
 
 class SDLAspngSurface : public AspngSurface {
 public:
@@ -12,6 +13,7 @@ public:
     size_t get_height(void);
     Rgb get_pixel(size_t, size_t);
     void set_pixel(size_t, size_t, Rgb);
+    Patch get_patch_at(size_t, size_t, size_t, size_t);
     SDL_Texture *get_texture(void);
 
 private:
@@ -60,16 +62,16 @@ void SDLAspngSurface::set_pixel(size_t x, size_t y, Rgb rgb) {
     uint32_t pixel = SDL_MapRGBA(sdl_pixel_format, rgb.r, rgb.g, rgb.b, 255);
     *((uint32_t *)&pixels[(pitch * y) + (4 * x)]) = pixel;
     SDL_UnlockTexture(this->sdl_texture);
-    //0xf8, 0xac, 0x59
-    if (rgb.r == 0xf8 && rgb.b != 0xac && rgb.g != 0x59) {
-        std::cout << x << ", " << y << " = " << (int)rgb.r << ", " << (int)rgb.g << ", " << (int)rgb.b << std::endl;
-    }
     SDL_FreeFormat(sdl_pixel_format);
 }
 
 // TODO: destructor should free stuff
 
 int main(int argc, char **argv) {
+    if (argc != 2) {
+        return -1;
+    }
+
     // Create the SDL window and renderer.
     ASSERT(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) == 0);
     SDL_Window *sdl_window = SDL_CreateWindow("aspng", 0, 0, 100, 100, SDL_WINDOW_RESIZABLE);
@@ -77,17 +79,20 @@ int main(int argc, char **argv) {
     SDL_Renderer *sdl_renderer = SDL_CreateRenderer(sdl_window, -1, SDL_RENDERER_ACCELERATED);
     ASSERT(sdl_renderer != nullptr);
 
-    auto png = Png::read("tests/nand_gate/_.png");
+    auto png = Png::read(argv[1]);
     if (png == nullptr)
         return -1;
     SDLAspngSurface sdl_aspng_surface(sdl_renderer, png->get_width(), png->get_height());
 
     std::string error;
     auto aspng = Aspng(png, error);
-    if (error != "")
+    if (error != "") {
+        std::cout << "creating Aspng object failed: " << error << std::endl;
         return -1;
+    }
 
     // Event loop!
+    SimpleAspngSurface input_map(png->get_width(), png->get_height());
     double pan_x = 0;
     double pan_y = 0;
     int32_t zoom_level = 2;
@@ -101,6 +106,22 @@ int main(int argc, char **argv) {
                 switch(e.key.keysym.sym) {
                 case SDLK_ESCAPE:
                     do_quit = true;
+                    break;
+
+                default:
+                    break;
+                }
+                break;
+
+            case SDL_MOUSEBUTTONDOWN:
+                switch (e.button.button) {
+                case SDL_BUTTON_LEFT:
+                    {
+                        auto device = aspng.which_device(e.button.x, e.button.y);
+                        if (device != nullptr) {
+                            device->click();
+                        }
+                    }
                     break;
 
                 default:

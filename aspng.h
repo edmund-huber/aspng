@@ -6,7 +6,7 @@
 #include <stdint.h>
 #include <string>
 
-#include "aspngsurface.h"
+#include "aspng_surface.h"
 #include "device.h"
 #include "patch.h"
 
@@ -15,6 +15,8 @@ public:
     Aspng(AspngSurface *, std::string &);
     std::string step(void);
     void draw(AspngSurface *);
+    void draw_input_map(AspngSurface *);
+    std::shared_ptr<Device> which_device(size_t, size_t );
 
 private:
     std::set<std::shared_ptr<Device>> all_devices;

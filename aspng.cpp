@@ -27,6 +27,7 @@ Aspng::Aspng(AspngSurface *surface, std::string &error) {
     std::list<std::function<Device *(void)>> registry;
     registry.push_back(BackgroundDevice::create);
     registry.push_back(CopperDevice::create);
+    registry.push_back(InputDevice::create);
     registry.push_back(PullDevice::create);
     registry.push_back(SinkDevice::create);
     registry.push_back(SourceDevice::create);
@@ -238,4 +239,18 @@ void Aspng::draw(AspngSurface *surface) {
         auto device = *i;
         device->draw_debug(surface);
     }
+}
+
+std::shared_ptr<Device> Aspng::which_device(size_t x, size_t y) {
+    for (auto i = this->all_devices.begin(); i != this->all_devices.end(); i++) {
+        auto device = *i;
+        auto all_patches = device->all_patches();
+        for (auto j = all_patches.begin(); j != all_patches.end(); j++) {
+            auto patch = *j;
+            if (patch->find(Coord(x, y)) != patch->end()) {
+                return device;
+            }
+        }
+    }
+    return nullptr;
 }

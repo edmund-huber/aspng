@@ -4,6 +4,10 @@ Device *CopperDevice::create(void) {
     return new CopperDevice();
 }
 
+CopperDevice::CopperDevice() {
+    this->color_for_drawing = CopperDevice::color;
+}
+
 std::string CopperDevice::name(void) {
     return "Copper";
 }

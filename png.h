@@ -4,7 +4,7 @@
 #include <png.h>
 #include <string>
 
-#include "aspngsurface.h"
+#include "aspng_surface.h"
 
 class Png : public AspngSurface {
 public:

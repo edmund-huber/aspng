@@ -19,3 +19,31 @@ void Patch::insert(const Coord &coord) {
     }
     ASSERT(is_contiguous);
 }
+
+void Patch::get_bounding_box(int32_t &min_x, int32_t &max_x, int32_t &min_y, int32_t &max_y) {
+    min_x = INT32_MAX;
+    max_x = INT32_MIN;
+    min_y = INT32_MAX;
+    max_y = INT32_MIN;
+    for (auto i = this->begin(); i != this->end(); i++) {
+        auto coord = *i;
+        int32_t x, y;
+        std::tie(x, y) = coord;
+        min_x = x < min_x ? x : min_x;
+        max_x = x > max_x ? x : max_x;
+        min_y = y < min_y ? y : min_y;
+        max_y = y > max_y ? y : max_y;
+    }
+}
+
+int32_t Patch::get_width(void) {
+    int32_t min_x, max_x, min_y, max_y;
+    this->get_bounding_box(min_x, max_x, min_y, max_y);
+    return max_x - min_x;
+}
+
+int32_t Patch::get_height(void) {
+    int32_t min_x, max_x, min_y, max_y;
+    this->get_bounding_box(min_x, max_x, min_y, max_y);
+    return max_y - min_y;
+}

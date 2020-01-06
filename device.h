@@ -60,13 +60,15 @@ public:
     virtual void draw(AspngSurface *);
     virtual void draw_debug(AspngSurface *);
 
+    virtual void click(void);
+
 private:
     std::list<std::shared_ptr<Port>> ports;
 
     static void flood_helper(AspngSurface *, size_t, size_t, Rgb, Patch &, Patch &);
     void maybe_neighbor(Device ***, size_t, size_t, size_t, size_t, std::set<Device *> *);
 
-    virtual Rgb get_draw_color(Patch *) = 0;
+    virtual Rgb get_draw_color(Patch *);
 };
 
 class BackgroundDevice : public Device {
@@ -90,8 +92,24 @@ private:
     virtual Rgb get_draw_color(Patch *);
 };
 
+class BaseTemplateDevice : public Device {
+public:
+    bool parse(AspngSurface *, size_t, size_t);
+    std::list<Patch *> all_patches(void);
+    std::tuple<LinkResult, PortType> prelink(Patch *, std::shared_ptr<Device>);
+    static Rgb color;
+    void draw(AspngSurface *);
+
+private:
+    Patch patch;
+    std::string tab;
+
+    virtual Rgb get_draw_color(Patch *);
+};
+
 class CopperDevice : public Device {
 public:
+    CopperDevice();
     std::string name(void);
     static Device *create(void);
     bool parse(AspngSurface *, size_t, size_t);
@@ -108,6 +126,20 @@ private:
     Rgb color_for_drawing;
 
     virtual Rgb get_draw_color(Patch *);
+};
+
+class InputDevice : public BaseTemplateDevice {
+public:
+    InputDevice(void);
+    std::string name(void);
+    static Device *create(void);
+    bool link(void);
+    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
+    ElectricalValue get_value_at_port(std::shared_ptr<Port>);
+    void apply_new_value(Port *, ElectricalValue);
+
+private:
+    bool being_clicked;
 };
 
 class PullDevice : public Device {
