@@ -105,8 +105,7 @@ Patch *Device::find_patch_containing(Coord coord) {
     ASSERT(0);
 }
 
-void Device::draw(AspngSurface *surface) {
-    auto patches = this->all_patches();
+void Device::draw_helper(AspngSurface *surface, std::list<Patch *> patches) {
     for (auto i = patches.begin(); i != patches.end(); i++) {
         auto patch = *i;
         for (auto j = patch->begin(); j != patch->end(); j++) {
@@ -118,6 +117,10 @@ void Device::draw(AspngSurface *surface) {
             surface->set_pixel(x, y, this->get_draw_color(patch));
         }
     }
+}
+
+void Device::draw(AspngSurface *surface) {
+    this->draw_helper(surface, this->all_patches());
 }
 
 void Device::draw_debug(AspngSurface *) {}

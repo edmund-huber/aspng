@@ -1,5 +1,3 @@
-#include <iostream> // TODO
-
 #include "common.h"
 #include "device.h"
 #include "simple_aspng_surface.h"
@@ -43,6 +41,9 @@ bool BaseTemplateDevice::parse(AspngSurface *surface, size_t base_x, size_t base
 
     // Find the extents of what we're dealing with.
     Patch p = this->flood(surface, base_x, base_y, BaseTemplateDevice::color);
+    if (p.size() == 0) {
+        return false;
+    }
     int32_t min_x, max_x, min_y, max_y;
     p.get_bounding_box(min_x, max_x, min_y, max_y);
 
@@ -71,7 +72,9 @@ bool BaseTemplateDevice::parse(AspngSurface *surface, size_t base_x, size_t base
     }
 
     // Instantiate the underlying device named in the tab.
-    // TODO
+    if (!this->sub_parse(surface, min_x + 1, min_y + 5, max_x - 1, max_y - 1)) {
+        return false;
+    }
 
     // Add the box to the patch. (If it's not there, that's a parse error.)
     // (Top bit.)
@@ -103,15 +106,16 @@ bool BaseTemplateDevice::parse(AspngSurface *surface, size_t base_x, size_t base
         this->patch.insert(Coord(x, max_y));
     }
 
-    // The subdevice is responsible for the contents of the box.
-    // this->parse_contents();
-
     return true;
 }
 
 std::list<Patch *> BaseTemplateDevice::all_patches(void) {
     std::list<Patch *> all_patches;
     all_patches.push_back(&(this->patch));
+    auto sub_patches = this->sub_patches();
+    for (auto i = sub_patches.begin(); i != sub_patches.end(); i++) {
+        all_patches.push_back(*i);
+    }
     return all_patches;
 }
 
@@ -125,7 +129,9 @@ std::tuple<LinkResult, PortType> BaseTemplateDevice::prelink(Patch *, std::share
 
 void BaseTemplateDevice::draw(AspngSurface *surface) {
     // Draw the frame.
-    Device::draw(surface);
+    std::list<Patch *> just_this_patch;
+    just_this_patch.push_back(&(this->patch));
+    this->draw_helper(surface, just_this_patch);
 
     // Draw in the tab letters.
     int32_t min_x, max_x, min_y, max_y;
@@ -139,7 +145,7 @@ void BaseTemplateDevice::draw(AspngSurface *surface) {
     }
 
     // Make the subdevice draw.
-    // TODO
+    this->sub_draw(surface, min_x + 1, min_y + 5, max_x - 1, max_y - 1);
 }
 
 Rgb BaseTemplateDevice::get_draw_color(Patch *) {

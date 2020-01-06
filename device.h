@@ -62,6 +62,9 @@ public:
 
     virtual void click(void);
 
+protected:
+    void draw_helper(AspngSurface *, std::list<Patch *>);
+
 private:
     std::list<std::shared_ptr<Port>> ports;
 
@@ -99,6 +102,9 @@ public:
     std::tuple<LinkResult, PortType> prelink(Patch *, std::shared_ptr<Device>);
     static Rgb color;
     void draw(AspngSurface *);
+    virtual bool sub_parse(AspngSurface *, size_t, size_t, size_t, size_t) = 0;
+    virtual std::list<Patch *> sub_patches(void) = 0;
+    virtual void sub_draw(AspngSurface *, size_t, size_t, size_t, size_t) = 0;
 
 private:
     Patch patch;
@@ -133,13 +139,17 @@ public:
     InputDevice(void);
     std::string name(void);
     static Device *create(void);
+    bool sub_parse(AspngSurface *, size_t, size_t, size_t, size_t);
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
     void apply_new_value(Port *, ElectricalValue);
+    std::list<Patch *> sub_patches(void);
+    void sub_draw(AspngSurface *, size_t, size_t, size_t, size_t);
 
 private:
     bool being_clicked;
+    Patch sub_patch;
 };
 
 class PullDevice : public Device {
