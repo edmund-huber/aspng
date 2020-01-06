@@ -62,3 +62,11 @@ void InputDevice::sub_draw(AspngSurface *surface, size_t min_x, size_t min_y, si
         }
     }
 }
+
+void InputDevice::click(Coord coord) {
+    this->being_clicked = true;
+}
+
+void InputDevice::unclick(void) {
+    this->being_clicked = false;
+}

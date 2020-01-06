@@ -97,6 +97,7 @@ int main(int argc, char **argv) {
     double pan_y = 0;
     int32_t zoom_level = 2;
     bool do_quit = false;
+    std::shared_ptr<Device> device_being_clicked = nullptr;
     while (!do_quit) {
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
@@ -117,9 +118,11 @@ int main(int argc, char **argv) {
                 switch (e.button.button) {
                 case SDL_BUTTON_LEFT:
                     {
-                        auto device = aspng.which_device(e.button.x, e.button.y);
+                        Coord coord(pan_x + e.button.x, pan_y + e.button.y);
+                        auto device = aspng.which_device(coord);
                         if (device != nullptr) {
-                            device->click();
+                            device_being_clicked = device;
+                            device_being_clicked->click(coord);
                         }
                     }
                     break;
@@ -128,6 +131,19 @@ int main(int argc, char **argv) {
                     break;
                 }
                 break;
+
+            case SDL_MOUSEBUTTONUP:
+                switch (e.button.button) {
+                case SDL_BUTTON_LEFT:
+                    if (device_being_clicked != nullptr) {
+                        device_being_clicked->unclick();
+                        device_being_clicked = nullptr;
+                    }
+                    break;
+
+                default:
+                    break;
+                }
 
             case SDL_MOUSEMOTION:
                 switch (e.motion.state) {

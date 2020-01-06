@@ -241,13 +241,13 @@ void Aspng::draw(AspngSurface *surface) {
     }
 }
 
-std::shared_ptr<Device> Aspng::which_device(size_t x, size_t y) {
+std::shared_ptr<Device> Aspng::which_device(Coord coord) {
     for (auto i = this->all_devices.begin(); i != this->all_devices.end(); i++) {
         auto device = *i;
         auto all_patches = device->all_patches();
         for (auto j = all_patches.begin(); j != all_patches.end(); j++) {
             auto patch = *j;
-            if (patch->find(Coord(x, y)) != patch->end()) {
+            if (patch->find(coord) != patch->end()) {
                 return device;
             }
         }

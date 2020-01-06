@@ -129,4 +129,6 @@ Rgb Device::get_draw_color(Patch *) {
     return Rgb(0, 0, 0);
 }
 
-void Device::click(void) {}
+void Device::click(Coord) {}
+
+void Device::unclick(void) {}

@@ -60,7 +60,8 @@ public:
     virtual void draw(AspngSurface *);
     virtual void draw_debug(AspngSurface *);
 
-    virtual void click(void);
+    virtual void click(Coord);
+    virtual void unclick(void);
 
 protected:
     void draw_helper(AspngSurface *, std::list<Patch *>);
@@ -146,6 +147,8 @@ public:
     void apply_new_value(Port *, ElectricalValue);
     std::list<Patch *> sub_patches(void);
     void sub_draw(AspngSurface *, size_t, size_t, size_t, size_t);
+    void click(Coord);
+    void unclick(void);
 
 private:
     bool being_clicked;

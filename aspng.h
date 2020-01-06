@@ -16,7 +16,7 @@ public:
     std::string step(void);
     void draw(AspngSurface *);
     void draw_input_map(AspngSurface *);
-    std::shared_ptr<Device> which_device(size_t, size_t );
+    std::shared_ptr<Device> which_device(Coord);
 
 private:
     std::set<std::shared_ptr<Device>> all_devices;
