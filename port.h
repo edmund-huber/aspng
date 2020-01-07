@@ -12,6 +12,10 @@
 enum PortType {
     NoSpecialMeaning,
     ToBeResolved,
+    // BridgeDevice
+    BridgeNorthSouth,
+    BridgeEastWest,
+    // TransistorDevice
     TransistorBridge,
     TransistorGate
 };

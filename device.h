@@ -115,6 +115,25 @@ private:
     virtual Rgb get_draw_color(Patch *);
 };
 
+class BridgeDevice : public Device {
+public:
+    std::string name(void);
+    static Device *create(void);
+    bool parse(AspngSurface *, size_t, size_t);
+    std::list<Patch *> all_patches(void);
+    std::tuple<LinkResult, PortType> prelink(Patch *, std::shared_ptr<Device>);
+    bool link(void);
+    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
+    ElectricalValue get_value_at_port(std::shared_ptr<Port>);
+    void apply_new_value(Port *, ElectricalValue);
+    static Rgb color;
+
+private:
+    Patch patch;
+
+    virtual Rgb get_draw_color(Patch *);
+};
+
 class CopperDevice : public Device {
 public:
     CopperDevice();
@@ -154,6 +173,25 @@ public:
 
 private:
     bool being_clicked;
+    Patch sub_patch;
+};
+
+class LEDDevice : public BaseTemplateDevice {
+public:
+    LEDDevice(void);
+    std::string name(void);
+    static Device *create(void);
+    std::string template_name(void);
+    bool sub_parse(AspngSurface *, size_t, size_t, size_t, size_t);
+    bool link(void);
+    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
+    ElectricalValue get_value_at_port(std::shared_ptr<Port>);
+    void apply_new_value(Port *, ElectricalValue);
+    std::list<Patch *> sub_patches(void);
+    void sub_draw(AspngSurface *, size_t, size_t, size_t, size_t);
+
+private:
+    bool active;
     Patch sub_patch;
 };
 

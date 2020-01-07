@@ -26,8 +26,10 @@ Aspng::Aspng(AspngSurface *surface, std::string &error) {
 
     std::list<std::function<Device *(void)>> registry;
     registry.push_back(BackgroundDevice::create);
+    registry.push_back(BridgeDevice::create);
     registry.push_back(CopperDevice::create);
     registry.push_back(InputDevice::create);
+    registry.push_back(LEDDevice::create);
     registry.push_back(PullDevice::create);
     registry.push_back(SinkDevice::create);
     registry.push_back(SourceDevice::create);
