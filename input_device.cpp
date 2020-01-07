@@ -12,6 +12,10 @@ Device *InputDevice::create(void) {
     return new InputDevice();
 }
 
+std::string InputDevice::template_name(void) {
+    return "input";
+}
+
 // A valid InputDevice must be empty (black).
 bool InputDevice::sub_parse(AspngSurface *surface, size_t min_x, size_t min_y, size_t max_x, size_t max_y) {
     for (size_t x = min_x; x <= max_x; x++) {

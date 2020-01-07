@@ -103,6 +103,7 @@ public:
     std::tuple<LinkResult, PortType> prelink(Patch *, std::shared_ptr<Device>);
     static Rgb color;
     void draw(AspngSurface *);
+    virtual std::string template_name(void) = 0;
     virtual bool sub_parse(AspngSurface *, size_t, size_t, size_t, size_t) = 0;
     virtual std::list<Patch *> sub_patches(void) = 0;
     virtual void sub_draw(AspngSurface *, size_t, size_t, size_t, size_t) = 0;
@@ -140,6 +141,7 @@ public:
     InputDevice(void);
     std::string name(void);
     static Device *create(void);
+    std::string template_name(void);
     bool sub_parse(AspngSurface *, size_t, size_t, size_t, size_t);
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);

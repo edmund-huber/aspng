@@ -72,6 +72,9 @@ bool BaseTemplateDevice::parse(AspngSurface *surface, size_t base_x, size_t base
     }
 
     // Instantiate the underlying device named in the tab.
+    if (this->template_name() != tab) {
+        return false;
+    }
     if (!this->sub_parse(surface, min_x + 1, min_y + 5, max_x - 1, max_y - 1)) {
         return false;
     }
