@@ -16,7 +16,7 @@ Rgb CopperDevice::color = Rgb(0xf8, 0xac, 0x59);
 
 bool CopperDevice::parse(AspngSurface *surface, size_t x, size_t y) {
     this->patch = this->flood(surface, x, y, CopperDevice::color);
-    return this->patch.size() == 1;
+    return this->patch.size() >= 1;
 }
 
 std::list<Patch *> CopperDevice::all_patches(void) {
