@@ -97,6 +97,7 @@ int main(int argc, char **argv) {
     double pan_y = 0;
     int32_t zoom_level = 2;
     double zoom = pow(2, zoom_level);
+    Coord last_mouse_position;
     bool do_quit = false;
     std::shared_ptr<Device> device_being_clicked = nullptr;
     while (!do_quit) {
@@ -150,6 +151,7 @@ int main(int argc, char **argv) {
                 }
 
             case SDL_MOUSEMOTION:
+                last_mouse_position = Coord(e.motion.x, e.motion.y);
                 switch (e.motion.state) {
                 case SDL_BUTTON_RMASK:
                     pan_x += e.motion.xrel / zoom;
@@ -162,8 +164,16 @@ int main(int argc, char **argv) {
                 break;
 
             case SDL_MOUSEWHEEL:
-                zoom_level += e.wheel.y;
-                zoom = pow(2, zoom_level);
+                {
+                    double mouse_pre_zoom_x = std::get<0>(last_mouse_position) / zoom;
+                    double mouse_pre_zoom_y = std::get<1>(last_mouse_position) / zoom;
+                    zoom_level += e.wheel.y;
+                    zoom = pow(2, zoom_level);
+                    double mouse_post_zoom_x = std::get<0>(last_mouse_position) / zoom;
+                    double mouse_post_zoom_y = std::get<1>(last_mouse_position) / zoom;
+                    pan_x += mouse_post_zoom_x - mouse_pre_zoom_x;
+                    pan_y += mouse_post_zoom_y - mouse_pre_zoom_y;
+                }
                 break;
 
             case SDL_QUIT:
