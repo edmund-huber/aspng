@@ -96,6 +96,7 @@ int main(int argc, char **argv) {
     double pan_x = 0;
     double pan_y = 0;
     int32_t zoom_level = 2;
+    double zoom = pow(2, zoom_level);
     bool do_quit = false;
     std::shared_ptr<Device> device_being_clicked = nullptr;
     while (!do_quit) {
@@ -118,7 +119,10 @@ int main(int argc, char **argv) {
                 switch (e.button.button) {
                 case SDL_BUTTON_LEFT:
                     {
-                        Coord coord(pan_x + e.button.x, pan_y + e.button.y);
+                        Coord coord(
+                            (e.button.x / zoom) - pan_x,
+                            (e.button.y / zoom) - pan_y
+                        );
                         auto device = aspng.which_device(coord);
                         if (device != nullptr) {
                             device_being_clicked = device;
@@ -148,8 +152,8 @@ int main(int argc, char **argv) {
             case SDL_MOUSEMOTION:
                 switch (e.motion.state) {
                 case SDL_BUTTON_RMASK:
-                    pan_x += e.motion.xrel;
-                    pan_y += e.motion.yrel;
+                    pan_x += e.motion.xrel / zoom;
+                    pan_y += e.motion.yrel / zoom;
                     break;
 
                 default:
@@ -159,6 +163,7 @@ int main(int argc, char **argv) {
 
             case SDL_MOUSEWHEEL:
                 zoom_level += e.wheel.y;
+                zoom = pow(2, zoom_level);
                 break;
 
             case SDL_QUIT:
@@ -175,7 +180,6 @@ int main(int argc, char **argv) {
         aspng.draw(&sdl_aspng_surface);
         aspng.step();
 
-        double zoom = pow(2, zoom_level);
         SDL_Rect sdl_rect_dst;
         sdl_rect_dst.w = sdl_aspng_surface.get_width() * zoom;
         sdl_rect_dst.h = sdl_aspng_surface.get_height() * zoom;
