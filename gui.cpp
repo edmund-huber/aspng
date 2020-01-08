@@ -175,18 +175,13 @@ int main(int argc, char **argv) {
         aspng.draw(&sdl_aspng_surface);
         aspng.step();
 
-        SDL_Rect sdl_rect_src;
-        sdl_rect_src.w = sdl_aspng_surface.get_width();
-        sdl_rect_src.h = sdl_aspng_surface.get_height();
-        sdl_rect_src.x = 0;
-        sdl_rect_src.y = 0;
-        double zoom = zoom_level * 5.;
+        double zoom = pow(2, zoom_level);
         SDL_Rect sdl_rect_dst;
         sdl_rect_dst.w = sdl_aspng_surface.get_width() * zoom;
         sdl_rect_dst.h = sdl_aspng_surface.get_height() * zoom;
         sdl_rect_dst.x = pan_x * zoom;
         sdl_rect_dst.y = pan_y * zoom;
-        SDL_RenderCopy(sdl_renderer, sdl_aspng_surface.get_texture(), &sdl_rect_src, &sdl_rect_dst);
+        SDL_RenderCopy(sdl_renderer, sdl_aspng_surface.get_texture(), nullptr, &sdl_rect_dst);
         SDL_RenderPresent(sdl_renderer);
 
         // TODO
