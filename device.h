@@ -257,6 +257,25 @@ private:
     virtual Rgb get_draw_color(Patch *);
 };
 
+class SwitchDevice : public BaseTemplateDevice {
+public:
+    std::string name(void);
+    static Device *create(void);
+    std::string template_name(void);
+    bool sub_parse(AspngSurface *, size_t, size_t, size_t, size_t);
+    bool link(void);
+    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
+    ElectricalValue get_value_at_port(std::shared_ptr<Port>);
+    void apply_new_value(Port *, ElectricalValue);
+    std::list<Patch *> sub_patches(void);
+    void sub_draw(AspngSurface *, size_t, size_t, size_t, size_t);
+    void click(Coord);
+
+private:
+    bool closed;
+    Patch sub_patch;
+};
+
 class TransistorDevice : public Device {
 public:
     TransistorDevice();

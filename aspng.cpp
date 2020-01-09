@@ -33,6 +33,7 @@ Aspng::Aspng(AspngSurface *surface, std::string &error) {
     registry.push_back(PullDevice::create);
     registry.push_back(SinkDevice::create);
     registry.push_back(SourceDevice::create);
+    registry.push_back(SwitchDevice::create);
     registry.push_back(TransistorDevice::create);
 
     // Go through all pixels until we find an unassigned pixel ..
