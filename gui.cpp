@@ -218,7 +218,7 @@ int main(int argc, char **argv) {
         milliseconds t1 = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
         int elapsed = (t1 - t0).count();
         if (elapsed >= 1000) {
-            std::cout << (frames / (elapsed / 1000.)) << std::endl;
+            //std::cout << (frames / (elapsed / 1000.)) << std::endl;
             t0 = t1;
             frames = 0;
         }
