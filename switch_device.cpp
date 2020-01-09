@@ -18,7 +18,7 @@ bool SwitchDevice::sub_parse(AspngSurface *surface, size_t min_x, size_t min_y, 
         On,
         Off,
         Unknown
-    } switch_state;
+    } switch_state = Unknown;
     for (size_t x = min_x; x <= max_x; x++) {
         for (size_t y = min_y; y <= max_y; y++) {
             Rgb pixel = surface->get_pixel(x, y);
