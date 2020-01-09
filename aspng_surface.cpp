@@ -35,3 +35,7 @@ void AspngSurface::copy(AspngSurface *other, size_t x, size_t y) {
         }
     }
 }
+
+void AspngSurface::start_draw(void) {}
+
+void AspngSurface::finish_draw(void) {}

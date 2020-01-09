@@ -1,3 +1,5 @@
+#include <chrono>
+using namespace std::chrono;
 #include <iostream>
 #include <SDL2/SDL.h>
 
@@ -13,28 +15,39 @@ public:
     size_t get_height(void);
     Rgb get_pixel(size_t, size_t);
     void set_pixel(size_t, size_t, Rgb);
+    void start_draw(void);
+    void finish_draw(void);
     Patch get_patch_at(size_t, size_t, size_t, size_t);
     SDL_Texture *get_texture(void);
 
 private:
     SDL_Texture *sdl_texture;
+    SDL_PixelFormat *sdl_pixel_format;
+    size_t width;
+    size_t height;
+    uint8_t *pixels;
+    int pitch;
+    bool ready_to_draw;
 };
 
 SDLAspngSurface::SDLAspngSurface(SDL_Renderer *sdl_renderer, size_t w, size_t h) {
     this->sdl_texture = SDL_CreateTexture(sdl_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, w, h);
     ASSERT(this->sdl_texture != nullptr);
+    uint32_t format;
+    SDL_QueryTexture(this->sdl_texture, &format, nullptr, nullptr, nullptr);
+    this->sdl_pixel_format = SDL_AllocFormat(format);
+    ASSERT(this->sdl_pixel_format != nullptr);
+    this->width = w;
+    this->height = h;
+    this->ready_to_draw = false;
 }
 
 size_t SDLAspngSurface::get_width(void) {
-    int w, h;
-    SDL_QueryTexture(this->sdl_texture, nullptr, nullptr, &w, &h);
-    return w;
+    return this->width;
 }
 
 size_t SDLAspngSurface::get_height(void) {
-    int w, h;
-    SDL_QueryTexture(this->sdl_texture, nullptr, nullptr, &w, &h);
-    return h;
+    return this->height;
 }
 
 SDL_Texture *SDLAspngSurface::get_texture(void) {
@@ -46,23 +59,23 @@ Rgb SDLAspngSurface::get_pixel(size_t x, size_t y) {
     ASSERT(0);
 }
 
-void SDLAspngSurface::set_pixel(size_t x, size_t y, Rgb rgb) {
-    // Get information about the texture and do bounds-checking.
-    int w, h;
-    uint32_t format;
-    SDL_QueryTexture(this->sdl_texture, &format, nullptr, &w, &h);
-    SDL_PixelFormat *sdl_pixel_format = SDL_AllocFormat(format);
-    ASSERT((x >= 0) && ((int)x < w));
-    ASSERT((y >= 0) && ((int)y < h));
+void SDLAspngSurface::start_draw(void) {
+    ASSERT(SDL_LockTexture(this->sdl_texture, nullptr, (void **)&(this->pixels), &(this->pitch)) == 0);
+    this->ready_to_draw = true;
+}
 
-    uint8_t *pixels;
-    int pitch;
-    ASSERT(SDL_LockTexture(this->sdl_texture, nullptr, (void **)&pixels, &pitch) == 0);
-    ASSERT(pixels != nullptr);
-    uint32_t pixel = SDL_MapRGBA(sdl_pixel_format, rgb.r, rgb.g, rgb.b, 255);
-    *((uint32_t *)&pixels[(pitch * y) + (4 * x)]) = pixel;
+void SDLAspngSurface::set_pixel(size_t x, size_t y, Rgb rgb) {
+    ASSERT(this->ready_to_draw);
+    ASSERT((x >= 0) && (x < this->width));
+    ASSERT((y >= 0) && (y < this->height));
+    ASSERT(this->pixels != nullptr);
+    uint32_t pixel = SDL_MapRGBA(this->sdl_pixel_format, rgb.r, rgb.g, rgb.b, 255);
+    *((uint32_t *)&(this->pixels)[(this->pitch * y) + (4 * x)]) = pixel;
+}
+
+void SDLAspngSurface::finish_draw(void) {
     SDL_UnlockTexture(this->sdl_texture);
-    SDL_FreeFormat(sdl_pixel_format);
+    this->ready_to_draw = false;
 }
 
 // TODO: destructor should free stuff
@@ -100,6 +113,8 @@ int main(int argc, char **argv) {
     Coord last_mouse_position;
     bool do_quit = false;
     std::shared_ptr<Device> device_being_clicked = nullptr;
+    milliseconds t0 = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+    int frames = 0;
     while (!do_quit) {
         SDL_Event e;
         while (SDL_PollEvent(&e)) {
@@ -187,7 +202,9 @@ int main(int argc, char **argv) {
 
         SDL_SetRenderDrawColor(sdl_renderer, 255, 0, 255, 255);
         SDL_RenderClear(sdl_renderer);
+        sdl_aspng_surface.start_draw();
         aspng.draw(&sdl_aspng_surface);
+        sdl_aspng_surface.finish_draw();
         aspng.step();
 
         SDL_Rect sdl_rect_dst;
@@ -197,6 +214,15 @@ int main(int argc, char **argv) {
         sdl_rect_dst.y = pan_y * zoom;
         SDL_RenderCopy(sdl_renderer, sdl_aspng_surface.get_texture(), nullptr, &sdl_rect_dst);
         SDL_RenderPresent(sdl_renderer);
+
+        milliseconds t1 = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+        int elapsed = (t1 - t0).count();
+        if (elapsed >= 1000) {
+            std::cout << (frames / (elapsed / 1000.)) << std::endl;
+            t0 = t1;
+            frames = 0;
+        }
+        frames++;
 
         // TODO
         SDL_Delay(5);

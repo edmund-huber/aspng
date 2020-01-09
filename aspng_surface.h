@@ -23,6 +23,8 @@ public:
     virtual void set_pixel(size_t, size_t, Rgb) = 0;
     virtual size_t get_width(void) = 0;
     virtual size_t get_height(void) = 0;
+    virtual void start_draw(void);
+    virtual void finish_draw(void);
     bool contains(AspngSurface *, size_t, size_t);
     void copy(AspngSurface *, size_t, size_t);
 };
