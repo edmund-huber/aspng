@@ -17,7 +17,7 @@ std::string TransistorDevice::name(void) {
 
 Rgb TransistorDevice::color = Rgb(0xff, 0, 0xf2);
 
-bool TransistorDevice::parse(AspngSurface *surface, size_t x, size_t y) {
+bool TransistorDevice::parse(AspngSurface *surface, int32_t x, int32_t y) {
     this->patch = this->flood(surface, x, y, TransistorDevice::color);
     return this->patch.size() == 1;
 }
@@ -28,12 +28,12 @@ std::list<Patch *> TransistorDevice::all_patches(void) {
     return all_patches;
 }
 
-std::tuple<LinkResult, PortType> TransistorDevice::prelink(Patch *, std::shared_ptr<Device> d) {
+std::tuple<LinkResult, PortType, std::string> TransistorDevice::prelink(Patch *, std::shared_ptr<Device> d) {
     if (std::dynamic_pointer_cast<BackgroundDevice>(d))
-        return std::make_tuple(CanTouch, NoSpecialMeaning);
+        return std::make_tuple(CanTouch, NoSpecialMeaning, "");
     if (std::dynamic_pointer_cast<CopperDevice>(d))
-        return std::make_tuple(CanLink, ToBeResolved);
-    return std::make_tuple(LinkError, NoSpecialMeaning);
+        return std::make_tuple(CanLink, ToBeResolved, "");
+    return std::make_tuple(LinkError, NoSpecialMeaning, "must touch copper or background");
 }
 
 bool TransistorDevice::link(void) {
@@ -51,10 +51,8 @@ bool TransistorDevice::link(void) {
             auto port2 = *j;
             auto *port2_their_half = port2->get_their_port_half(this);
             // If the two ports share an axis, then they're bridges.
-            size_t c1_x, c1_y, c2_x, c2_y;
-            std::tie(c1_x, c1_y) = port1_their_half->coord;
-            std::tie(c2_x, c2_y) = port2_their_half->coord;
-            if ((c1_x == c2_x) || (c1_y == c2_y)) {
+            if ((port1_their_half->coord.x == port2_their_half->coord.x)
+                || (port1_their_half->coord.y == port2_their_half->coord.y)) {
                 port1_our_half->port_type = TransistorBridge;
                 bridges.insert(&(port1_our_half->port_type));
             }
@@ -132,13 +130,11 @@ void TransistorDevice::draw_debug(AspngSurface *surface) {
     for (auto i = all_ports.begin(); i != all_ports.end(); i++) {
         auto port = *i;
         auto port_their_half = port->get_their_port_half(this);
-        size_t x, y;
-        std::tie(x, y) = port_their_half->coord;
         auto port_our_half = port->get_our_port_half(this);
         if (port_our_half->port_type == TransistorBridge) {
-            surface->set_pixel(x, y, Rgb(0, 0, 0xff));
+            surface->set_pixel(port_their_half->coord.x, port_their_half->coord.y, Rgb(0, 0, 0xff));
         } else if (port_our_half->port_type == TransistorGate) {
-            surface->set_pixel(x, y, Rgb(0xff, 0, 0));
+            surface->set_pixel(port_their_half->coord.x, port_their_half->coord.y, Rgb(0xff, 0, 0));
         } else {
             ASSERT(0);
         }

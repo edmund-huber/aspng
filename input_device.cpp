@@ -17,9 +17,9 @@ std::string InputDevice::template_name(void) {
 }
 
 // A valid InputDevice must be empty (black).
-bool InputDevice::sub_parse(AspngSurface *surface, size_t min_x, size_t min_y, size_t max_x, size_t max_y) {
-    for (size_t x = min_x; x <= max_x; x++) {
-        for (size_t y = min_y; y <= max_y; y++) {
+bool InputDevice::sub_parse(AspngSurface *surface, int32_t min_x, int32_t min_y, int32_t max_x, int32_t max_y) {
+    for (int32_t x = min_x; x <= max_x; x++) {
+        for (int32_t y = min_y; y <= max_y; y++) {
             if (surface->get_pixel(x, y) != Rgb(0, 0, 0)) {
                 return false;
             }
@@ -58,10 +58,10 @@ std::list<Patch *> InputDevice::sub_patches(void) {
 }
 
 // "Source color" if being clicked, "sink color" otherwise.
-void InputDevice::sub_draw(AspngSurface *surface, size_t min_x, size_t min_y, size_t max_x, size_t max_y) {
+void InputDevice::sub_draw(AspngSurface *surface, int32_t min_x, int32_t min_y, int32_t max_x, int32_t max_y) {
     Rgb color = this->being_clicked ? SourceDevice::color : SinkDevice::color;
-    for (size_t x = min_x; x <= max_x; x++) {
-        for (size_t y = min_y; y <= max_y; y++) {
+    for (int32_t x = min_x; x <= max_x; x++) {
+        for (int32_t y = min_y; y <= max_y; y++) {
             surface->set_pixel(x, y, color);
         }
     }

@@ -10,7 +10,7 @@ Device *SourceDevice::create(void) {
     return new SourceDevice();
 }
 
-bool SourceDevice::parse(AspngSurface *surface, size_t x, size_t y) {
+bool SourceDevice::parse(AspngSurface *surface, int32_t x, int32_t y) {
     this->patch = this->flood(surface, x, y, SourceDevice::color);
     return this->patch.size() == 1;
 }
@@ -21,12 +21,12 @@ std::list<Patch *> SourceDevice::all_patches(void) {
     return all_patches;
 }
 
-std::tuple<LinkResult, PortType> SourceDevice::prelink(Patch *, std::shared_ptr<Device> d) {
+std::tuple<LinkResult, PortType, std::string> SourceDevice::prelink(Patch *, std::shared_ptr<Device> d) {
     if (std::dynamic_pointer_cast<CopperDevice>(d))
-        return std::make_tuple(CanLink, NoSpecialMeaning);
+        return std::make_tuple(CanLink, NoSpecialMeaning, "");
     if (std::dynamic_pointer_cast<BackgroundDevice>(d))
-        return std::make_tuple(CanTouch, NoSpecialMeaning);
-    return std::make_tuple(LinkError, NoSpecialMeaning);
+        return std::make_tuple(CanTouch, NoSpecialMeaning, "");
+    return std::make_tuple(LinkError, NoSpecialMeaning, "must touch copper or background");
 }
 
 bool SourceDevice::link(void) {

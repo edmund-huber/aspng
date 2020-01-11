@@ -10,27 +10,27 @@ using namespace std::chrono;
 
 class SDLAspngSurface : public AspngSurface {
 public:
-    SDLAspngSurface(SDL_Renderer *, size_t, size_t);
-    size_t get_width(void);
-    size_t get_height(void);
-    Rgb get_pixel(size_t, size_t);
-    void set_pixel(size_t, size_t, Rgb);
+    SDLAspngSurface(SDL_Renderer *, int32_t, int32_t);
+    int32_t get_width(void);
+    int32_t get_height(void);
+    Rgb get_pixel(int32_t, int32_t);
+    void set_pixel(int32_t, int32_t, Rgb);
     void start_draw(void);
     void finish_draw(void);
-    Patch get_patch_at(size_t, size_t, size_t, size_t);
+    Patch get_patch_at(int32_t, int32_t, int32_t, int32_t);
     SDL_Texture *get_texture(void);
 
 private:
     SDL_Texture *sdl_texture;
     SDL_PixelFormat *sdl_pixel_format;
-    size_t width;
-    size_t height;
+    int32_t width;
+    int32_t height;
     uint8_t *pixels;
     int pitch;
     bool ready_to_draw;
 };
 
-SDLAspngSurface::SDLAspngSurface(SDL_Renderer *sdl_renderer, size_t w, size_t h) {
+SDLAspngSurface::SDLAspngSurface(SDL_Renderer *sdl_renderer, int32_t w, int32_t h) {
     this->sdl_texture = SDL_CreateTexture(sdl_renderer, SDL_PIXELFORMAT_RGBA8888, SDL_TEXTUREACCESS_STREAMING, w, h);
     ASSERT(this->sdl_texture != nullptr);
     uint32_t format;
@@ -42,11 +42,11 @@ SDLAspngSurface::SDLAspngSurface(SDL_Renderer *sdl_renderer, size_t w, size_t h)
     this->ready_to_draw = false;
 }
 
-size_t SDLAspngSurface::get_width(void) {
+int32_t SDLAspngSurface::get_width(void) {
     return this->width;
 }
 
-size_t SDLAspngSurface::get_height(void) {
+int32_t SDLAspngSurface::get_height(void) {
     return this->height;
 }
 
@@ -54,7 +54,7 @@ SDL_Texture *SDLAspngSurface::get_texture(void) {
     return this->sdl_texture;
 }
 
-Rgb SDLAspngSurface::get_pixel(size_t x, size_t y) {
+Rgb SDLAspngSurface::get_pixel(int32_t x, int32_t y) {
     // SDLAspngSurface is really only meant as an output surface.
     ASSERT(0);
 }
@@ -64,7 +64,7 @@ void SDLAspngSurface::start_draw(void) {
     this->ready_to_draw = true;
 }
 
-void SDLAspngSurface::set_pixel(size_t x, size_t y, Rgb rgb) {
+void SDLAspngSurface::set_pixel(int32_t x, int32_t y, Rgb rgb) {
     ASSERT(this->ready_to_draw);
     ASSERT((x >= 0) && (x < this->width));
     ASSERT((y >= 0) && (y < this->height));
@@ -180,12 +180,12 @@ int main(int argc, char **argv) {
 
             case SDL_MOUSEWHEEL:
                 {
-                    double mouse_pre_zoom_x = std::get<0>(last_mouse_position) / zoom;
-                    double mouse_pre_zoom_y = std::get<1>(last_mouse_position) / zoom;
+                    double mouse_pre_zoom_x = last_mouse_position.x / zoom;
+                    double mouse_pre_zoom_y = last_mouse_position.y / zoom;
                     zoom_level += e.wheel.y;
                     zoom = pow(2, zoom_level);
-                    double mouse_post_zoom_x = std::get<0>(last_mouse_position) / zoom;
-                    double mouse_post_zoom_y = std::get<1>(last_mouse_position) / zoom;
+                    double mouse_post_zoom_x = last_mouse_position.x / zoom;
+                    double mouse_post_zoom_y = last_mouse_position.y / zoom;
                     pan_x += mouse_post_zoom_x - mouse_pre_zoom_x;
                     pan_y += mouse_post_zoom_y - mouse_pre_zoom_y;
                 }

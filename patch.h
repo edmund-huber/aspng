@@ -2,9 +2,19 @@
 #define __PATCH_H__
 
 #include <set>
-#include <tuple>
+#include <string>
 
-typedef std::tuple<size_t, size_t> Coord;
+class Coord {
+public:
+    Coord(void) {};
+    Coord(int32_t _x, int32_t _y) : x(_x), y(_y) {};
+
+    int32_t x;
+    int32_t y;
+};
+
+bool operator<(const Coord, const Coord);
+std::string operator+(const std::string, const Coord);
 
 class Patch : private std::set<Coord> {
 public:

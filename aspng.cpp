@@ -18,8 +18,8 @@ bool is_subset(std::set<T> set_a, std::set<T> set_b) {
 
 Aspng::Aspng(AspngSurface *surface, std::string &error) {
     std::map<Coord, std::shared_ptr<Device>> device_map;
-    for (size_t x = 0; x < surface->get_width(); x++) {
-        for (size_t y = 0; y < surface->get_height(); y++) {
+    for (int32_t x = 0; x < surface->get_width(); x++) {
+        for (int32_t y = 0; y < surface->get_height(); y++) {
             device_map[Coord(x, y)] = nullptr;
         }
     }
@@ -37,8 +37,8 @@ Aspng::Aspng(AspngSurface *surface, std::string &error) {
     registry.push_back(TransistorDevice::create);
 
     // Go through all pixels until we find an unassigned pixel ..
-    for (size_t y = 0; y < surface->get_height(); y++) {
-        for (size_t x = 0; x < surface->get_width(); x++) {
+    for (int32_t y = 0; y < surface->get_height(); y++) {
+        for (int32_t x = 0; x < surface->get_width(); x++) {
             if (device_map[Coord(x, y)] == nullptr) {
                 // .. and try to parse a device starting from that pixel.
                 for (auto it1 = registry.begin(); it1 != registry.end(); it1++) {
@@ -94,8 +94,8 @@ Aspng::Aspng(AspngSurface *surface, std::string &error) {
 
     // After we have passed through the whole image, every pixel should be
     // assigned.
-    for (size_t x = 0; x < surface->get_width(); x++) {
-        for (size_t y = 0; y < surface->get_height(); y++) {
+    for (int32_t x = 0; x < surface->get_width(); x++) {
+        for (int32_t y = 0; y < surface->get_height(); y++) {
             if (device_map[Coord(x, y)] == nullptr) {
                 error = "incomplete parse";
                 return;
@@ -105,15 +105,16 @@ Aspng::Aspng(AspngSurface *surface, std::string &error) {
 
     // Pre-linking: for every pair of directly (not diagonally) touching pixels
     // between devices, add Ports (or not).
-    for (size_t x = 0; x < surface->get_width(); x++) {
-        for (size_t y = 0; y < surface->get_height(); y++) { // TODO .. should be -1 (ditto above)?
+    for (int32_t x = 0; x < surface->get_width(); x++) {
+        for (int32_t y = 0; y < surface->get_height(); y++) { // TODO .. should be -1 (ditto above)?
             Coord coord(x, y);
-            if (!maybe_add_ports(device_map, coord, 1, 0)) {
-                error = "prelink fail";
+            std::string prelink_fail;
+            if ((prelink_fail = maybe_add_ports(device_map, coord, 1, 0)) != "") {
+                error = "prelink fail: " + prelink_fail;
                 return;
             }
-            if (!maybe_add_ports(device_map, coord, 0, 1)) {
-                error = "prelink fail";
+            if ((prelink_fail = maybe_add_ports(device_map, coord, 0, 1)) != "") {
+                error = "prelink fail: " + prelink_fail;
                 return;
             }
             // Note: I'm only considering right and up so that I'm not adding
@@ -147,25 +148,26 @@ Aspng::Aspng(AspngSurface *surface, std::string &error) {
 
 // If neighboring Coords are different devices, then add ports to both devices
 // (pointing to the other device).
-bool Aspng::maybe_add_ports(std::map<Coord, std::shared_ptr<Device>> &device_map, Coord d1_coord, size_t x_off, size_t y_off) {
+std::string Aspng::maybe_add_ports(std::map<Coord, std::shared_ptr<Device>> &device_map, Coord d1_coord, int32_t x_off, int32_t y_off) {
     auto d1 = device_map[d1_coord];
     if (d1 == nullptr)
-        return false;
+        return "";
 
-    Coord d2_coord = Coord(std::get<0>(d1_coord) + x_off, std::get<1>(d1_coord) + y_off);
+    Coord d2_coord = Coord(d1_coord.x + x_off, d1_coord.y + y_off);
     auto d2 = device_map[d2_coord];
     if ((d2 != nullptr) && (d2 != d1)) {
         LinkResult d1_link_result, d2_link_result;
         PortType d1_port_type, d2_port_type;
+        std::string error;
         auto d1_patch = d1->find_patch_containing(d1_coord);
-        std::tie(d1_link_result, d1_port_type) = d1->prelink(d1_patch, d2);
+        std::tie(d1_link_result, d1_port_type, error) = d1->prelink(d1_patch, d2);
         if (d1_link_result == LinkError) {
-            return false;
+            return d1->name() + " " + d1_coord + " - " + error;
         }
         auto d2_patch = d2->find_patch_containing(d2_coord);
-        std::tie(d2_link_result, d2_port_type) = d2->prelink(d2_patch, d1);
+        std::tie(d2_link_result, d2_port_type, error) = d2->prelink(d2_patch, d1);
         if (d2_link_result == LinkError) {
-            return false;
+            return d2->name() + " " + d2_coord + " - " + error;
         }
         if ((d1_link_result == CanLink) && (d2_link_result == CanLink)) {
             auto port = std::make_shared<Port>(d1, d1_coord, d1_port_type, d2, d2_coord, d2_port_type);
@@ -174,7 +176,7 @@ bool Aspng::maybe_add_ports(std::map<Coord, std::shared_ptr<Device>> &device_map
         }
     }
 
-    return true;
+    return "";
 }
 
 std::string Aspng::step(void) {
@@ -201,7 +203,7 @@ std::string Aspng::step(void) {
     // Sanity check: every Port should be contained in exactly one Net.
     for (auto i = this->all_ports.begin(); i != this->all_ports.end(); i++) {
         auto port = *i;
-        size_t count = 0;
+        int32_t count = 0;
         for (auto j = nets.begin(); j != nets.end(); j++) {
             auto net = *j;
             if (net->contains(port)) {

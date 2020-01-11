@@ -11,7 +11,7 @@ std::string BridgeDevice::name(void) {
 
 Rgb BridgeDevice::color = Rgb(0x79, 0x44, 0x3b);
 
-bool BridgeDevice::parse(AspngSurface *surface, size_t x, size_t y) {
+bool BridgeDevice::parse(AspngSurface *surface, int32_t x, int32_t y) {
     this->patch = this->flood(surface, x, y, BridgeDevice::color);
     return this->patch.size() == 1;
 }
@@ -22,11 +22,11 @@ std::list<Patch *> BridgeDevice::all_patches(void) {
     return all_patches;
 }
 
-std::tuple<LinkResult, PortType> BridgeDevice::prelink(Patch *, std::shared_ptr<Device> d) {
+std::tuple<LinkResult, PortType, std::string> BridgeDevice::prelink(Patch *, std::shared_ptr<Device> d) {
     if (std::dynamic_pointer_cast<CopperDevice>(d))
-        return std::make_tuple(CanLink, ToBeResolved);
+        return std::make_tuple(CanLink, ToBeResolved, "");
     // Why use a Bridge if any of its ports are unused?
-    return std::make_tuple(LinkError, NoSpecialMeaning);
+    return std::make_tuple(LinkError, NoSpecialMeaning, "must touch copper");
 }
 
 bool BridgeDevice::link(void) {
@@ -42,13 +42,10 @@ bool BridgeDevice::link(void) {
         auto *port_our_half = port->get_our_port_half(this);
         ASSERT(port_our_half->port_type == ToBeResolved);
         auto *port_their_half = port->get_their_port_half(this);
-        size_t our_x, our_y, their_x, their_y;
-        std::tie(our_x, our_y) = port_our_half->coord;
-        std::tie(their_x, their_y) = port_their_half->coord;
-        if (our_x == their_x) {
+        if (port_our_half->coord.x == port_their_half->coord.x) {
             port_our_half->port_type = BridgeNorthSouth;
             north_south_ports++;
-        } else if (our_y == their_y) {
+        } else if (port_our_half->coord.y == port_their_half->coord.y) {
             port_our_half->port_type = BridgeEastWest;
             east_west_ports++;
         } else {

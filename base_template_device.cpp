@@ -7,7 +7,7 @@ Rgb BaseTemplateDevice::color = Rgb(0x11, 0x9e, 0);
 Png *font = nullptr;
 std::vector<SimpleAspngSurface> glyphs;
 
-bool BaseTemplateDevice::parse(AspngSurface *surface, size_t base_x, size_t base_y) {
+bool BaseTemplateDevice::parse(AspngSurface *surface, int32_t base_x, int32_t base_y) {
     // Do the one-time font loading if it hasn't been done yet ..
     if (font == nullptr) {
         font = Png::read("font.png");
@@ -15,11 +15,11 @@ bool BaseTemplateDevice::parse(AspngSurface *surface, size_t base_x, size_t base
         ASSERT(font->get_height() == 5);
 
         // .. and chop the font up into glyphs.
-        size_t glyph_begin_x = 0;
+        int32_t glyph_begin_x = 0;
         SimpleAspngSurface glyph(1, font->get_height());
-        for (size_t font_x = 0; font_x < font->get_width(); font_x++) {
+        for (int32_t font_x = 0; font_x < font->get_width(); font_x++) {
             bool blank_column = true;
-            for (size_t font_y = 0; font_y < font->get_height(); font_y++) {
+            for (int32_t font_y = 0; font_y < font->get_height(); font_y++) {
                 Rgb pixel = font->get_pixel(font_x, font_y);
                 if (pixel == Rgb(0, 0, 0)) {
                     blank_column = false;
@@ -48,7 +48,7 @@ bool BaseTemplateDevice::parse(AspngSurface *surface, size_t base_x, size_t base
     p.get_bounding_box(min_x, max_x, min_y, max_y);
 
     // There should be a tab at the top left with the name of the device.
-    size_t surface_x = min_x;
+    int32_t surface_x = min_x;
     while (true) {
         int glyphs_found = 0;
         int which = 0;
@@ -58,8 +58,8 @@ bool BaseTemplateDevice::parse(AspngSurface *surface, size_t base_x, size_t base
                 // Add the character and add to the patch.
                 this->tab += (char)('a' + which);
                 glyphs_found++;
-                for (size_t patch_x = surface_x; patch_x < surface_x + glyph.get_width(); patch_x++) {
-                    for (size_t patch_y = min_y; patch_y < min_y + glyph.get_height(); patch_y++) {
+                for (int32_t patch_x = surface_x; patch_x < surface_x + glyph.get_width(); patch_x++) {
+                    for (int32_t patch_y = min_y; patch_y < min_y + glyph.get_height(); patch_y++) {
                         this->patch.insert(Coord(patch_x, patch_y));
                     }
                 }
@@ -122,12 +122,12 @@ std::list<Patch *> BaseTemplateDevice::all_patches(void) {
     return all_patches;
 }
 
-std::tuple<LinkResult, PortType> BaseTemplateDevice::prelink(Patch *, std::shared_ptr<Device> d) {
+std::tuple<LinkResult, PortType, std::string> BaseTemplateDevice::prelink(Patch *, std::shared_ptr<Device> d) {
     if (std::dynamic_pointer_cast<CopperDevice>(d))
-        return std::make_tuple(CanLink, NoSpecialMeaning);
+        return std::make_tuple(CanLink, NoSpecialMeaning, "");
     if (std::dynamic_pointer_cast<BackgroundDevice>(d))
-        return std::make_tuple(CanTouch, NoSpecialMeaning);
-    return std::make_tuple(LinkError, NoSpecialMeaning);
+        return std::make_tuple(CanTouch, NoSpecialMeaning, "");
+    return std::make_tuple(LinkError, NoSpecialMeaning, "must touch copper or background");
 }
 
 void BaseTemplateDevice::draw(AspngSurface *surface) {

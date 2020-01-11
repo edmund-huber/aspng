@@ -14,7 +14,7 @@ std::string CopperDevice::name(void) {
 
 Rgb CopperDevice::color = Rgb(0xf8, 0xac, 0x59);
 
-bool CopperDevice::parse(AspngSurface *surface, size_t x, size_t y) {
+bool CopperDevice::parse(AspngSurface *surface, int32_t x, int32_t y) {
     this->patch = this->flood(surface, x, y, CopperDevice::color);
     return this->patch.size() >= 1;
 }
@@ -25,8 +25,8 @@ std::list<Patch *> CopperDevice::all_patches(void) {
     return all_patches;
 }
 
-std::tuple<LinkResult, PortType> CopperDevice::prelink(Patch *, std::shared_ptr<Device> d) {
-    return std::make_tuple(CanLink, NoSpecialMeaning);
+std::tuple<LinkResult, PortType, std::string> CopperDevice::prelink(Patch *, std::shared_ptr<Device> d) {
+    return std::make_tuple(CanLink, NoSpecialMeaning, "");
 }
 
 bool CopperDevice::link(void) {

@@ -13,14 +13,14 @@ std::string SwitchDevice::template_name(void) {
 }
 
 // A valid SwitchDevice is white if on, black if off.
-bool SwitchDevice::sub_parse(AspngSurface *surface, size_t min_x, size_t min_y, size_t max_x, size_t max_y) {
+bool SwitchDevice::sub_parse(AspngSurface *surface, int32_t min_x, int32_t min_y, int32_t max_x, int32_t max_y) {
     enum {
         On,
         Off,
         Unknown
     } switch_state = Unknown;
-    for (size_t x = min_x; x <= max_x; x++) {
-        for (size_t y = min_y; y <= max_y; y++) {
+    for (int32_t x = min_x; x <= max_x; x++) {
+        for (int32_t y = min_y; y <= max_y; y++) {
             Rgb pixel = surface->get_pixel(x, y);
             switch (switch_state) {
             case On:
@@ -81,10 +81,10 @@ std::list<Patch *> SwitchDevice::sub_patches(void) {
 }
 
 // White if closed, black otherwise.
-void SwitchDevice::sub_draw(AspngSurface *surface, size_t min_x, size_t min_y, size_t max_x, size_t max_y) {
+void SwitchDevice::sub_draw(AspngSurface *surface, int32_t min_x, int32_t min_y, int32_t max_x, int32_t max_y) {
     Rgb color = this->closed ? Rgb(0xff, 0xff, 0xff) : Rgb(0, 0, 0);
-    for (size_t x = min_x; x <= max_x; x++) {
-        for (size_t y = min_y; y <= max_y; y++) {
+    for (int32_t x = min_x; x <= max_x; x++) {
+        for (int32_t y = min_y; y <= max_y; y++) {
             surface->set_pixel(x, y, color);
         }
     }

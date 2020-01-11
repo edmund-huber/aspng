@@ -11,7 +11,7 @@ std::string PullDevice::name(void) {
     return "PullDevice";
 }
 
-bool PullDevice::parse(AspngSurface *surface, size_t x, size_t y) {
+bool PullDevice::parse(AspngSurface *surface, int32_t x, int32_t y) {
     // Let's look for a source pixel ..
     this->patch_source_or_sink = this->flood(surface, x, y, SourceDevice::color);
     this->pull_type = PullHi;
@@ -41,19 +41,19 @@ std::list<Patch *> PullDevice::all_patches(void) {
     return all_patches;
 }
 
-std::tuple<LinkResult, PortType> PullDevice::prelink(Patch *patch, std::shared_ptr<Device> d) {
+std::tuple<LinkResult, PortType, std::string> PullDevice::prelink(Patch *patch, std::shared_ptr<Device> d) {
     if (patch == &(this->patch_yellow)) {
         // The yellow bit can only touch copper and the background.
         if (std::dynamic_pointer_cast<CopperDevice>(d))
-            return std::make_tuple(CanLink, NoSpecialMeaning);
+            return std::make_tuple(CanLink, NoSpecialMeaning, "");
         if (std::dynamic_pointer_cast<BackgroundDevice>(d))
-            return std::make_tuple(CanTouch, NoSpecialMeaning);
+            return std::make_tuple(CanTouch, NoSpecialMeaning, "");
     } else if (patch == &(this->patch_source_or_sink)) {
         // The source/sink can only touch background.
         if (std::dynamic_pointer_cast<BackgroundDevice>(d))
-            return std::make_tuple(CanTouch, NoSpecialMeaning);
+            return std::make_tuple(CanTouch, NoSpecialMeaning, "");
     }
-    return std::make_tuple(LinkError, NoSpecialMeaning);
+    return std::make_tuple(LinkError, NoSpecialMeaning, "can't touch that");
 }
 
 bool PullDevice::link(void) {

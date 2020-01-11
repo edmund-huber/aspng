@@ -7,16 +7,16 @@
 
 class SimpleAspngSurface : public AspngSurface {
 public:
-    SimpleAspngSurface(size_t, size_t);
-    void resize(size_t, size_t);
-    Rgb get_pixel(size_t, size_t);
-    void set_pixel(size_t, size_t, Rgb);
-    size_t get_width(void);
-    size_t get_height(void);
+    SimpleAspngSurface(int32_t, int32_t);
+    void resize(int32_t, int32_t);
+    Rgb get_pixel(int32_t, int32_t);
+    void set_pixel(int32_t, int32_t, Rgb);
+    int32_t get_width(void);
+    int32_t get_height(void);
 
 private:
-    size_t width;
-    size_t height;
+    int32_t width;
+    int32_t height;
     std::vector<Rgb> pixels;
 };
 

@@ -55,13 +55,13 @@ std::list<std::shared_ptr<Port>> Device::all_ports(void) {
     return this->ports;
 }
 
-Patch Device::flood(AspngSurface *surface, size_t x, size_t y, Rgb color) {
+Patch Device::flood(AspngSurface *surface, int32_t x, int32_t y, Rgb color) {
     Patch patch, visited;
     Device::flood_helper(surface, x, y, color, patch, visited);
     return patch;
 }
 
-void Device::flood_helper(AspngSurface *surface, size_t x, size_t y, Rgb color, Patch &patch, Patch &visited) {
+void Device::flood_helper(AspngSurface *surface, int32_t x, int32_t y, Rgb color, Patch &patch, Patch &visited) {
     if ((x < 0) || (x >= surface->get_width())) {
         return;
     }
@@ -110,11 +110,9 @@ void Device::draw_helper(AspngSurface *surface, std::list<Patch *> patches) {
         auto patch = *i;
         for (auto j = patch->begin(); j != patch->end(); j++) {
             auto coord = *j;
-            size_t x, y;
-            std::tie(x, y) = coord;
-            ASSERT((x >= 0) && (x < surface->get_width()));
-            ASSERT((y >= 0) && (y < surface->get_height()));
-            surface->set_pixel(x, y, this->get_draw_color(patch));
+            ASSERT((coord.x >= 0) && (coord.x < surface->get_width()));
+            ASSERT((coord.y >= 0) && (coord.y < surface->get_height()));
+            surface->set_pixel(coord.x, coord.y, this->get_draw_color(patch));
         }
     }
 }

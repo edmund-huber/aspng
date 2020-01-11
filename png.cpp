@@ -13,11 +13,11 @@ bool Rgb::operator!=(Rgb other) {
 
 Png::Png() {}
 
-Png::Png(size_t w, size_t h) {
+Png::Png(int32_t w, int32_t h) {
     this->width = w;
     this->height = h;
     this->rows = new png_bytep[this->height];
-    for (size_t y = 0; y < this->height; y++) {
+    for (int32_t y = 0; y < this->height; y++) {
         this->rows[y] = new png_byte[3 * this->width * this->height];
     }
 }
@@ -65,7 +65,7 @@ Png *Png::read(std::string fn) {
     }
     png_read_update_info(png, info);
     p->rows = new png_bytep[p->height];
-    for (size_t y = 0; y < p->height; y++) {
+    for (int32_t y = 0; y < p->height; y++) {
         p->rows[y] = new png_byte[png_get_rowbytes(png, info)];
     }
     png_read_image(png, p->rows);
@@ -73,20 +73,20 @@ Png *Png::read(std::string fn) {
     return p;
 }
 
-size_t Png::get_width(void) {
+int32_t Png::get_width(void) {
     return this->width;
 }
 
-size_t Png::get_height(void) {
+int32_t Png::get_height(void) {
     return this->height;
 }
 
-Rgb Png::get_pixel(size_t x, size_t y) {
+Rgb Png::get_pixel(int32_t x, int32_t y) {
     png_bytep pixel = &(this->rows[y][x * 4]);
     return Rgb(pixel[0], pixel[1], pixel[2]);
 }
 
-void Png::set_pixel(size_t x, size_t y, Rgb rgb) {
+void Png::set_pixel(int32_t x, int32_t y, Rgb rgb) {
     png_bytep pixel = &(this->rows[y][x * 4]);
     pixel[0] = rgb.r;
     pixel[1] = rgb.g;

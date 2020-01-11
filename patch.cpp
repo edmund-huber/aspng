@@ -1,6 +1,15 @@
 #include "common.h"
 #include "patch.h"
 
+bool operator<(const Coord c1, const Coord c2) {
+    if (c1.x != c2.x) return c1.x < c2.x;
+    return c1.y < c2.y;
+}
+
+std::string operator+(const std::string s, const Coord c) {
+    return s + "(" + std::to_string(c.x) + ", " + std::to_string(c.y) + ")";
+}
+
 void Patch::insert(const Coord &coord) {
     std::set<Coord>::insert(coord);
 
@@ -12,10 +21,10 @@ void Patch::insert(const Coord &coord) {
         is_contiguous = true;
     } else {
         is_contiguous =
-            (this->find(Coord(std::get<0>(coord) + 1, std::get<1>(coord))) != this->end())
-            || (this->find(Coord(std::get<0>(coord) - 1, std::get<1>(coord))) != this->end())
-            || (this->find(Coord(std::get<0>(coord), std::get<1>(coord) + 1)) != this->end())
-            || (this->find(Coord(std::get<0>(coord), std::get<1>(coord) - 1)) != this->end());
+            (this->find(Coord(coord.x + 1, coord.y)) != this->end())
+            || (this->find(Coord(coord.x - 1, coord.y)) != this->end())
+            || (this->find(Coord(coord.x, coord.y + 1)) != this->end())
+            || (this->find(Coord(coord.x, coord.y - 1)) != this->end());
     }
     ASSERT(is_contiguous);
 }
@@ -27,12 +36,10 @@ void Patch::get_bounding_box(int32_t &min_x, int32_t &max_x, int32_t &min_y, int
     max_y = INT32_MIN;
     for (auto i = this->begin(); i != this->end(); i++) {
         auto coord = *i;
-        int32_t x, y;
-        std::tie(x, y) = coord;
-        min_x = x < min_x ? x : min_x;
-        max_x = x > max_x ? x : max_x;
-        min_y = y < min_y ? y : min_y;
-        max_y = y > max_y ? y : max_y;
+        min_x = coord.x < min_x ? coord.x : min_x;
+        max_x = coord.x > max_x ? coord.x : max_x;
+        min_y = coord.y < min_y ? coord.y : min_y;
+        max_y = coord.y > max_y ? coord.y : max_y;
     }
 }
 
