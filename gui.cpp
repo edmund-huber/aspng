@@ -168,7 +168,7 @@ int main(int argc, char **argv) {
             case SDL_MOUSEMOTION:
                 last_mouse_position = Coord(e.motion.x, e.motion.y);
                 switch (e.motion.state) {
-                case SDL_BUTTON_RMASK:
+                case SDL_BUTTON_MMASK:
                     pan_x += e.motion.xrel / zoom;
                     pan_y += e.motion.yrel / zoom;
                     break;
