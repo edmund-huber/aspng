@@ -56,8 +56,8 @@ std::tuple<LinkResult, PortType, std::string> PullDevice::prelink(Patch *patch, 
     return std::make_tuple(LinkError, NoSpecialMeaning, "can't touch that");
 }
 
-bool PullDevice::link(void) {
-    return true;
+std::string PullDevice::link(void) {
+    return "";
 }
 
 std::list<std::shared_ptr<Port>> PullDevice::propagate(std::shared_ptr<Port> port) {

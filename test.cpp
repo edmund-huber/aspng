@@ -48,8 +48,8 @@ std::string test(std::string path, std::string test_name) {
         ASSERT(out_png.get_width() == png->get_width());
         ASSERT(out_png.get_height() == png->get_height());
         bool wrong = false;
-        for (size_t x = 0; x < out_png.get_width(); x++) {
-            for (size_t y = 0; y < out_png.get_height(); y++) {
+        for (int32_t x = 0; x < out_png.get_width(); x++) {
+            for (int32_t y = 0; y < out_png.get_height(); y++) {
                 if (out_png.get_pixel(x, y) != png->get_pixel(x, y)) {
                     wrong = true;
                     break;

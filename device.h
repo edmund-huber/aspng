@@ -33,7 +33,7 @@ public:
 
     // Return the list of pixels that were parsed out, during the method above.
     virtual std::list<Patch *> all_patches(void) = 0;
-    std::set<Coord> all_patches_combined(void);
+    Patch all_patches_combined(void);
     Patch *find_patch_containing(Coord);
 
     // `prelink` indicates whether these devices may touch and whether to
@@ -47,7 +47,7 @@ public:
     // `link` gives each device a chance to finalize the linking process. This
     // is the earliest time that the device knows all ports that are linking
     // into it, and it must resolve "ToBeResolved" port types at this time.
-    virtual bool link(void) = 0;
+    virtual std::string link(void) = 0;
 
     // `propagate` should return the list of Ports that are immediate neighbors
     // of the given Port.
@@ -84,7 +84,7 @@ public:
     bool parse(AspngSurface *, int32_t, int32_t);
     std::list<Patch *> all_patches(void);
     std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
-    bool link(void);
+    std::string link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
     void apply_new_value(Port *, ElectricalValue);
@@ -122,7 +122,7 @@ public:
     bool parse(AspngSurface *, int32_t, int32_t);
     std::list<Patch *> all_patches(void);
     std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
-    bool link(void);
+    std::string link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
     void apply_new_value(Port *, ElectricalValue);
@@ -142,7 +142,7 @@ public:
     bool parse(AspngSurface *, int32_t, int32_t);
     std::list<Patch *> all_patches(void);
     std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
-    bool link(void);
+    std::string link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
     void apply_new_value(Port *, ElectricalValue);
@@ -162,7 +162,7 @@ public:
     static Device *create(void);
     std::string template_name(void);
     bool sub_parse(AspngSurface *, int32_t, int32_t, int32_t, int32_t);
-    bool link(void);
+    std::string link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
     void apply_new_value(Port *, ElectricalValue);
@@ -183,7 +183,7 @@ public:
     static Device *create(void);
     std::string template_name(void);
     bool sub_parse(AspngSurface *, int32_t, int32_t, int32_t, int32_t);
-    bool link(void);
+    std::string link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
     void apply_new_value(Port *, ElectricalValue);
@@ -202,7 +202,7 @@ public:
     bool parse(AspngSurface *, int32_t, int32_t);
     std::list<Patch *> all_patches(void);
     std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
-    bool link(void);
+    std::string link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
     void apply_new_value(Port *, ElectricalValue);
@@ -226,7 +226,7 @@ public:
     bool parse(AspngSurface *, int32_t, int32_t);
     std::list<Patch *> all_patches(void);
     std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
-    bool link(void);
+    std::string link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
     void apply_new_value(Port *, ElectricalValue);
@@ -245,7 +245,7 @@ public:
     bool parse(AspngSurface *, int32_t, int32_t);
     std::list<Patch *> all_patches(void);
     std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
-    bool link(void);
+    std::string link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
     void apply_new_value(Port *, ElectricalValue);
@@ -263,7 +263,7 @@ public:
     static Device *create(void);
     std::string template_name(void);
     bool sub_parse(AspngSurface *, int32_t, int32_t, int32_t, int32_t);
-    bool link(void);
+    std::string link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
     void apply_new_value(Port *, ElectricalValue);
@@ -284,7 +284,7 @@ public:
     bool parse(AspngSurface *, int32_t, int32_t);
     std::list<Patch *> all_patches(void);
     std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
-    bool link(void);
+    std::string link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
     void apply_new_value(Port *, ElectricalValue);

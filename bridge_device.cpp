@@ -29,11 +29,11 @@ std::tuple<LinkResult, PortType, std::string> BridgeDevice::prelink(Patch *, std
     return std::make_tuple(LinkError, NoSpecialMeaning, "must touch copper");
 }
 
-bool BridgeDevice::link(void) {
+std::string BridgeDevice::link(void) {
     // Why use a Bridge if any of its ports are unused?
     auto all_ports = this->all_ports();
     if (all_ports.size() != 4)
-        return false;
+        return "unused ports";
 
     int north_south_ports = 0;
     int east_west_ports = 0;
@@ -55,7 +55,7 @@ bool BridgeDevice::link(void) {
     ASSERT(north_south_ports == 2);
     ASSERT(east_west_ports == 2);
 
-    return true;
+    return "";
 }
 
 std::list<std::shared_ptr<Port>> BridgeDevice::propagate(std::shared_ptr<Port> port) {

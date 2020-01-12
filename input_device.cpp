@@ -29,8 +29,8 @@ bool InputDevice::sub_parse(AspngSurface *surface, int32_t min_x, int32_t min_y,
     return true;
 }
 
-bool InputDevice::link(void) {
-    return true;
+std::string InputDevice::link(void) {
+    return "";
 }
 
 std::list<std::shared_ptr<Port>> InputDevice::propagate(std::shared_ptr<Port> port) {

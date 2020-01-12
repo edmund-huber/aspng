@@ -54,3 +54,12 @@ int32_t Patch::get_height(void) {
     this->get_bounding_box(min_x, max_x, min_y, max_y);
     return max_y - min_y;
 }
+
+bool Patch::is_subset(Patch &other) {
+    for (auto i = this->begin(); i != this->end(); i++) {
+        if (other.find(*i) == other.end()) {
+            return false;
+        }
+    }
+    return true;
+}

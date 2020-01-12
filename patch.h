@@ -28,6 +28,7 @@ public:
     void get_bounding_box(int32_t &, int32_t &, int32_t &, int32_t &);
     int32_t get_width(void);
     int32_t get_height(void);
+    bool is_subset(Patch &);
 };
 
 #endif

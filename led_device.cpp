@@ -29,8 +29,8 @@ bool LEDDevice::sub_parse(AspngSurface *surface, int32_t min_x, int32_t min_y, i
     return true;
 }
 
-bool LEDDevice::link(void) {
-    return true;
+std::string LEDDevice::link(void) {
+    return "";
 }
 
 std::list<std::shared_ptr<Port>> LEDDevice::propagate(std::shared_ptr<Port> port) {
