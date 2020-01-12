@@ -6,6 +6,16 @@
 #include "device.h"
 #include "net.h"
 
+template<typename T>
+bool is_subset(std::set<T> set_a, std::set<T> set_b) {
+    for (auto i = set_a.begin(); i != set_a.end(); i++) {
+        if (set_b.find(*i) == set_b.end()) {
+            return false;
+        }
+    }
+    return true;
+}
+
 Aspng::Aspng(AspngSurface *surface, std::string &error) {
     std::map<Coord, std::shared_ptr<Device>> device_map;
     for (int32_t x = 0; x < surface->get_width(); x++) {
@@ -54,11 +64,11 @@ Aspng::Aspng(AspngSurface *surface, std::string &error) {
                             for (auto it2 = conflicting_devices.begin(); it2 != conflicting_devices.end(); it2++) {
                                 auto other = *it2;
                                 auto other_combined = other->all_patches_combined();
-                                if (d_combined.is_subset(other_combined)) {
+                                if (is_subset(d_combined, other_combined)) {
                                     // We won't continue with `d`.
                                     d_is_valid = false;
                                     break;
-                                } else if (other_combined.is_subset(d_combined)) {
+                                } else if (is_subset(other_combined, d_combined)) {
                                     // The other parse isn't maximal, remove it.
                                     ASSERT(this->all_devices.erase(other) == 1);
                                 } else {
