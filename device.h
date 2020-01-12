@@ -69,7 +69,7 @@ protected:
 private:
     std::list<std::shared_ptr<Port>> ports;
 
-    static void flood_helper(AspngSurface *, int32_t, int32_t, Rgb, Patch &, Patch &);
+    static void flood_helper(int32_t, int32_t, AspngSurface *, Patch &, std::list<Coord> &);
     void maybe_neighbor(Device ***, int32_t, int32_t, int32_t, int32_t, std::set<Device *> *);
 
     virtual Rgb get_draw_color(Patch *);

@@ -57,27 +57,36 @@ std::list<std::shared_ptr<Port>> Device::all_ports(void) {
 
 Patch Device::flood(AspngSurface *surface, int32_t x, int32_t y, Rgb color) {
     Patch patch, visited;
-    Device::flood_helper(surface, x, y, color, patch, visited);
+    std::list<Coord> to_visit;
+    to_visit.push_back(Coord(x, y));
+    while (!to_visit.empty()) {
+        Coord current = to_visit.back();
+        to_visit.pop_back();
+
+        if (surface->get_pixel(current.x, current.y) == color) {
+            patch.insert(current);
+            visited.insert(current);
+
+            Device::flood_helper(current.x - 1, current.y, surface, visited, to_visit);
+            Device::flood_helper(current.x + 1, current.y, surface, visited, to_visit);
+            Device::flood_helper(current.x, current.y - 1, surface, visited, to_visit);
+            Device::flood_helper(current.x, current.y + 1, surface, visited, to_visit);
+        }
+    }
+
     return patch;
 }
 
-void Device::flood_helper(AspngSurface *surface, int32_t x, int32_t y, Rgb color, Patch &patch, Patch &visited) {
+void Device::flood_helper(int32_t x, int32_t y, AspngSurface *surface, Patch &visited, std::list<Coord> &to_visit) {
     if ((x < 0) || (x >= surface->get_width())) {
         return;
     }
     if ((y < 0) || (y >= surface->get_height())) {
         return;
     }
-    if (visited.find(Coord(x, y)) != visited.end()) {
-        return;
-    }
-    visited.insert(Coord(x, y));
-    if (surface->get_pixel(x, y) == color) {
-        patch.insert(Coord(x, y));
-        Device::flood_helper(surface, x - 1, y, color, patch, visited);
-        Device::flood_helper(surface, x + 1, y, color, patch, visited);
-        Device::flood_helper(surface, x, y - 1, color, patch, visited);
-        Device::flood_helper(surface, x, y + 1, color, patch, visited);
+    Coord coord = Coord(x, y);
+    if (visited.find(coord) == visited.end()) {
+        to_visit.push_back(coord);
     }
 }
 
