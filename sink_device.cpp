@@ -29,8 +29,8 @@ std::tuple<LinkResult, PortType, std::string> SinkDevice::prelink(Patch *, std::
     return std::make_tuple(LinkError, NoSpecialMeaning, "must touch copper or background");
 }
 
-std::string SinkDevice::link(void) {
-    return "";
+bool SinkDevice::link(void) {
+    return true;
 }
 
 std::list<std::shared_ptr<Port>> SinkDevice::propagate(std::shared_ptr<Port> port) {

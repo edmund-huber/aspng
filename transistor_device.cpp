@@ -36,7 +36,7 @@ std::tuple<LinkResult, PortType, std::string> TransistorDevice::prelink(Patch *,
     return std::make_tuple(LinkError, NoSpecialMeaning, "must touch copper or background");
 }
 
-std::string TransistorDevice::link(void) {
+bool TransistorDevice::link(void) {
     // For our end of each port, figure out if it's a bridge: bridge ports
     // always lie on the same axis.
     std::set<PortType *> bridges;
@@ -71,11 +71,7 @@ std::string TransistorDevice::link(void) {
     }
 
     // We must have exactly 1 gate and 2 bridges.
-    if ((gates.size() != 1) || (bridges.size() != 2)) {
-        return "must have 1 gate and 2 bridges";
-    }
-
-    return "";
+    return (gates.size() == 1) && (bridges.size() == 2);
 }
 
 std::list<std::shared_ptr<Port>> TransistorDevice::propagate(std::shared_ptr<Port> port) {

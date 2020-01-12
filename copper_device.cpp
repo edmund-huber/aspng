@@ -29,8 +29,8 @@ std::tuple<LinkResult, PortType, std::string> CopperDevice::prelink(Patch *, std
     return std::make_tuple(CanLink, NoSpecialMeaning, "");
 }
 
-std::string CopperDevice::link(void) {
-    return "";
+bool CopperDevice::link(void) {
+    return true;
 }
 
 std::list<std::shared_ptr<Port>> CopperDevice::propagate(std::shared_ptr<Port> port) {

@@ -51,8 +51,8 @@ bool SwitchDevice::sub_parse(AspngSurface *surface, int32_t min_x, int32_t min_y
     return switch_state != Unknown;
 }
 
-std::string SwitchDevice::link(void) {
-    return "";
+bool SwitchDevice::link(void) {
+    return true;
 }
 
 std::list<std::shared_ptr<Port>> SwitchDevice::propagate(std::shared_ptr<Port> port) {

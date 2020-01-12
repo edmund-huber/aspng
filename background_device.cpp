@@ -29,8 +29,8 @@ std::tuple<LinkResult, PortType, std::string> BackgroundDevice::prelink(Patch *,
     return std::make_tuple(CanTouch, NoSpecialMeaning, "");
 }
 
-std::string BackgroundDevice::link(void) {
-    return "";
+bool BackgroundDevice::link(void) {
+    return true;
 }
 
 std::list<std::shared_ptr<Port>> BackgroundDevice::propagate(std::shared_ptr<Port> port) {

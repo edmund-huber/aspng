@@ -125,11 +125,8 @@ Aspng::Aspng(AspngSurface *surface, std::string &error) {
     // Link all devices.
     for (auto i = this->all_devices.begin(); i != this->all_devices.end(); i++) {
         auto device = *i;
-        if ((error = device->link()) != "") {
-            auto all_patches_combined = device->all_patches_combined();
-            ASSERT(all_patches_combined.size() > 0);
-            auto coord = *(all_patches_combined.begin());
-            error = "link fail: " + device->name() + " " + coord + " - " + error;
+        if (!device->link()) {
+            error = "link fail";
             return;
         }
     }
