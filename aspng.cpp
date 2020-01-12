@@ -33,7 +33,7 @@ Aspng::Aspng(AspngSurface *surface, std::string &error) {
                 // .. and try to parse a device starting from that pixel.
                 for (auto it1 = registry.begin(); it1 != registry.end(); it1++) {
                     std::shared_ptr<Device> d((*it1)());
-                    if (d->parse(surface, x, y)) {
+                    if (d->parse(surface, Coord(x, y))) {
                         bool d_is_valid = true;
 
                         // Lets find all pixels where we have a parse conflict.

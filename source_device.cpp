@@ -10,8 +10,8 @@ Device *SourceDevice::create(void) {
     return new SourceDevice();
 }
 
-bool SourceDevice::parse(AspngSurface *surface, int32_t x, int32_t y) {
-    this->patch = this->flood(surface, x, y, SourceDevice::color);
+bool SourceDevice::parse(AspngSurface *surface, Coord coord) {
+    this->patch = this->flood(surface, coord, SourceDevice::color);
     return this->patch.size() == 1;
 }
 

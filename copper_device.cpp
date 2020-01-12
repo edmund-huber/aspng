@@ -14,8 +14,8 @@ std::string CopperDevice::name(void) {
 
 Rgb CopperDevice::color = Rgb(0xf8, 0xac, 0x59);
 
-bool CopperDevice::parse(AspngSurface *surface, int32_t x, int32_t y) {
-    this->patch = this->flood(surface, x, y, CopperDevice::color);
+bool CopperDevice::parse(AspngSurface *surface, Coord coord) {
+    this->patch = this->flood(surface, coord, CopperDevice::color);
     return this->patch.size() >= 1;
 }
 

@@ -7,7 +7,7 @@ Rgb BaseTemplateDevice::color = Rgb(0x11, 0x9e, 0);
 Png *font = nullptr;
 std::vector<SimpleAspngSurface> glyphs;
 
-bool BaseTemplateDevice::parse(AspngSurface *surface, int32_t base_x, int32_t base_y) {
+bool BaseTemplateDevice::parse(AspngSurface *surface, Coord coord) {
     // Do the one-time font loading if it hasn't been done yet ..
     if (font == nullptr) {
         font = Png::read("font.png");
@@ -40,7 +40,7 @@ bool BaseTemplateDevice::parse(AspngSurface *surface, int32_t base_x, int32_t ba
     }
 
     // Find the extents of what we're dealing with.
-    Patch p = this->flood(surface, base_x, base_y, BaseTemplateDevice::color);
+    Patch p = this->flood(surface, coord, BaseTemplateDevice::color);
     if (p.size() == 0) {
         return false;
     }

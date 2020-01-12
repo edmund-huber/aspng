@@ -28,12 +28,12 @@ public:
     // pixels it parsed out.) Note that this is separate from "linking" -- we
     // do not decide here whether the device can exist in the context of the
     // pixels (and devices) surrounding it.
-    virtual bool parse(AspngSurface *, int32_t, int32_t) = 0;
-    Patch flood(AspngSurface *, int32_t, int32_t, Rgb);
+    virtual bool parse(AspngSurface *, Coord) = 0;
+    Patch flood(AspngSurface *, Coord, Rgb);
 
     // Return the list of pixels that were parsed out, during the method above.
     virtual std::list<Patch *> all_patches(void) = 0;
-    Patch all_patches_combined(void);
+    std::set<Coord> all_patches_combined(void);
     Patch *find_patch_containing(Coord);
 
     // `prelink` indicates whether these devices may touch and whether to
@@ -69,7 +69,7 @@ protected:
 private:
     std::list<std::shared_ptr<Port>> ports;
 
-    static void flood_helper(int32_t, int32_t, AspngSurface *, Patch &, std::list<Coord> &);
+    static void flood_helper(Coord, AspngSurface *, Patch &, std::list<Coord> &);
     void maybe_neighbor(Device ***, int32_t, int32_t, int32_t, int32_t, std::set<Device *> *);
 
     virtual Rgb get_draw_color(Patch *);
@@ -81,7 +81,7 @@ public:
     ~BackgroundDevice(void);
     std::string name(void);
     static Device *create(void);
-    bool parse(AspngSurface *, int32_t, int32_t);
+    bool parse(AspngSurface *, Coord);
     std::list<Patch *> all_patches(void);
     std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
     std::string link(void);
@@ -98,7 +98,7 @@ private:
 
 class BaseTemplateDevice : public Device {
 public:
-    bool parse(AspngSurface *, int32_t, int32_t);
+    bool parse(AspngSurface *, Coord);
     std::list<Patch *> all_patches(void);
     std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
     static Rgb color;
@@ -119,7 +119,7 @@ class BridgeDevice : public Device {
 public:
     std::string name(void);
     static Device *create(void);
-    bool parse(AspngSurface *, int32_t, int32_t);
+    bool parse(AspngSurface *, Coord);
     std::list<Patch *> all_patches(void);
     std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
     std::string link(void);
@@ -139,7 +139,7 @@ public:
     CopperDevice();
     std::string name(void);
     static Device *create(void);
-    bool parse(AspngSurface *, int32_t, int32_t);
+    bool parse(AspngSurface *, Coord);
     std::list<Patch *> all_patches(void);
     std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
     std::string link(void);
@@ -199,7 +199,7 @@ class PullDevice : public Device {
 public:
     std::string name(void);
     static Device *create(void);
-    bool parse(AspngSurface *, int32_t, int32_t);
+    bool parse(AspngSurface *, Coord);
     std::list<Patch *> all_patches(void);
     std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
     std::string link(void);
@@ -223,7 +223,7 @@ class SinkDevice : public Device {
 public:
     std::string name(void);
     static Device *create(void);
-    bool parse(AspngSurface *, int32_t, int32_t);
+    bool parse(AspngSurface *, Coord);
     std::list<Patch *> all_patches(void);
     std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
     std::string link(void);
@@ -242,7 +242,7 @@ class SourceDevice : public Device {
 public:
     std::string name(void);
     static Device *create(void);
-    bool parse(AspngSurface *, int32_t, int32_t);
+    bool parse(AspngSurface *, Coord);
     std::list<Patch *> all_patches(void);
     std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
     std::string link(void);
@@ -281,7 +281,7 @@ public:
     TransistorDevice();
     std::string name(void);
     static Device *create(void);
-    bool parse(AspngSurface *, int32_t, int32_t);
+    bool parse(AspngSurface *, Coord);
     std::list<Patch *> all_patches(void);
     std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
     std::string link(void);

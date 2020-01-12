@@ -11,8 +11,8 @@ std::string BridgeDevice::name(void) {
 
 Rgb BridgeDevice::color = Rgb(0x79, 0x44, 0x3b);
 
-bool BridgeDevice::parse(AspngSurface *surface, int32_t x, int32_t y) {
-    this->patch = this->flood(surface, x, y, BridgeDevice::color);
+bool BridgeDevice::parse(AspngSurface *surface, Coord coord) {
+    this->patch = this->flood(surface, coord, BridgeDevice::color);
     return this->patch.size() == 1;
 }
 

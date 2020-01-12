@@ -55,10 +55,10 @@ std::list<std::shared_ptr<Port>> Device::all_ports(void) {
     return this->ports;
 }
 
-Patch Device::flood(AspngSurface *surface, int32_t x, int32_t y, Rgb color) {
+Patch Device::flood(AspngSurface *surface, Coord start_coord, Rgb color) {
     Patch patch, visited;
     std::list<Coord> to_visit;
-    to_visit.push_back(Coord(x, y));
+    to_visit.push_back(start_coord);
     while (!to_visit.empty()) {
         Coord current = to_visit.back();
         to_visit.pop_back();
@@ -67,29 +67,30 @@ Patch Device::flood(AspngSurface *surface, int32_t x, int32_t y, Rgb color) {
             patch.insert(current);
             visited.insert(current);
 
-            Device::flood_helper(current.x - 1, current.y, surface, visited, to_visit);
-            Device::flood_helper(current.x + 1, current.y, surface, visited, to_visit);
-            Device::flood_helper(current.x, current.y - 1, surface, visited, to_visit);
-            Device::flood_helper(current.x, current.y + 1, surface, visited, to_visit);
+            Device::flood_helper(Coord(current.x - 1, current.y), surface, visited, to_visit);
+            Device::flood_helper(Coord(current.x + 1, current.y), surface, visited, to_visit);
+            Device::flood_helper(Coord(current.x, current.y - 1), surface, visited, to_visit);
+            Device::flood_helper(Coord(current.x, current.y + 1), surface, visited, to_visit);
         }
     }
 
     return patch;
 }
 
-void Device::flood_helper(int32_t x, int32_t y, AspngSurface *surface, Patch &visited, std::list<Coord> &to_visit) {
-    if ((x < 0) || (x >= surface->get_width())) {
+void Device::flood_helper(Coord coord, AspngSurface *surface, Patch &visited, std::list<Coord> &to_visit) {
+    if ((coord.x < 0) || (coord.x >= surface->get_width())) {
         return;
     }
-    if ((y < 0) || (y >= surface->get_height())) {
+    if ((coord.y < 0) || (coord.y >= surface->get_height())) {
         return;
     }
-    Coord coord = Coord(x, y);
     if (visited.find(coord) == visited.end()) {
         to_visit.push_back(coord);
     }
 }
 
+// This doesn't return Patch, because Patches must be contiguous, but the union
+// of all Patches in a device might not be.
 std::set<Coord> Device::all_patches_combined(void) {
     auto all_patches = this->all_patches();
     std::set<Coord> all_patches_combined;

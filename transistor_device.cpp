@@ -17,8 +17,8 @@ std::string TransistorDevice::name(void) {
 
 Rgb TransistorDevice::color = Rgb(0xff, 0, 0xf2);
 
-bool TransistorDevice::parse(AspngSurface *surface, int32_t x, int32_t y) {
-    this->patch = this->flood(surface, x, y, TransistorDevice::color);
+bool TransistorDevice::parse(AspngSurface *surface, Coord coord) {
+    this->patch = this->flood(surface, coord, TransistorDevice::color);
     return this->patch.size() == 1;
 }
 
