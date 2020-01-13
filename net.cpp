@@ -1,14 +1,15 @@
 #include <queue>
 
+#include "common.h"
 #include "net.h"
 
-Net::Net(std::shared_ptr<Port> p) {
-    // Initialize class members.
-    this->ports_in_net.insert(p);
+Net::Net(std::shared_ptr<Port> starting_port, std::set<std::shared_ptr<Port>> &contained_ports) {
     this->new_value = EmptyElectricalValue;
-
+    this->ports_in_net.insert(starting_port);
+    ASSERT(contained_ports.find(starting_port) == contained_ports.end());
+    contained_ports.insert(starting_port);
     std::queue<std::shared_ptr<Port>> ports_to_visit;
-    ports_to_visit.push(p);
+    ports_to_visit.push(starting_port);
     while (!ports_to_visit.empty()) {
         // Take a port off the to_visit queue.
         auto port = ports_to_visit.front();
@@ -19,14 +20,12 @@ Net::Net(std::shared_ptr<Port> p) {
             auto port2 = *i;
             if (this->ports_in_net.find(port2) == this->ports_in_net.end()) {
                 this->ports_in_net.insert(port2);
+                ASSERT(contained_ports.find(port2) == contained_ports.end());
+                contained_ports.insert(port2);
                 ports_to_visit.push(port2);
             }
         }
     }
-}
-
-bool Net::contains(std::shared_ptr<Port> port) {
-    return this->ports_in_net.find(port) != this->ports_in_net.end();
 }
 
 // The value of a net is a function of the values of the individual

@@ -182,37 +182,18 @@ std::string Aspng::maybe_add_ports(std::map<Coord, std::shared_ptr<Device>> &dev
 std::string Aspng::step(void) {
     // Build Nets for simulation: for each port,
     std::list<std::shared_ptr<Net>> nets;
+    std::set<std::shared_ptr<Port>> contained_ports;
     for (auto i = this->all_ports.begin(); i != this->all_ports.end(); i++) {
-        // .. see if the Port is in a Net already.
-        auto port = *i;
-        bool found = false;
-        for (auto j = nets.begin(); j != nets.end(); j++) {
-            auto net = *j;
-            if (net->contains(port)) {
-                found = true;
-                break;
-            }
-        }
         // If this Port isn't in any Net, then let's start a new Net,
         // propagating out from this Port.
-        if (!found) {
-            nets.push_back(std::make_shared<Net>(port));
+        auto port = *i;
+        if (!(contained_ports.find(port) != contained_ports.end())) {
+            nets.push_back(std::make_shared<Net>(port, contained_ports));
         }
     }
 
-    // Sanity check: every Port should be contained in exactly one Net.
-    for (auto i = this->all_ports.begin(); i != this->all_ports.end(); i++) {
-        auto port = *i;
-        int32_t count = 0;
-        for (auto j = nets.begin(); j != nets.end(); j++) {
-            auto net = *j;
-            if (net->contains(port)) {
-                count++;
-            }
-        }
-        ASSERT(count > 0);
-        ASSERT(count == 1);
-    }
+    // Sanity check: every Port should be contained in some Net.
+    ASSERT(this->all_ports.size() == contained_ports.size())
 
     // For each net, compute the new value.
     for (auto i = nets.begin(); i != nets.end(); i++) {

@@ -8,13 +8,12 @@
 
 class Net {
 public:
-    Net();
-    Net(std::shared_ptr<Port>);
-    bool contains(std::shared_ptr<Port>);
+    Net(std::shared_ptr<Port>, std::set<std::shared_ptr<Port>> &);
     void compute_new_value(void);
     void apply_new_value(void);
 
 private:
+    Net();
     std::set<std::shared_ptr<Port>> ports_in_net;
     ElectricalValue new_value;
 };
