@@ -183,7 +183,7 @@ int main(int argc, char **argv) {
                     double mouse_pre_zoom_x = last_mouse_position.x / zoom;
                     double mouse_pre_zoom_y = last_mouse_position.y / zoom;
                     zoom_level += e.wheel.y;
-                    zoom = pow(2, zoom_level);
+                    zoom = pow(1.2, zoom_level);
                     double mouse_post_zoom_x = last_mouse_position.x / zoom;
                     double mouse_post_zoom_y = last_mouse_position.y / zoom;
                     pan_x += mouse_post_zoom_x - mouse_pre_zoom_x;
