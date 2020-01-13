@@ -193,7 +193,7 @@ std::string Aspng::step(void) {
     }
 
     // Sanity check: every Port should be contained in some Net.
-    ASSERT(this->all_ports.size() == contained_ports.size())
+    ASSERT(this->all_ports.size() == contained_ports.size());
 
     // For each net, compute the new value.
     for (auto i = nets.begin(); i != nets.end(); i++) {
