@@ -1,0 +1,111 @@
+Parsing
+-------
+
+An image has been "parsed" when every pixel in the image has been assigned to
+some device. Including the background -- it's assigned to an inert
+BackgroundDevices. For clarity's sake, the background pixels/devices are left
+out of the figures in this document.
+
+```
+raw                      parsed
+---                      ------
+
+@@@@@@@@                 11111111
+@@@@@@@@                 11111111
+@@@@@@@@*****            1111111122222
+@@@@@@@@*****            1111111122222
+@@@@@@@@*****      ->    1111111122222
+@@@@@@@@   **            11111111   22
+@@@@@@@@   **            11111111   22
+@@@@@@@@ @@@@@@          11111111 333333
+  # #    @@@@@@            4 5    333333
+  # #    @@@@@@            4 5
+ $$$$$                    66666
+ $$$$$                    66666
+
+                         id | device type
+                         ----------------
+                         1  | A
+                         2  | B
+                         3  | A
+                         4  | C
+                         5  | C
+                         6  | D
+```
+
+The `aspng` parser, as implemented, only does one pass over the image. For each
+unclaimed pixel, starting from the top left, the parser asks each Device type D
+to try to parse out a device starting from that pixel. If D is successful, then
+the parser assigns all the pixels that D has claimed to D. If any unclaimed
+pixel remains at the end of the pass, then that is an error.
+
+To deal with overlapping parse results, the parser chooses the parse that is a
+proper superset of the other. If there is no such parse, that is considered a
+failing of the grammar and the parser exits. This is how PullDevices and
+{Sink,Source}Devices can coexist, because if a PullDevice parse exists then it
+is always a proper superset of the {Sink,Source}Device parse.
+
+Linking
+-------
+
+After parsing, we know which devices are in the image. But there is nothing to
+simulate until we know how those devices are connected.
+
+This process is called linking. Considering a subset of the figure from before,
+the result that we want from linking is one "port" between the devices 1 and 2,
+illustrated with # and % signs:
+
+```
+raw                    parsed                    linked
+---                    ------                    ------
+
+@@@@@@@@               11111111                  11111111
+@@@@@@@@               11111111                  11111111
+@@@@@@@@*****          1111111122222             1111111#%2222
+@@@@@@@@*****          1111111122222             1111111#%2222
+@@@@@@@@*****    ->    1111111122222       ->    1111111#%2222
+@@@@@@@@   **          11111111   22             11111111   22
+@@@@@@@@   **          11111111   22             11111111   22
+@@@@@@@@               11111111                  11111111
+
+                       id | device type
+                       ----------------
+                       1  | A
+                       2  | B
+```
+
+The # and % signs, taken together, are the "port". The # signs are those pixels
+comprising the port which are contained in device 1, and the % signs are those
+contained in device 2. The reason this distinction is important is that each
+device will decide how to interact with this port based on where the port
+touches the device.
+
+The way `aspng` does the linking process is by first finding the longest
+contiguous patches where two devices touch. Then, each device is queried to
+find out whether it is legal for it to be touching the other device -- if one
+or both devices do not allow the port, then that is a linking error.
+
+Simulation
+----------
+
+Simulation in `aspng` follows the clock. A simulation step looks like this:
+
+1. Flip the clock value from - -> + or + -> - .
+
+2. Group all devices into "nets". A device is in the same "net" as another if
+the two devices are reachable through any number of ports (passing through
+other devices). Devices decide how their ports relate to one another -- for
+example, a transistor will connect two ports if and only if the third port (the
+gate) is "+". Note that a device can be in multiple nets.
+
+3. Determine the total value of each net, given the states of the devices
+inside of it:
+* if mix of + and -: error
+* if there is any +: +
+* if there is any -: -
+* if there is any SRC: +
+* if there is any SNK: -
+* otherwise, "float.
+
+4. If any port value changed, return to step 2. If we have done "too many"
+iterations and we don't think the simulation will converge, then error.

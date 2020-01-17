@@ -1,0 +1,63 @@
+add CapacitorDevice
+
+add DRAM example
+
+add tests for all the new devices I added
+   .. need to add click infrastructure
+
+convert remaining size_t -> int32_t
+
+remove Device::name, needs to be virtual to work anyway
+
+let devices also report why they didn't parse - for debug purposes
+
+rename all_patches -> all_patches_to_own
+
+"virtual Rgb get_draw_color(Patch *);¶" in CopperDevice and others seems pointless (virtual)
+
+all size_t (for Coord) -> int32_t
+  (will need to add more asserts for >0)
+
+do zooming / panning better:
+    when zoom, should pan to keep cursor centered
+    when pan, should be normalized to zoom level
+    handle window resize by panning/zooming
+
+all () -> (void)
+
+*AspngSurface -> *Surface
+
+use more const in the right places
+
+something is wrong with the tests - how did the "uninitialized color_for_drawing" issue get by?
+
+SDL display using geometry instead of textures -- for sampling
+
+SDL display (later also for input)
+
+with "$N_" ... just organize the tests better with subfolders and stuff too
+
+* add tests for transistor - note, multiple in-series transistors should settle in one 'tick'
+   -- or should they? -- and what if there are racing transistors, what should the behavior be
+
+should esbtalish the order in which tests are run - numerical order? all directories must start
+
+finish up the DESIGN doc
+
+improve "link fail" messages -- e.g. the fail transistors should say "not enough.."
+
+valgrind should be a test
+
+Png library is a mess, fix it
+
+snakecase -> camelCase
+
+remove printf from all (include common.h)
+
+split up test into ParserLinker, etc
+
+google C++ style guide
+
+use range-based iterators when it makes sense
+
+use stringbuffers instead of +'ing up string components..

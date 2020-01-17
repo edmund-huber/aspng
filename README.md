@@ -3,8 +3,8 @@ aspng: application-specific PNG
 
 Have you ever wanted to design a CPU with Paint? Well now you can!
 
-`aspng` allows you to draw out digital circuits using pixels, and then simulate
-those circuits.
+`aspng` allows you to draw out transistor-level digital circuits using pixels,
+and then simulate (and interact with!) those circuits.
 
 Design guide
 ------------
@@ -41,8 +41,13 @@ As the name `aspng` suggests, I want to draw a parallel to ASIC (or VLSI)
 design. An ASIC implementing digital logic does so through a careful
 arrangement of n- or p-channel MOSFETs, and pullups or pulldowns implemented
 through depletion-mode MOSFETS (for e.g. NMOS or PMOS logic), or both n- and
-p-channel MOSFETS (for e.g. CMOS logic). All logical gates, SRAM, adders,
-muxers, etc. are built with these primitives.
+p-channel MOSFETS (for e.g. CMOS logic). 
+
+All logical gates, SRAM, adders, muxers, etc. are built with these primitives.
+For the same reasons that I didn't find building a circuit in Verilog engaging,
+I didn't find it engaging to design circuits at the level of boolean logic, and
+so I decided I would build a transistor-level simulator that I could use and
+understand.
 
 Yet there is a deeper, darker magical art of understanding and managing power
 consumption, switching delays, parasitic capacitances, capacitance delays,
@@ -50,7 +55,11 @@ leakage, and so on that true VLSI designers must practice. For the sake of
 keeping `aspng` fun and instructive, (and because I'm incapable of writing a
 program to simulate those effects), `aspng` ignores those effects.
 
-`aspng` is basically a toy, but one you can learn from.
+`aspng` is mostly a toy, but one you can learn some low-level principles from,
+because it does force you to think about:
+* voltages - whether high, low, or floating,
+* propagation delay,
+* layout.
 
 Related projects / inspiration
 ------------------------------
