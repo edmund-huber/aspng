@@ -22,17 +22,6 @@ green            template: LED, clock (also color for bonding)
 recommended: aseprite. If you use aseprite, you can use palette.aseprite . It
 has the above palette, laid out in order.
 
-specific components i want to be able to do:
-gates - in NMOS style, in CMOS style
-sram
-dram
-mask rom
-adder
-shift register
-latch
-flipflop
-clock divider
-
 
 Goals of `aspng`
 ----------------
