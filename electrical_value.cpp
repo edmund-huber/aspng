@@ -18,12 +18,16 @@ ElectricalValue combine_electrical_values(ElectricalValue v1, ElectricalValue v2
     case PullLoElectricalValue:
         if (v2 == HiElectricalValue) {
             return HiElectricalValue;
+        } else if (v2 == PullHiElectricalValue) {
+            throw ElectricalValueException();
         } else {
             return PullLoElectricalValue;
         }
     case PullHiElectricalValue:
         if (v2 == LoElectricalValue) {
             return LoElectricalValue;
+        } else if (v2 == PullLoElectricalValue) {
+            throw ElectricalValueException();
         } else {
             return PullHiElectricalValue;
         }
