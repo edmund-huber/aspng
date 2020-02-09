@@ -3,8 +3,10 @@ aspng: application-specific PNG
 
 Have you ever wanted to design a CPU with Paint? Well now you can!
 
-`aspng` allows you to draw out transistor-level digital circuits using pixels,
-and then simulate (and interact with!) those circuits.
+`aspng` ("application-specific PNG") lets you draw out transistor-level digital
+circuits using pixels, and then simulate (and interact with!) those circuits.
+
+Have a look at some <a href="">interactive examples</a>.
 
 Design guide
 ------------
@@ -22,33 +24,40 @@ green            template: LED, clock (also color for bonding)
 recommended: aseprite. If you use aseprite, you can use palette.aseprite . It
 has the above palette, laid out in order.
 
-
 Goals of `aspng`
 ----------------
 
-As the name `aspng` suggests, I want to draw a parallel to ASIC (or VLSI)
-design. An ASIC implementing digital logic does so through a careful
-arrangement of n- or p-channel MOSFETs, and pullups or pulldowns implemented
-through depletion-mode MOSFETS (for e.g. NMOS or PMOS logic), or both n- and
-p-channel MOSFETS (for e.g. CMOS logic). 
+A digital ASIC is a careful arrangement of n- and/or p-channel MOSFETs,
+pullups, and pulldowns, implementing arbitrarily complicated relationships
+between input and output pins.
 
-All logical gates, SRAM, adders, muxers, etc. are built with these primitives.
-For the same reasons that I didn't find building a circuit in Verilog engaging,
-I didn't find it engaging to design circuits at the level of boolean logic, and
-so I decided I would build a transistor-level simulator that I could use and
-understand.
+In the early days, all decisions about the logic and the layout of these
+circuits were made by humans, and big masks were drawn out by hand.
+Microprocessors like the Intel 4004 and the MOS 6502 were designed this way.
 
-Yet there is a deeper, darker magical art of understanding and managing power
+Today, digital ASICs are much too large and complicated to be designed by
+humans. Instead, hardware description languages like Verilog or VHDL are used
+to describe the behavior, and then very heavily researched computer programs
+figure out the exact layout of physical devices to realize the design ("logic
+synthesis").
+
+I'm a simple person. I feel drawn to those "early days", with the intimate and
+basically artisanal relationship between the designer and their circuit. Every
+chip was bespoke, and had only one or a few minds behind it.
+
+But at the same time, I don't want to get bogged down in managing power
 consumption, switching delays, parasitic capacitances, capacitance delays,
-leakage, and so on that true VLSI designers must practice. For the sake of
-keeping `aspng` fun and instructive, (and because I'm incapable of writing a
-program to simulate those effects), `aspng` ignores those effects.
+leakage, and so on that true ASIC designers have to consider. I'm lazy! I just
+want the fun parts!
 
-`aspng` is mostly a toy, but one you can learn some low-level principles from,
-because it does force you to think about:
-* voltages - whether high, low, or floating,
-* propagation delay,
-* layout.
+So for the sake of keeping "ASIC design" fun (?) and feasibly simple for a
+non-expert who just wants to see some blinkenlights, `aspng` greatly simplifies
+all electrical properties:
+
+* *resistance* does not exist.
+* *capacitance* only exists in CapacitorDevices, which charge instantly and
+  don't lose charge over time.
+* *inductance* does not exist.
 
 Related projects / inspiration
 ------------------------------
