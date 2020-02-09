@@ -109,7 +109,7 @@ int main(int argc, char **argv) {
     double pan_x = 0;
     double pan_y = 0;
     int32_t zoom_level = 2;
-    double zoom = pow(2, zoom_level);
+    double zoom = pow(1.2, zoom_level);
     Coord last_mouse_position;
     bool do_quit = false;
     std::shared_ptr<Device> device_being_clicked = nullptr;
