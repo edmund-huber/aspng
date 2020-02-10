@@ -69,7 +69,7 @@ simplifies all electrical properties:
 * *Voltage* is either floating, low, or high.
 
 Unlike very similar projects (that I know of) such as
-[TICS]<https://github.com/onidev/TICS>, `aspng` doesn't reduce down to logical
+[TICS](https://github.com/onidev/TICS), `aspng` doesn't reduce down to logical
 networks of "true" or "false". To me, logical networks feel so far removed from
 the reality of MOS technology and how electrical devices work, that I don't
 feel compelled to write a simulator that functions at that level of
