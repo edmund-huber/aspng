@@ -112,8 +112,10 @@ int main(int argc, char **argv) {
     double zoom = pow(1.2, zoom_level);
     Coord last_mouse_position;
     bool do_quit = false;
+    bool have_aspng_sim_exception = false;
+    AspngSimException aspng_sim_exception;
     std::shared_ptr<Device> device_being_clicked = nullptr;
-    milliseconds t0 = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+    milliseconds then = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
     int frames = 0;
     while (!do_quit) {
         SDL_Event e;
@@ -135,14 +137,16 @@ int main(int argc, char **argv) {
                 switch (e.button.button) {
                 case SDL_BUTTON_LEFT:
                     {
-                        Coord coord(
-                            (e.button.x / zoom) - pan_x,
-                            (e.button.y / zoom) - pan_y
-                        );
-                        auto device = aspng.which_device(coord);
-                        if (device != nullptr) {
-                            device_being_clicked = device;
-                            device_being_clicked->click(coord);
+                        if (!have_aspng_sim_exception) {
+                            Coord coord(
+                                (e.button.x / zoom) - pan_x,
+                                (e.button.y / zoom) - pan_y
+                            );
+                            auto device = aspng.which_device(coord);
+                            if (device != nullptr) {
+                                device_being_clicked = device;
+                                device_being_clicked->click(coord);
+                            }
                         }
                     }
                     break;
@@ -204,9 +208,32 @@ int main(int argc, char **argv) {
         SDL_RenderClear(sdl_renderer);
         sdl_aspng_surface.start_draw();
         aspng.draw(&sdl_aspng_surface);
-        sdl_aspng_surface.finish_draw();
-        aspng.step();
 
+        if (!have_aspng_sim_exception) {
+            try {
+                aspng.step();
+            } catch (AspngSimException &e) {
+                std::cout << "error: " << e.message << std::endl;
+                aspng_sim_exception = e;
+                have_aspng_sim_exception = true;
+            }
+        }
+
+        milliseconds now = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+        if (have_aspng_sim_exception) {
+            Rgb rgb((sin(now.count() * 6.28 / 500.) * 128) + 128, 0, 0);
+            for (int32_t x = aspng_sim_exception.bounding_box.get_bottom_left().x;
+                x <= aspng_sim_exception.bounding_box.get_top_right().x;
+                x++) {
+                for (int32_t y = aspng_sim_exception.bounding_box.get_bottom_left().y;
+                    y <= aspng_sim_exception.bounding_box.get_top_right().y;
+                    y++) {
+                    sdl_aspng_surface.set_pixel(x, y, rgb);
+                }
+            }
+        }
+
+        sdl_aspng_surface.finish_draw();
         SDL_Rect sdl_rect_dst;
         sdl_rect_dst.w = sdl_aspng_surface.get_width() * zoom;
         sdl_rect_dst.h = sdl_aspng_surface.get_height() * zoom;
@@ -215,11 +242,10 @@ int main(int argc, char **argv) {
         SDL_RenderCopy(sdl_renderer, sdl_aspng_surface.get_texture(), nullptr, &sdl_rect_dst);
         SDL_RenderPresent(sdl_renderer);
 
-        milliseconds t1 = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-        int elapsed = (t1 - t0).count();
+        int elapsed = (now - then).count();
         if (elapsed >= 1000) {
             //std::cout << (frames / (elapsed / 1000.)) << std::endl;
-            t0 = t1;
+            then = now;
             frames = 0;
         }
         frames++;

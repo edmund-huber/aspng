@@ -1,5 +1,6 @@
 #include <queue>
 
+#include "aspng.h"
 #include "common.h"
 #include "net.h"
 
@@ -37,13 +38,30 @@ void Net::compute_new_value(void) {
     for (auto i = this->ports_in_net.begin(); i != this->ports_in_net.end(); i++) {
         auto port = *i;
         ElectricalValue v = port->compute_new_value(port);
-        this->new_value = combine_electrical_values(v, this->new_value);
+        try {
+            this->new_value = combine_electrical_values(v, this->new_value);
+        } catch (ElectricalValueException &e) {
+            throw AspngSimException("Net::compute_new_value", this->get_bounding_box());
+        }
     }
 }
 
 void Net::apply_new_value(void) {
     for (auto i = this->ports_in_net.begin(); i != this->ports_in_net.end(); i++) {
         auto port = *i;
-        port->apply_new_value(this->new_value);
+        try {
+            port->apply_new_value(this->new_value);
+        } catch (ElectricalValueException &e) {
+            throw AspngSimException("Net::apply_new_value", this->get_bounding_box());
+        }
     }
+}
+
+BoundingBox Net::get_bounding_box(void) {
+    BoundingBox bounding_box;
+    for (auto i = this->ports_in_net.begin(); i != this->ports_in_net.end(); i++) {
+        auto port = *i;
+        port->expand_bounding_box(bounding_box);
+    }
+    return bounding_box;
 }

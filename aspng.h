@@ -7,13 +7,23 @@
 #include <string>
 
 #include "aspng_surface.h"
+#include "bounding_box.h"
 #include "device.h"
 #include "patch.h"
+
+class AspngSimException : public std::exception {
+public:
+    AspngSimException(std::string _message, BoundingBox _bounding_box) : message(_message), bounding_box(_bounding_box) {}
+    AspngSimException() {}
+
+    std::string message;
+    BoundingBox bounding_box;
+};
 
 class Aspng {
 public:
     Aspng(AspngSurface *, std::string &);
-    std::string step(void);
+    void step(void);
     void draw(AspngSurface *);
     void draw_input_map(AspngSurface *);
     std::shared_ptr<Device> which_device(Coord);

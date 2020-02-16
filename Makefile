@@ -2,7 +2,7 @@
 
 CXX=g++
 CXXFLAGS=-std=c++17 -pedantic -Wall -Werror -g -O0
-CORE_OBJECTS=obj/aspng.o obj/aspng_surface.o obj/background_device.o obj/base_template_device.o obj/bridge_device.o obj/copper_device.o obj/device.o obj/electrical_value.o obj/input_device.o obj/led_device.o obj/net.o obj/patch.o obj/png.o obj/port.o obj/pull_device.o obj/simple_aspng_surface.o obj/sink_device.o obj/source_device.o obj/switch_device.o obj/transistor_device.o
+CORE_OBJECTS=obj/aspng.o obj/aspng_surface.o obj/background_device.o obj/base_template_device.o obj/bounding_box.o obj/bridge_device.o obj/coord.o obj/copper_device.o obj/device.o obj/electrical_value.o obj/input_device.o obj/led_device.o obj/net.o obj/patch.o obj/png.o obj/port.o obj/pull_device.o obj/simple_aspng_surface.o obj/sink_device.o obj/source_device.o obj/switch_device.o obj/transistor_device.o
 
 test: bin/test
 	./bin/test

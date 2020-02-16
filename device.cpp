@@ -58,6 +58,19 @@ std::set<Coord> Device::all_patches_combined(void) {
     return all_patches_combined;
 }
 
+BoundingBox Device::get_bounding_box(void) {
+    BoundingBox bounding_box;
+    auto all_patches = this->all_patches();
+    for (auto i = all_patches.begin(); i != all_patches.end(); i++) {
+        auto patch = *i;
+        for (auto j = patch->begin(); j != patch->end(); j++) {
+            auto coord = *j;
+            bounding_box.include(coord);
+        }
+    }
+    return bounding_box;
+}
+
 Patch *Device::find_patch_containing(Coord coord) {
     auto all_patches = this->all_patches();
     for (auto i = all_patches.begin(); i != all_patches.end(); i++) {

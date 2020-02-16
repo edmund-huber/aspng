@@ -108,6 +108,7 @@ void TransistorDevice::apply_new_value(Port *port, ElectricalValue v) {
     if (port_our_half->port_type == TransistorGate) {
         switch (v) {
         case EmptyElectricalValue:
+            throw DeviceOperationException(this, "floating gate");
         case LoElectricalValue:
         case PullLoElectricalValue:
             this->passing = false;

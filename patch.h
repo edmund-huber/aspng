@@ -4,17 +4,7 @@
 #include <set>
 #include <string>
 
-class Coord {
-public:
-    Coord(void) {};
-    Coord(int32_t _x, int32_t _y) : x(_x), y(_y) {};
-
-    int32_t x;
-    int32_t y;
-};
-
-bool operator<(const Coord, const Coord);
-std::string operator+(const std::string, const Coord);
+#include "coord.h"
 
 class Patch : private std::set<Coord> {
 public:

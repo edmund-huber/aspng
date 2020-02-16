@@ -40,9 +40,9 @@ designed this way.
 
 Today, digital ASICs are much too large and complicated to be designed by
 humans. Instead, hardware description languages like Verilog or VHDL are used
-to describe the behavior, and then very heavily researched computer programs
-figure out the exact layout of physical devices to realize the design ("logic
-synthesis").
+to describe the behavior of the ASIC, and then very heavily researched computer
+programs figure out the exact layout of physical devices to realize the design
+("logic synthesis").
 
 I'm a simple person. I romanticize those early days, with the intimate and
 artisanal relationship between the designer and their circuit. `aspng` exists

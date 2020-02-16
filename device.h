@@ -6,7 +6,9 @@
 #include <list>
 #include <memory>
 #include <set>
+#include <string>
 
+#include "bounding_box.h"
 #include "patch.h"
 #include "png.h"
 #include "port.h"
@@ -15,6 +17,16 @@ enum LinkResult {
     CanTouch,
     CanLink,
     LinkError
+};
+
+class DeviceOperationException : public std::exception {
+public:
+    DeviceOperationException(Device *d, std::string s) {
+        this->device = d;
+        this->message = s;
+    }
+    Device *device;
+    std::string message;
 };
 
 class Device {
@@ -34,6 +46,7 @@ public:
     // Return the list of pixels that were parsed out, during the method above.
     virtual std::list<Patch *> all_patches(void) = 0;
     std::set<Coord> all_patches_combined(void);
+    BoundingBox get_bounding_box(void);
     Patch *find_patch_containing(Coord);
 
     // `prelink` indicates whether these devices may touch and whether to

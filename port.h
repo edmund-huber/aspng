@@ -4,6 +4,7 @@
 #include <list>
 #include <memory>
 
+#include "bounding_box.h"
 #include "electrical_value.h"
 #include "patch.h"
 
@@ -37,8 +38,11 @@ public:
     bool is_resolved(void);
     PortHalf *get_our_port_half(Device *);
     PortHalf *get_their_port_half(Device *);
+    void expand_bounding_box(BoundingBox &);
 
 private:
+    void apply_new_value_half(ElectricalValue, PortHalf *);
+
     PortHalf d1_port_half;
     PortHalf d2_port_half;
 };

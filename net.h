@@ -4,6 +4,7 @@
 #include <memory>
 #include <set>
 
+#include "bounding_box.h"
 #include "port.h"
 
 class Net {
@@ -14,6 +15,8 @@ public:
 
 private:
     Net();
+    BoundingBox get_bounding_box(void);
+
     std::set<std::shared_ptr<Port>> ports_in_net;
     ElectricalValue new_value;
 };

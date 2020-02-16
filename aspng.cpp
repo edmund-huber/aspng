@@ -179,7 +179,7 @@ std::string Aspng::maybe_add_ports(std::map<Coord, std::shared_ptr<Device>> &dev
     return "";
 }
 
-std::string Aspng::step(void) {
+void Aspng::step(void) {
     // Build Nets for simulation: for each port,
     std::list<std::shared_ptr<Net>> nets;
     std::set<std::shared_ptr<Port>> contained_ports;
@@ -198,11 +198,7 @@ std::string Aspng::step(void) {
     // For each net, compute the new value.
     for (auto i = nets.begin(); i != nets.end(); i++) {
         auto net = *i;
-        try {
-            net->compute_new_value();
-        } catch (ElectricalValueException &e) {
-            return "bad electrical value";
-        }
+        net->compute_new_value();
     }
 
     // For each net, apply the new value. (These steps are separated so that
@@ -212,8 +208,6 @@ std::string Aspng::step(void) {
         auto net = *i;
         net->apply_new_value();
     }
-
-    return "";
 }
 
 void Aspng::draw(AspngSurface *surface) {
