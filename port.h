@@ -34,14 +34,14 @@ public:
     Port(std::shared_ptr<Device>, Coord, PortType, std::shared_ptr<Device>, Coord, PortType);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue compute_new_value(std::shared_ptr<Port>);
-    void apply_new_value(ElectricalValue);
+    void apply_new_value(std::shared_ptr<Port>, ElectricalValue);
     bool is_resolved(void);
     PortHalf *get_our_port_half(Device *);
     PortHalf *get_their_port_half(Device *);
     void expand_bounding_box(BoundingBox &);
 
 private:
-    void apply_new_value_half(ElectricalValue, PortHalf *);
+    void apply_new_value_half(std::shared_ptr<Port>, ElectricalValue, PortHalf *);
 
     PortHalf d1_port_half;
     PortHalf d2_port_half;

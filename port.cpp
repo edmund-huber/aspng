@@ -26,9 +26,9 @@ Port::Port(std::shared_ptr<Device> d1, Coord d1_coord, PortType d1_port_type, st
     this->d2_port_half.port_type = d2_port_type;
 }
 
-void Port::apply_new_value_half(ElectricalValue v, PortHalf *port_half) {
+void Port::apply_new_value_half(std::shared_ptr<Port> self, ElectricalValue v, PortHalf *port_half) {
     try {
-        port_half->device->apply_new_value(this, v);
+        port_half->device->apply_new_value(self, v);
     } catch (DeviceOperationException &e) {
         throw AspngSimException(
             port_half->device->name() + "::apply_new_value_half: " + e.message,
@@ -37,9 +37,9 @@ void Port::apply_new_value_half(ElectricalValue v, PortHalf *port_half) {
     }
 }
 
-void Port::apply_new_value(ElectricalValue v) {
-    this->apply_new_value_half(v, &(this->d1_port_half));
-    this->apply_new_value_half(v, &(this->d2_port_half));
+void Port::apply_new_value(std::shared_ptr<Port> self, ElectricalValue v) {
+    this->apply_new_value_half(self, v, &(this->d1_port_half));
+    this->apply_new_value_half(self, v, &(this->d2_port_half));
 }
 
 bool Port::is_resolved(void) {

@@ -42,7 +42,7 @@ ElectricalValue LEDDevice::get_value_at_port(std::shared_ptr<Port>) {
     return EmptyElectricalValue;
 }
 
-void LEDDevice::apply_new_value(Port *, ElectricalValue v) {
+void LEDDevice::apply_new_value(std::shared_ptr<Port>, ElectricalValue v) {
     switch (v) {
     case HiElectricalValue:
     case PullHiElectricalValue:

@@ -47,7 +47,7 @@ ElectricalValue InputDevice::get_value_at_port(std::shared_ptr<Port>) {
     }
 }
 
-void InputDevice::apply_new_value(Port *, ElectricalValue) {
+void InputDevice::apply_new_value(std::shared_ptr<Port>, ElectricalValue) {
     // Deliberately empty.
 }
 

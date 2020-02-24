@@ -50,7 +50,7 @@ void Net::apply_new_value(void) {
     for (auto i = this->ports_in_net.begin(); i != this->ports_in_net.end(); i++) {
         auto port = *i;
         try {
-            port->apply_new_value(this->new_value);
+            port->apply_new_value(port, this->new_value);
         } catch (ElectricalValueException &e) {
             throw AspngSimException("Net::apply_new_value", this->get_bounding_box());
         }

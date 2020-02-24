@@ -103,7 +103,7 @@ ElectricalValue TransistorDevice::get_value_at_port(std::shared_ptr<Port>) {
     return EmptyElectricalValue;
 }
 
-void TransistorDevice::apply_new_value(Port *port, ElectricalValue v) {
+void TransistorDevice::apply_new_value(std::shared_ptr<Port> port, ElectricalValue v) {
     auto port_our_half = port->get_our_port_half(this);
     if (port_our_half->port_type == TransistorGate) {
         switch (v) {

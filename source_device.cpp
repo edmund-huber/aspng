@@ -43,7 +43,7 @@ ElectricalValue SourceDevice::get_value_at_port(std::shared_ptr<Port>) {
     return HiElectricalValue;
 }
 
-void SourceDevice::apply_new_value(Port *, ElectricalValue) {
+void SourceDevice::apply_new_value(std::shared_ptr<Port>, ElectricalValue) {
     // Deliberately empty.
 }
 

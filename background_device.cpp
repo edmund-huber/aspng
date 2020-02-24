@@ -42,7 +42,7 @@ ElectricalValue BackgroundDevice::get_value_at_port(std::shared_ptr<Port>) {
     return EmptyElectricalValue;
 }
 
-void BackgroundDevice::apply_new_value(Port *, ElectricalValue) {
+void BackgroundDevice::apply_new_value(std::shared_ptr<Port>, ElectricalValue) {
     // Deliberately empty.
 }
 

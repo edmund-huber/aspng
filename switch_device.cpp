@@ -70,7 +70,7 @@ ElectricalValue SwitchDevice::get_value_at_port(std::shared_ptr<Port>) {
     return EmptyElectricalValue;
 }
 
-void SwitchDevice::apply_new_value(Port *, ElectricalValue) {
+void SwitchDevice::apply_new_value(std::shared_ptr<Port>, ElectricalValue) {
     // Deliberately empty.
 }
 

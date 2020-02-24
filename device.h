@@ -4,6 +4,7 @@
 #include <cstdlib>
 #include <exception>
 #include <list>
+#include <map>
 #include <memory>
 #include <set>
 #include <string>
@@ -68,7 +69,7 @@ public:
 
     virtual ElectricalValue get_value_at_port(std::shared_ptr<Port>) = 0;
 
-    virtual void apply_new_value(Port *, ElectricalValue) = 0;
+    virtual void apply_new_value(std::shared_ptr<Port>, ElectricalValue) = 0;
 
     virtual void draw(AspngSurface *);
     virtual void draw_debug(AspngSurface *);
@@ -100,7 +101,7 @@ public:
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(Port *, ElectricalValue);
+    void apply_new_value(std::shared_ptr<Port>, ElectricalValue);
     static Rgb color;
 
 private:
@@ -138,7 +139,7 @@ public:
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(Port *, ElectricalValue);
+    void apply_new_value(std::shared_ptr<Port>, ElectricalValue);
     static Rgb color;
 
 private:
@@ -158,7 +159,7 @@ public:
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(Port *, ElectricalValue);
+    void apply_new_value(std::shared_ptr<Port>, ElectricalValue);
     static Rgb color;
 
 private:
@@ -178,7 +179,7 @@ public:
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(Port *, ElectricalValue);
+    void apply_new_value(std::shared_ptr<Port>, ElectricalValue);
     std::list<Patch *> sub_patches(void);
     void sub_draw(AspngSurface *, int32_t, int32_t, int32_t, int32_t);
     void click(Coord);
@@ -199,7 +200,7 @@ public:
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(Port *, ElectricalValue);
+    void apply_new_value(std::shared_ptr<Port>, ElectricalValue);
     std::list<Patch *> sub_patches(void);
     void sub_draw(AspngSurface *, int32_t, int32_t, int32_t, int32_t);
 
@@ -218,7 +219,7 @@ public:
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(Port *, ElectricalValue);
+    void apply_new_value(std::shared_ptr<Port>, ElectricalValue);
     static Rgb yellow;
 
 private:
@@ -232,6 +233,26 @@ private:
     virtual Rgb get_draw_color(Patch *);
 };
 
+class RegisterDevice : public BaseTemplateDevice {
+public:
+    std::string name(void);
+    static Device *create(void);
+    std::string template_name(void);
+    bool sub_parse(AspngSurface *, int32_t, int32_t, int32_t, int32_t);
+    std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
+    bool link(void);
+    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
+    ElectricalValue get_value_at_port(std::shared_ptr<Port>);
+    void apply_new_value(std::shared_ptr<Port>, ElectricalValue);
+    std::list<Patch *> sub_patches(void);
+    void sub_draw(AspngSurface *, int32_t, int32_t, int32_t, int32_t);
+
+private:
+    std::map<std::shared_ptr<Port>, std::shared_ptr<Port>> input_port_to_output_port;
+    std::map<std::shared_ptr<Port>, ElectricalValue> output_port_to_value;
+    Patch sub_patch;
+};
+
 class SinkDevice : public Device {
 public:
     std::string name(void);
@@ -242,7 +263,7 @@ public:
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(Port *, ElectricalValue);
+    void apply_new_value(std::shared_ptr<Port>, ElectricalValue);
     static Rgb color;
 
 private:
@@ -261,7 +282,7 @@ public:
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(Port *, ElectricalValue);
+    void apply_new_value(std::shared_ptr<Port>, ElectricalValue);
     static Rgb color;
 
 private:
@@ -279,7 +300,7 @@ public:
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(Port *, ElectricalValue);
+    void apply_new_value(std::shared_ptr<Port>, ElectricalValue);
     std::list<Patch *> sub_patches(void);
     void sub_draw(AspngSurface *, int32_t, int32_t, int32_t, int32_t);
     void click(Coord);
@@ -300,7 +321,7 @@ public:
     bool link(void);
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
     ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(Port *, ElectricalValue);
+    void apply_new_value(std::shared_ptr<Port>, ElectricalValue);
     static Rgb color;
     void draw_debug(AspngSurface *);
 

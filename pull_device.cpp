@@ -76,7 +76,7 @@ ElectricalValue PullDevice::get_value_at_port(std::shared_ptr<Port>) {
     ASSERT(0);
 }
 
-void PullDevice::apply_new_value(Port *, ElectricalValue v) {
+void PullDevice::apply_new_value(std::shared_ptr<Port>, ElectricalValue v) {
     // Deliberately empty.
 }
 
