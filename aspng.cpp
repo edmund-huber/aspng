@@ -1,5 +1,6 @@
 #include <functional>
 #include <memory>
+#include <iostream>
 
 #include "aspng.h"
 #include "common.h"
@@ -31,6 +32,7 @@ Aspng::Aspng(AspngSurface *surface, std::string &error) {
     registry.push_back(InputDevice::create);
     registry.push_back(LEDDevice::create);
     registry.push_back(PullDevice::create);
+    registry.push_back(RegisterDevice::create);
     registry.push_back(SinkDevice::create);
     registry.push_back(SourceDevice::create);
     registry.push_back(SwitchDevice::create);
@@ -144,6 +146,8 @@ Aspng::Aspng(AspngSurface *surface, std::string &error) {
             this->all_ports.insert(port);
         }
     }
+
+    this->first_step = true;
 }
 
 // If neighboring Coords are different devices, then add ports to both devices
@@ -181,14 +185,14 @@ std::string Aspng::maybe_add_ports(std::map<Coord, std::shared_ptr<Device>> &dev
 
 void Aspng::step(void) {
     // Build Nets for simulation: for each port,
-    std::list<std::shared_ptr<Net>> nets;
+    std::set<Net> nets;
     std::set<std::shared_ptr<Port>> contained_ports;
     for (auto i = this->all_ports.begin(); i != this->all_ports.end(); i++) {
-        // If this Port isn't in any Net, then let's start a new Net,
+        // .. if this Port isn't in any Net, then let's start a new Net,
         // propagating out from this Port.
         auto port = *i;
         if (!(contained_ports.find(port) != contained_ports.end())) {
-            nets.push_back(std::make_shared<Net>(port, contained_ports));
+            nets.insert(Net(port, contained_ports));
         }
     }
 
@@ -196,18 +200,35 @@ void Aspng::step(void) {
     ASSERT(this->all_ports.size() == contained_ports.size());
 
     // For each net, compute the new value.
+    std::set<Net> new_nets;
     for (auto i = nets.begin(); i != nets.end(); i++) {
         auto net = *i;
-        net->compute_new_value();
+        net.compute_new_value();
+        new_nets.insert(net);
     }
+    nets = new_nets;
 
     // For each net, apply the new value. (These steps are separated so that
     // the new value of one net doesn't affect the new value of the other
     // nets.)
+    new_nets.clear();
     for (auto i = nets.begin(); i != nets.end(); i++) {
         auto net = *i;
-        net->apply_new_value();
+        net.apply_new_value();
+        new_nets.insert(net);
     }
+    nets = new_nets;
+
+    // If this step's set of Nets is the same as the previous step's, and the
+    // value of those Nets have not changed, then it's time to make all the
+    // RegisterDevices latch new inputs.
+    if (!this->first_step && (nets == previous_nets)) {
+        std::cout << "what up dickhead" << std::endl;
+    } else {
+        std::cout << ".." << std::endl;
+    }
+    this->previous_nets = nets;
+    this->first_step = false;
 }
 
 void Aspng::draw(AspngSurface *surface) {

@@ -57,6 +57,21 @@ void Net::apply_new_value(void) {
     }
 }
 
+bool Net::operator==(const Net &other) const {
+    return (this->ports_in_net == other.ports_in_net)
+        && (this->new_value == other.new_value);
+}
+
+bool Net::operator<(const Net &other) const {
+    if (this->ports_in_net < other.ports_in_net) {
+        return true;
+    }
+    if (this->new_value < other.new_value) {
+        return true;
+    }
+    return false;
+}
+
 BoundingBox Net::get_bounding_box(void) {
     BoundingBox bounding_box;
     for (auto i = this->ports_in_net.begin(); i != this->ports_in_net.end(); i++) {

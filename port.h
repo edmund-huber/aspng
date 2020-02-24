@@ -16,6 +16,9 @@ enum PortType {
     // BridgeDevice
     BridgeNorthSouth,
     BridgeEastWest,
+    // RegisterDevice
+    RegisterInput,
+    RegisterOutput,
     // TransistorDevice
     TransistorBridge,
     TransistorGate

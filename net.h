@@ -10,6 +10,10 @@
 class Net {
 public:
     Net(std::shared_ptr<Port>, std::set<std::shared_ptr<Port>> &);
+
+    bool operator==(const Net &) const;
+    bool operator<(const Net &) const;
+
     void compute_new_value(void);
     void apply_new_value(void);
 

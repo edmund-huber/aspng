@@ -250,7 +250,6 @@ int main(int argc, char **argv) {
         }
         frames++;
 
-        // TODO
         SDL_Delay(5);
     }
 

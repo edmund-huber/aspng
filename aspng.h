@@ -9,6 +9,7 @@
 #include "aspng_surface.h"
 #include "bounding_box.h"
 #include "device.h"
+#include "net.h"
 #include "patch.h"
 
 class AspngSimException : public std::exception {
@@ -33,6 +34,9 @@ private:
     std::set<std::shared_ptr<Port>> all_ports;
 
     std::string maybe_add_ports(std::map<Coord, std::shared_ptr<Device>> &, Coord, int32_t, int32_t);
+
+    bool first_step;
+    std::set<Net> previous_nets;
 };
 
 #endif
