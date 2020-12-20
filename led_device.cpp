@@ -62,9 +62,9 @@ std::list<Patch *> LEDDevice::sub_patches(void) {
     return sub_patches;
 }
 
-// A nice neon green color if active, otherwise dark.
+// Bright red if active, otherwise dark.
 void LEDDevice::sub_draw(AspngSurface *surface, int32_t min_x, int32_t min_y, int32_t max_x, int32_t max_y) {
-    Rgb color = this->active ? Rgb(0, 0xff, 0) : Rgb(0, 0x30, 0);
+    Rgb color = this->active ? Rgb(0xff, 0, 0) : Rgb(0x30, 0, 0);
     for (int32_t x = min_x; x <= max_x; x++) {
         for (int32_t y = min_y; y <= max_y; y++) {
             surface->set_pixel(x, y, color);
