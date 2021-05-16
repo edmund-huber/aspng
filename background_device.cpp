@@ -25,7 +25,7 @@ std::list<Patch *> BackgroundDevice::all_patches(void) {
     return all_patches;
 }
 
-std::tuple<LinkResult, PortType, std::string> BackgroundDevice::prelink(Patch *, std::shared_ptr<Device> d) {
+std::tuple<LinkResult, PortType, std::string> BackgroundDevice::prelink(Patch *, std::shared_ptr<Device>) {
     return std::make_tuple(CanTouch, NoSpecialMeaning, "");
 }
 
@@ -33,7 +33,7 @@ bool BackgroundDevice::link(void) {
     return true;
 }
 
-std::list<std::shared_ptr<Port>> BackgroundDevice::propagate(std::shared_ptr<Port> port) {
+std::list<std::shared_ptr<Port>> BackgroundDevice::propagate(std::shared_ptr<Port>) {
     std::list<std::shared_ptr<Port>> empty;
     return empty;
 }

@@ -79,7 +79,7 @@ ElectricalValue BridgeDevice::get_value_at_port(std::shared_ptr<Port>) {
     return EmptyElectricalValue;
 }
 
-void BridgeDevice::apply_new_value(std::shared_ptr<Port>, ElectricalValue v) {
+void BridgeDevice::apply_new_value(std::shared_ptr<Port>, ElectricalValue) {
     // Deliberately empty.
 }
 

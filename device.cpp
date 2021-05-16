@@ -82,7 +82,7 @@ Patch *Device::find_patch_containing(Coord coord) {
     ASSERT(0);
 }
 
-void Device::draw_helper(AspngSurface *surface, std::list<Patch *> patches) {
+void Device::draw_helper(AspngSurface *surface, std::list<Patch *> &patches) {
     for (auto i = patches.begin(); i != patches.end(); i++) {
         auto patch = *i;
         for (auto j = patch->begin(); j != patch->end(); j++) {
@@ -95,7 +95,8 @@ void Device::draw_helper(AspngSurface *surface, std::list<Patch *> patches) {
 }
 
 void Device::draw(AspngSurface *surface) {
-    this->draw_helper(surface, this->all_patches());
+    auto patches = this->all_patches();
+    this->draw_helper(surface, patches);
 }
 
 void Device::draw_debug(AspngSurface *) {}

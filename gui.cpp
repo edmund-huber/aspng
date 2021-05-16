@@ -8,6 +8,11 @@ using namespace std::chrono;
 #include "png.h"
 #include "simple_aspng_surface.h"
 
+#ifdef __EMSCRIPTEN__
+    #include <emscripten.h>
+    #include <emscripten/html5.h>
+#endif
+
 class SDLAspngSurface : public AspngSurface {
 public:
     SDLAspngSurface(SDL_Renderer *, int32_t, int32_t);
@@ -25,7 +30,7 @@ private:
     SDL_PixelFormat *sdl_pixel_format;
     int32_t width;
     int32_t height;
-    uint8_t *pixels;
+    uint32_t *pixels;
     int pitch;
     bool ready_to_draw;
 };
@@ -54,7 +59,7 @@ SDL_Texture *SDLAspngSurface::get_texture(void) {
     return this->sdl_texture;
 }
 
-Rgb SDLAspngSurface::get_pixel(int32_t x, int32_t y) {
+Rgb SDLAspngSurface::get_pixel(int32_t, int32_t) {
     // SDLAspngSurface is really only meant as an output surface.
     ASSERT(0);
 }
@@ -70,15 +75,186 @@ void SDLAspngSurface::set_pixel(int32_t x, int32_t y, Rgb rgb) {
     ASSERT((y >= 0) && (y < this->height));
     ASSERT(this->pixels != nullptr);
     uint32_t pixel = SDL_MapRGBA(this->sdl_pixel_format, rgb.r, rgb.g, rgb.b, 255);
-    *((uint32_t *)&(this->pixels)[(this->pitch * y) + (4 * x)]) = pixel;
+    ASSERT(this->pitch % 4 == 0);
+    this->pixels[((this->pitch / 4) * y) + x] = pixel;
 }
 
 void SDLAspngSurface::finish_draw(void) {
+    ASSERT(this->sdl_texture != nullptr);
     SDL_UnlockTexture(this->sdl_texture);
     this->ready_to_draw = false;
 }
 
 // TODO: destructor should free stuff
+
+class OneLoopContext {
+    public:
+        OneLoopContext(SDL_Renderer *r, Png *png, SDLAspngSurface *s, Aspng *a) :
+            sdl_renderer(r),
+            sdl_aspng_surface(s),
+            aspng(a),
+            input_map(png->get_width(), png->get_height()),
+            pan_x(0),
+            pan_y(0),
+            zoom_level(2),
+            zoom(pow(1.2, 2)),
+            have_aspng_sim_exception(false),
+            device_being_clicked(nullptr),
+            then(duration_cast<milliseconds>(system_clock::now().time_since_epoch())),
+            frames(0),
+            do_quit(false)
+            {}
+
+        SDL_Renderer *sdl_renderer;
+        SDLAspngSurface *sdl_aspng_surface;
+        Aspng *aspng;
+        SimpleAspngSurface input_map;
+        double pan_x;
+        double pan_y;
+        int32_t zoom_level;
+        double zoom;
+        Coord last_mouse_position;
+        bool have_aspng_sim_exception;
+        AspngSimException aspng_sim_exception;
+        std::shared_ptr<Device> device_being_clicked;
+        milliseconds then;
+        int frames;
+        bool do_quit;
+};
+
+OneLoopContext *context = NULL;
+
+void one_loop(void) {
+    SDL_Event e;
+    while (SDL_PollEvent(&e)) {
+        switch (e.type) {
+
+        case SDL_KEYDOWN:
+            switch(e.key.keysym.sym) {
+            case SDLK_ESCAPE:
+                context->do_quit = true;
+                return;
+
+            default:
+                break;
+            }
+            break;
+
+        case SDL_MOUSEBUTTONDOWN:
+            switch (e.button.button) {
+            case SDL_BUTTON_LEFT:
+                {
+                    if (!context->have_aspng_sim_exception) {
+                        Coord coord(
+                            (e.button.x / context->zoom) - context->pan_x,
+                            (e.button.y / context->zoom) - context->pan_y
+                        );
+                        auto device = context->aspng->which_device(coord);
+                        if (device != nullptr) {
+                            context->device_being_clicked = device;
+                            context->device_being_clicked->click(coord);
+                        }
+                    }
+                }
+                break;
+
+            default:
+                break;
+            }
+            break;
+
+        case SDL_MOUSEBUTTONUP:
+            switch (e.button.button) {
+            case SDL_BUTTON_LEFT:
+                if (context->device_being_clicked != nullptr) {
+                    context->device_being_clicked->unclick();
+                    context->device_being_clicked = nullptr;
+                }
+                break;
+
+            default:
+                break;
+            }
+            break;
+
+        case SDL_MOUSEMOTION:
+            context->last_mouse_position = Coord(e.motion.x, e.motion.y);
+            switch (e.motion.state) {
+            case SDL_BUTTON_MMASK:
+                context->pan_x += e.motion.xrel / context->zoom;
+                context->pan_y += e.motion.yrel / context->zoom;
+                break;
+
+            default:
+                break;
+            }
+            break;
+
+        case SDL_MOUSEWHEEL:
+            {
+                double mouse_pre_zoom_x = context->last_mouse_position.x / context->zoom;
+                double mouse_pre_zoom_y = context->last_mouse_position.y / context->zoom;
+                context->zoom_level += e.wheel.y;
+                context->zoom = pow(1.2, context->zoom_level);
+                double mouse_post_zoom_x = context->last_mouse_position.x / context->zoom;
+                double mouse_post_zoom_y = context->last_mouse_position.y / context->zoom;
+                context->pan_x += mouse_post_zoom_x - mouse_pre_zoom_x;
+                context->pan_y += mouse_post_zoom_y - mouse_pre_zoom_y;
+            }
+            break;
+
+        case SDL_QUIT:
+            context->do_quit = true;
+            return;
+        }
+    }
+
+    SDL_SetRenderDrawColor(context->sdl_renderer, 255, 0, 255, 255);
+    SDL_RenderClear(context->sdl_renderer);
+    context->sdl_aspng_surface->start_draw();
+    context->aspng->draw(context->sdl_aspng_surface);
+
+    if (!context->have_aspng_sim_exception) {
+        try {
+            context->aspng->step();
+        } catch (AspngSimException &e) {
+            std::cout << "error: " << e.message << std::endl;
+            context->aspng_sim_exception = e;
+            context->have_aspng_sim_exception = true;
+        }
+    }
+
+    milliseconds now = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
+    if (context->have_aspng_sim_exception) {
+        Rgb rgb((sin(now.count() * 6.28 / 500.) * 128) + 128, 0, 0);
+        for (int32_t x = context->aspng_sim_exception.bounding_box.get_bottom_left().x;
+            x <= context->aspng_sim_exception.bounding_box.get_top_right().x;
+            x++) {
+            for (int32_t y = context->aspng_sim_exception.bounding_box.get_bottom_left().y;
+                y <= context->aspng_sim_exception.bounding_box.get_top_right().y;
+                y++) {
+                context->sdl_aspng_surface->set_pixel(x, y, rgb);
+            }
+        }
+    }
+
+    context->sdl_aspng_surface->finish_draw();
+    SDL_Rect sdl_rect_dst;
+    sdl_rect_dst.w = context->sdl_aspng_surface->get_width() * context->zoom;
+    sdl_rect_dst.h = context->sdl_aspng_surface->get_height() * context->zoom;
+    sdl_rect_dst.x = context->pan_x * context->zoom;
+    sdl_rect_dst.y = context->pan_y * context->zoom;
+    SDL_RenderCopy(context->sdl_renderer, context->sdl_aspng_surface->get_texture(), nullptr, &sdl_rect_dst);
+    SDL_RenderPresent(context->sdl_renderer);
+
+    int elapsed = (now - context->then).count();
+    if (elapsed >= 1000) {
+        //std::cout << (frames / (elapsed / 1000.)) << std::endl;
+        context->then = now;
+        context->frames = 0;
+    }
+    context->frames++;
+}
 
 int main(int argc, char **argv) {
     if (argc != 2) {
@@ -86,174 +262,37 @@ int main(int argc, char **argv) {
     }
 
     // Create the SDL window and renderer.
-    ASSERT(SDL_Init(SDL_INIT_VIDEO | SDL_INIT_AUDIO) == 0);
-    SDL_Window *sdl_window = SDL_CreateWindow("aspng", 0, 0, 100, 100, SDL_WINDOW_RESIZABLE);
-    ASSERT(sdl_window != nullptr);
-    SDL_Renderer *sdl_renderer = SDL_CreateRenderer(sdl_window, -1, SDL_RENDERER_ACCELERATED);
-    ASSERT(sdl_renderer != nullptr);
+    ASSERT(SDL_Init(SDL_INIT_VIDEO) == 0);
+    SDL_Window *sdl_window;
+    SDL_Renderer *sdl_renderer;
+    ASSERT(SDL_CreateWindowAndRenderer(500, 500, 0, &sdl_window, &sdl_renderer) == 0);
 
     auto png = Png::read(argv[1]);
-    if (png == nullptr)
+    if (png == nullptr) {
+        std::cout << "can't read input" << std::endl;
         return -1;
-    SDLAspngSurface sdl_aspng_surface(sdl_renderer, png->get_width(), png->get_height());
+    }
+    auto sdl_aspng_surface = new SDLAspngSurface(sdl_renderer, png->get_width(), png->get_height());
 
     std::string error;
-    auto aspng = Aspng(png, error);
+    auto aspng = new Aspng(png, error);
     if (error != "") {
         std::cout << "creating Aspng object failed: " << error << std::endl;
         return -1;
     }
 
     // Event loop!
-    SimpleAspngSurface input_map(png->get_width(), png->get_height());
-    double pan_x = 0;
-    double pan_y = 0;
-    int32_t zoom_level = 2;
-    double zoom = pow(1.2, zoom_level);
-    Coord last_mouse_position;
-    bool do_quit = false;
-    bool have_aspng_sim_exception = false;
-    AspngSimException aspng_sim_exception;
-    std::shared_ptr<Device> device_being_clicked = nullptr;
-    milliseconds then = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-    int frames = 0;
-    while (!do_quit) {
-        SDL_Event e;
-        while (SDL_PollEvent(&e)) {
-            switch (e.type) {
-
-            case SDL_KEYDOWN:
-                switch(e.key.keysym.sym) {
-                case SDLK_ESCAPE:
-                    do_quit = true;
-                    break;
-
-                default:
-                    break;
-                }
-                break;
-
-            case SDL_MOUSEBUTTONDOWN:
-                switch (e.button.button) {
-                case SDL_BUTTON_LEFT:
-                    {
-                        if (!have_aspng_sim_exception) {
-                            Coord coord(
-                                (e.button.x / zoom) - pan_x,
-                                (e.button.y / zoom) - pan_y
-                            );
-                            auto device = aspng.which_device(coord);
-                            if (device != nullptr) {
-                                device_being_clicked = device;
-                                device_being_clicked->click(coord);
-                            }
-                        }
-                    }
-                    break;
-
-                default:
-                    break;
-                }
-                break;
-
-            case SDL_MOUSEBUTTONUP:
-                switch (e.button.button) {
-                case SDL_BUTTON_LEFT:
-                    if (device_being_clicked != nullptr) {
-                        device_being_clicked->unclick();
-                        device_being_clicked = nullptr;
-                    }
-                    break;
-
-                default:
-                    break;
-                }
-
-            case SDL_MOUSEMOTION:
-                last_mouse_position = Coord(e.motion.x, e.motion.y);
-                switch (e.motion.state) {
-                case SDL_BUTTON_MMASK:
-                    pan_x += e.motion.xrel / zoom;
-                    pan_y += e.motion.yrel / zoom;
-                    break;
-
-                default:
-                    break;
-                }
-                break;
-
-            case SDL_MOUSEWHEEL:
-                {
-                    double mouse_pre_zoom_x = last_mouse_position.x / zoom;
-                    double mouse_pre_zoom_y = last_mouse_position.y / zoom;
-                    zoom_level += e.wheel.y;
-                    zoom = pow(1.2, zoom_level);
-                    double mouse_post_zoom_x = last_mouse_position.x / zoom;
-                    double mouse_post_zoom_y = last_mouse_position.y / zoom;
-                    pan_x += mouse_post_zoom_x - mouse_pre_zoom_x;
-                    pan_y += mouse_post_zoom_y - mouse_pre_zoom_y;
-                }
-                break;
-
-            case SDL_QUIT:
-                do_quit = true;
-                break;
-
-            default:
-                break;
-            }
+    context = new OneLoopContext(sdl_renderer, png, sdl_aspng_surface, aspng);
+    #ifdef __EMSCRIPTEN__
+        emscripten_set_main_loop(&one_loop, 0, 0);
+        return 0;
+    #else
+        while (!context->do_quit) {
+            one_loop();
+            // TODO this could be smarter.
+            SDL_Delay(5);
         }
-
-        SDL_SetRenderDrawColor(sdl_renderer, 255, 0, 255, 255);
-        SDL_RenderClear(sdl_renderer);
-        sdl_aspng_surface.start_draw();
-        aspng.draw(&sdl_aspng_surface);
-
-        if (!have_aspng_sim_exception) {
-            try {
-                aspng.step();
-            } catch (AspngSimException &e) {
-                std::cout << "error: " << e.message << std::endl;
-                aspng_sim_exception = e;
-                have_aspng_sim_exception = true;
-            }
-        }
-
-        milliseconds now = duration_cast<milliseconds>(system_clock::now().time_since_epoch());
-        if (have_aspng_sim_exception) {
-            Rgb rgb((sin(now.count() * 6.28 / 500.) * 128) + 128, 0, 0);
-            for (int32_t x = aspng_sim_exception.bounding_box.get_bottom_left().x;
-                x <= aspng_sim_exception.bounding_box.get_top_right().x;
-                x++) {
-                for (int32_t y = aspng_sim_exception.bounding_box.get_bottom_left().y;
-                    y <= aspng_sim_exception.bounding_box.get_top_right().y;
-                    y++) {
-                    sdl_aspng_surface.set_pixel(x, y, rgb);
-                }
-            }
-        }
-
-        sdl_aspng_surface.finish_draw();
-        SDL_Rect sdl_rect_dst;
-        sdl_rect_dst.w = sdl_aspng_surface.get_width() * zoom;
-        sdl_rect_dst.h = sdl_aspng_surface.get_height() * zoom;
-        sdl_rect_dst.x = pan_x * zoom;
-        sdl_rect_dst.y = pan_y * zoom;
-        SDL_RenderCopy(sdl_renderer, sdl_aspng_surface.get_texture(), nullptr, &sdl_rect_dst);
-        SDL_RenderPresent(sdl_renderer);
-
-        int elapsed = (now - then).count();
-        if (elapsed >= 1000) {
-            //std::cout << (frames / (elapsed / 1000.)) << std::endl;
-            then = now;
-            frames = 0;
-        }
-        frames++;
-
-        // TODO
-        SDL_Delay(5);
-    }
-
-    SDL_Quit();
-    return 0;
+        SDL_Quit();
+        return 0;
+    #endif
 }

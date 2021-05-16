@@ -6,8 +6,8 @@
 
 class Coord {
 public:
-    Coord(void) {};
-    Coord(int32_t _x, int32_t _y) : x(_x), y(_y) {};
+    Coord(void) {}
+    Coord(int32_t _x, int32_t _y) : x(_x), y(_y) {}
 
     int32_t x;
     int32_t y;

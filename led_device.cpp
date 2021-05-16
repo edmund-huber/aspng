@@ -33,7 +33,7 @@ bool LEDDevice::link(void) {
     return true;
 }
 
-std::list<std::shared_ptr<Port>> LEDDevice::propagate(std::shared_ptr<Port> port) {
+std::list<std::shared_ptr<Port>> LEDDevice::propagate(std::shared_ptr<Port>) {
     std::list<std::shared_ptr<Port>> empty;
     return empty;
 }

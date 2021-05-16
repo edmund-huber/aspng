@@ -67,7 +67,7 @@ void InputDevice::sub_draw(AspngSurface *surface, int32_t min_x, int32_t min_y, 
     }
 }
 
-void InputDevice::click(Coord coord) {
+void InputDevice::click(Coord) {
     this->being_clicked = true;
 }
 

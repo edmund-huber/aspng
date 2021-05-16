@@ -25,7 +25,7 @@ std::list<Patch *> CopperDevice::all_patches(void) {
     return all_patches;
 }
 
-std::tuple<LinkResult, PortType, std::string> CopperDevice::prelink(Patch *, std::shared_ptr<Device> d) {
+std::tuple<LinkResult, PortType, std::string> CopperDevice::prelink(Patch *, std::shared_ptr<Device>) {
     return std::make_tuple(CanLink, NoSpecialMeaning, "");
 }
 

@@ -56,7 +56,7 @@ public:
     // ports.
     virtual std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>) = 0;
     void add_port(std::shared_ptr<Port>);
-    std::list<std::shared_ptr<Port>> all_ports(void);
+    std::list<std::shared_ptr<Port> > all_ports(void);
 
     // `link` gives each device a chance to finalize the linking process. This
     // is the earliest time that the device knows all ports that are linking
@@ -65,7 +65,7 @@ public:
 
     // `propagate` should return the list of Ports that are immediate neighbors
     // of the given Port.
-    virtual std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>) = 0;
+    virtual std::list<std::shared_ptr<Port> > propagate(std::shared_ptr<Port>) = 0;
 
     virtual ElectricalValue get_value_at_port(std::shared_ptr<Port>) = 0;
 
@@ -78,10 +78,10 @@ public:
     virtual void unclick(void);
 
 protected:
-    void draw_helper(AspngSurface *, std::list<Patch *>);
+    void draw_helper(AspngSurface *, std::list<Patch *> &);
 
 private:
-    std::list<std::shared_ptr<Port>> ports;
+    std::list<std::shared_ptr<Port> > ports;
 
     static void flood_helper(Coord, AspngSurface *, Patch &, std::list<Coord> &);
     void maybe_neighbor(Device ***, int32_t, int32_t, int32_t, int32_t, std::set<Device *> *);
@@ -93,30 +93,30 @@ class BackgroundDevice : public Device {
 public:
     BackgroundDevice(void);
     ~BackgroundDevice(void);
-    std::string name(void);
+    std::string name(void) override;
     static Device *create(void);
-    bool parse(AspngSurface *, Coord);
-    std::list<Patch *> all_patches(void);
-    std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
-    bool link(void);
-    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
-    ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(std::shared_ptr<Port>, ElectricalValue);
+    bool parse(AspngSurface *, Coord) override;
+    std::list<Patch *> all_patches(void) override;
+    std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>) override;
+    bool link(void) override;
+    std::list<std::shared_ptr<Port> > propagate(std::shared_ptr<Port>) override;
+    ElectricalValue get_value_at_port(std::shared_ptr<Port>) override;
+    void apply_new_value(std::shared_ptr<Port>, ElectricalValue) override;
     static Rgb color;
 
 private:
     Patch patch;
 
-    virtual Rgb get_draw_color(Patch *);
+    virtual Rgb get_draw_color(Patch *) override;
 };
 
 class BaseTemplateDevice : public Device {
 public:
-    bool parse(AspngSurface *, Coord);
-    std::list<Patch *> all_patches(void);
-    std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
+    bool parse(AspngSurface *, Coord) override;
+    std::list<Patch *> all_patches(void) override;
+    std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>) override;
     static Rgb color;
-    void draw(AspngSurface *);
+    void draw(AspngSurface *) override;
     virtual std::string template_name(void) = 0;
     virtual bool sub_parse(AspngSurface *, int32_t, int32_t, int32_t, int32_t) = 0;
     virtual std::list<Patch *> sub_patches(void) = 0;
@@ -126,64 +126,64 @@ private:
     Patch patch;
     std::string tab;
 
-    virtual Rgb get_draw_color(Patch *);
+    virtual Rgb get_draw_color(Patch *) override;
 };
 
 class BridgeDevice : public Device {
 public:
-    std::string name(void);
+    std::string name(void) override;
     static Device *create(void);
-    bool parse(AspngSurface *, Coord);
-    std::list<Patch *> all_patches(void);
-    std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
-    bool link(void);
-    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
-    ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(std::shared_ptr<Port>, ElectricalValue);
+    bool parse(AspngSurface *, Coord) override;
+    std::list<Patch *> all_patches(void) override;
+    std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>) override;
+    bool link(void) override;
+    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>) override;
+    ElectricalValue get_value_at_port(std::shared_ptr<Port>) override;
+    void apply_new_value(std::shared_ptr<Port>, ElectricalValue) override;
     static Rgb color;
 
 private:
     Patch patch;
 
-    virtual Rgb get_draw_color(Patch *);
+    virtual Rgb get_draw_color(Patch *) override;
 };
 
 class CopperDevice : public Device {
 public:
     CopperDevice();
-    std::string name(void);
+    std::string name(void) override;
     static Device *create(void);
-    bool parse(AspngSurface *, Coord);
-    std::list<Patch *> all_patches(void);
-    std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
-    bool link(void);
-    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
-    ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(std::shared_ptr<Port>, ElectricalValue);
+    bool parse(AspngSurface *, Coord) override;
+    std::list<Patch *> all_patches(void) override;
+    std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>) override;
+    bool link(void) override;
+    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>) override;
+    ElectricalValue get_value_at_port(std::shared_ptr<Port>) override;
+    void apply_new_value(std::shared_ptr<Port>, ElectricalValue) override;
     static Rgb color;
 
 private:
     Patch patch;
     Rgb color_for_drawing;
 
-    virtual Rgb get_draw_color(Patch *);
+    virtual Rgb get_draw_color(Patch *) override;
 };
 
 class InputDevice : public BaseTemplateDevice {
 public:
     InputDevice(void);
-    std::string name(void);
+    std::string name(void) override;
     static Device *create(void);
-    std::string template_name(void);
-    bool sub_parse(AspngSurface *, int32_t, int32_t, int32_t, int32_t);
-    bool link(void);
-    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
-    ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(std::shared_ptr<Port>, ElectricalValue);
-    std::list<Patch *> sub_patches(void);
-    void sub_draw(AspngSurface *, int32_t, int32_t, int32_t, int32_t);
-    void click(Coord);
-    void unclick(void);
+    std::string template_name(void) override;
+    bool sub_parse(AspngSurface *, int32_t, int32_t, int32_t, int32_t) override;
+    bool link(void) override;
+    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>) override;
+    ElectricalValue get_value_at_port(std::shared_ptr<Port>) override;
+    void apply_new_value(std::shared_ptr<Port>, ElectricalValue) override;
+    std::list<Patch *> sub_patches(void) override;
+    void sub_draw(AspngSurface *, int32_t, int32_t, int32_t, int32_t) override;
+    void click(Coord) override;
+    void unclick(void) override;
 
 private:
     bool being_clicked;
@@ -193,16 +193,16 @@ private:
 class LEDDevice : public BaseTemplateDevice {
 public:
     LEDDevice(void);
-    std::string name(void);
+    std::string name(void) override;
     static Device *create(void);
-    std::string template_name(void);
-    bool sub_parse(AspngSurface *, int32_t, int32_t, int32_t, int32_t);
-    bool link(void);
-    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
-    ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(std::shared_ptr<Port>, ElectricalValue);
-    std::list<Patch *> sub_patches(void);
-    void sub_draw(AspngSurface *, int32_t, int32_t, int32_t, int32_t);
+    std::string template_name(void) override;
+    bool sub_parse(AspngSurface *, int32_t, int32_t, int32_t, int32_t) override;
+    bool link(void) override;
+    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>) override;
+    ElectricalValue get_value_at_port(std::shared_ptr<Port>) override;
+    void apply_new_value(std::shared_ptr<Port>, ElectricalValue) override;
+    std::list<Patch *> sub_patches(void) override;
+    void sub_draw(AspngSurface *, int32_t, int32_t, int32_t, int32_t) override;
 
 private:
     bool active;
@@ -211,15 +211,15 @@ private:
 
 class PullDevice : public Device {
 public:
-    std::string name(void);
+    std::string name(void) override;
     static Device *create(void);
-    bool parse(AspngSurface *, Coord);
-    std::list<Patch *> all_patches(void);
-    std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
-    bool link(void);
-    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
-    ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(std::shared_ptr<Port>, ElectricalValue);
+    bool parse(AspngSurface *, Coord) override;
+    std::list<Patch *> all_patches(void) override;
+    std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>) override;
+    bool link(void) override;
+    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>) override;
+    ElectricalValue get_value_at_port(std::shared_ptr<Port>) override;
+    void apply_new_value(std::shared_ptr<Port>, ElectricalValue) override;
     static Rgb yellow;
 
 private:
@@ -230,60 +230,60 @@ private:
         PullLo
     } pull_type;
 
-    virtual Rgb get_draw_color(Patch *);
+    virtual Rgb get_draw_color(Patch *) override;
 };
 
 class SinkDevice : public Device {
 public:
-    std::string name(void);
+    std::string name(void) override;
     static Device *create(void);
-    bool parse(AspngSurface *, Coord);
-    std::list<Patch *> all_patches(void);
-    std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
-    bool link(void);
-    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
-    ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(std::shared_ptr<Port>, ElectricalValue);
+    bool parse(AspngSurface *, Coord) override;
+    std::list<Patch *> all_patches(void) override;
+    std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>) override;
+    bool link(void) override;
+    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>) override;
+    ElectricalValue get_value_at_port(std::shared_ptr<Port>) override;
+    void apply_new_value(std::shared_ptr<Port>, ElectricalValue) override;
     static Rgb color;
 
 private:
     Patch patch;
 
-    virtual Rgb get_draw_color(Patch *);
+    virtual Rgb get_draw_color(Patch *) override;
 };
 
 class SourceDevice : public Device {
 public:
-    std::string name(void);
+    std::string name(void) override;
     static Device *create(void);
-    bool parse(AspngSurface *, Coord);
-    std::list<Patch *> all_patches(void);
-    std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
-    bool link(void);
-    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
-    ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(std::shared_ptr<Port>, ElectricalValue);
+    bool parse(AspngSurface *, Coord) override;
+    std::list<Patch *> all_patches(void) override;
+    std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>) override;
+    bool link(void) override;
+    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>) override;
+    ElectricalValue get_value_at_port(std::shared_ptr<Port>) override;
+    void apply_new_value(std::shared_ptr<Port>, ElectricalValue) override;
     static Rgb color;
 
 private:
     Patch patch;
 
-    virtual Rgb get_draw_color(Patch *);
+    virtual Rgb get_draw_color(Patch *) override;
 };
 
 class SwitchDevice : public BaseTemplateDevice {
 public:
-    std::string name(void);
+    std::string name(void) override;
     static Device *create(void);
-    std::string template_name(void);
-    bool sub_parse(AspngSurface *, int32_t, int32_t, int32_t, int32_t);
-    bool link(void);
-    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
-    ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(std::shared_ptr<Port>, ElectricalValue);
-    std::list<Patch *> sub_patches(void);
-    void sub_draw(AspngSurface *, int32_t, int32_t, int32_t, int32_t);
-    void click(Coord);
+    std::string template_name(void) override;
+    bool sub_parse(AspngSurface *, int32_t, int32_t, int32_t, int32_t) override;
+    bool link(void) override;
+    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>) override;
+    ElectricalValue get_value_at_port(std::shared_ptr<Port>) override;
+    void apply_new_value(std::shared_ptr<Port>, ElectricalValue) override;
+    std::list<Patch *> sub_patches(void) override;
+    void sub_draw(AspngSurface *, int32_t, int32_t, int32_t, int32_t) override;
+    void click(Coord) override;
 
 private:
     bool closed;
@@ -293,23 +293,23 @@ private:
 class TransistorDevice : public Device {
 public:
     TransistorDevice();
-    std::string name(void);
+    std::string name(void) override;
     static Device *create(void);
-    bool parse(AspngSurface *, Coord);
-    std::list<Patch *> all_patches(void);
-    std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>);
-    bool link(void);
-    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>);
-    ElectricalValue get_value_at_port(std::shared_ptr<Port>);
-    void apply_new_value(std::shared_ptr<Port>, ElectricalValue);
+    bool parse(AspngSurface *, Coord) override;
+    std::list<Patch *> all_patches(void) override;
+    std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>) override;
+    bool link(void) override;
+    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>) override;
+    ElectricalValue get_value_at_port(std::shared_ptr<Port>) override;
+    void apply_new_value(std::shared_ptr<Port>, ElectricalValue) override;
     static Rgb color;
-    void draw_debug(AspngSurface *);
+    void draw_debug(AspngSurface *) override;
 
 private:
     Patch patch;
     bool passing;
 
-    virtual Rgb get_draw_color(Patch *);
+    virtual Rgb get_draw_color(Patch *) override;
 };
 
 #endif

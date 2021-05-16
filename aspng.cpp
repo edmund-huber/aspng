@@ -77,6 +77,7 @@ Aspng::Aspng(AspngSurface *surface, std::string &error) {
                                 }
                             }
                         }
+
                         // To complete the parse, the device should claim all
                         // of its pixels.
                         if (d_is_valid) {

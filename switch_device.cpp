@@ -90,6 +90,6 @@ void SwitchDevice::sub_draw(AspngSurface *surface, int32_t min_x, int32_t min_y,
     }
 }
 
-void SwitchDevice::click(Coord coord) {
+void SwitchDevice::click(Coord) {
     this->closed = !this->closed;
 }

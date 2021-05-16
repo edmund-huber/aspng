@@ -19,6 +19,7 @@ std::ostream &operator<<(std::ostream &, const Rgb &);
 
 class AspngSurface {
 public:
+    virtual ~AspngSurface() {}
     virtual Rgb get_pixel(int32_t, int32_t) = 0;
     virtual void set_pixel(int32_t, int32_t, Rgb) = 0;
     virtual int32_t get_width(void) = 0;
