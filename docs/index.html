@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="en-us">
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <style>
+            body {
+                margin: 0;
+                padding: none;
+            }
+            /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
+            canvas {
+                border: 0px none;
+                background-color: black;
+            }
+            #emscripten_logo {
+                display: inline-block;
+                margin: 0;
+            }
+        </style>
+    </head>
+    <body>
+        <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
+        <script type="text/javascript">
+            var Module = {
+                preRun: [],
+                postRun: [],
+                print: function(s) { console.log("wasm: " + s); },
+                printErr: function(s) { console.log("wasm: " + s); },
+                canvas: (function() {
+                    var canvas = document.getElementById("canvas");
+                    // TODO, should make this more robust.
+                    canvas.addEventListener("webglcontextlost", function(e) {
+                        console.log("WebGL context lost");
+                        e.preventDefault();
+                    });
+                    return canvas;
+                })(),
+                setStatus: function(text) {},
+                monitorRunDependencies: function(left) {},
+                arguments: ['input.png'],
+                preRun: function() {
+                    FS.createPreloadedFile("/", "input.png", "/wasm/input.png", true, true);
+                    FS.createPreloadedFile("/", "font.png", "/font.png", true, true);
+                }
+            };
+        </script>
+        <script async type="text/javascript" src="/bin/aspng_wasm.js"></script>
+    </body>
+</html>
