@@ -245,8 +245,6 @@ void one_loop(void) {
     context->sdl_aspng_surface->finish_draw();
     SDL_Rect sdl_rect_dst;
     sdl_rect_dst.w = context->sdl_aspng_surface->get_width() * context->zoom;
-    std::cout << "width " <<  context->sdl_aspng_surface->get_width() <<std::endl;
-    std::cout << "height " <<  context->sdl_aspng_surface->get_height() <<std::endl;
     sdl_rect_dst.h = context->sdl_aspng_surface->get_height() * context->zoom;
     sdl_rect_dst.x = context->pan_x * context->zoom;
     sdl_rect_dst.y = context->pan_y * context->zoom;
