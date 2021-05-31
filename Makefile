@@ -27,18 +27,18 @@ obj/%.o: %.cpp | obj
 # for why we're using DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=0.
 # Note: the following targets only differ in what input file gets embedded in
 # the WASM!
-docs/wasm_full_ripple_adder.js: CXX = emcc $(CXXFLAGS) -s WASM=1 -s MODULARIZE=1 -s USE_LIBPNG -s USE_SDL=2 -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=0
-docs/wasm_full_ripple_adder.js: obj/gui.ow $(CORE_OBJECTS_WASM) | bin
+docs/full_ripple_adder.js: CXX = emcc $(CXXFLAGS) -s WASM=1 -s MODULARIZE=1 -s USE_LIBPNG -s USE_SDL=2 -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=0
+docs/full_ripple_adder.js: obj/gui.ow $(CORE_OBJECTS_WASM) | bin
 	$(CXX) $^ --embed-file tests/full_ripple_adder/_.png@input.png --embed-file font.png -o $@
-docs/wasm_source_and_sink.js: CXX = emcc $(CXXFLAGS) -s WASM=1 -s MODULARIZE=1 -s USE_LIBPNG -s USE_SDL=2 -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=0
-docs/wasm_source_and_sink.js: obj/gui.ow $(CORE_OBJECTS_WASM) | bin
+docs/source_and_sink.js: CXX = emcc $(CXXFLAGS) -s WASM=1 -s MODULARIZE=1 -s USE_LIBPNG -s USE_SDL=2 -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=0
+docs/source_and_sink.js: obj/gui.ow $(CORE_OBJECTS_WASM) | bin
 	$(CXX) $^ --embed-file examples/source_and_sink.png@input.png --embed-file font.png -o $@
 
 obj/%.ow: %.cpp | obj
 	$(CXX) -c $(CXXFLAGS) $^ -o $@
 
 .PHONY: docs
-docs: docs/wasm_full_ripple_adder.js docs/wasm_source_and_sink.js
+docs: docs/full_ripple_adder.js docs/source_and_sink.js
 
 .PHONY: clean
 clean:
