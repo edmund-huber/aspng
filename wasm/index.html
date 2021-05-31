@@ -20,9 +20,10 @@
         </style>
     </head>
     <body>
+        <script type="text/javascript" src="/bin/aspng_wasm.js"></script>
         <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
         <script type="text/javascript">
-            var Module = {
+            Module({
                 preRun: [],
                 postRun: [],
                 print: function(s) { console.log("wasm: " + s); },
@@ -38,13 +39,8 @@
                 })(),
                 setStatus: function(text) {},
                 monitorRunDependencies: function(left) {},
-                arguments: ['input.png'],
-                preRun: function() {
-                    FS.createPreloadedFile("/", "input.png", "/wasm/input.png", true, true);
-                    FS.createPreloadedFile("/", "font.png", "/font.png", true, true);
-                }
-            };
+                arguments: ['input.png']
+            }).then(function() {});
         </script>
-        <script async type="text/javascript" src="/bin/aspng_wasm.js"></script>
     </body>
 </html>

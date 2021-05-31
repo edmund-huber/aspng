@@ -23,9 +23,9 @@ obj:
 obj/%.o: %.cpp | obj
 	$(CXX) -c $(CXXFLAGS) $^ -o $@
 
-bin/aspng_wasm.js: CXX = emcc $(CXXFLAGS) -s WASM=1 -s USE_LIBPNG -s USE_SDL=2
+bin/aspng_wasm.js: CXX = emcc $(CXXFLAGS) -s WASM=1 -s MODULARIZE=1 -s USE_LIBPNG -s USE_SDL=2
 bin/aspng_wasm.js: obj/gui.ow $(CORE_OBJECTS_WASM) | bin
-	$(CXX) $^ -o $@
+	$(CXX) $^ --embed-file tests/full_ripple_adder/_.png@input.png --embed-file font.png -o $@
 
 obj/%.ow: %.cpp | obj
 	$(CXX) -c $(CXXFLAGS) $^ -o $@
