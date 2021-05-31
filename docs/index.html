@@ -23,7 +23,7 @@
         <div class="header">Table of contents</div>
         <div>
             <a href="#anchor-introduction">Introduction</a><br>
-            Design guide<br>
+            <a href="#anchor-design-guide">Design guide</a><br>
             Why does this exist? and design decisions<br>
         </div>
 
@@ -74,6 +74,56 @@
             square here.  Sorry! TODO link to later instructions on how to run
             locally)
         </div>
+
+        <div class="header" id="anchor-design-guide">Design guide</div>
+        <div>
+            First, your background must be entirely black (#000000).
+            <u>aspng</u> ignores black pixels.
+            <script type="text/javascript" src="/aspng/source_and_sink.js"></script>
+            <canvas id="canvas2" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
+            <script type="text/javascript">
+                Module({
+                    preRun: [],
+                    postRun: [],
+                    print: function(s) { console.log("wasm: " + s); },
+                    printErr: function(s) { console.log("wasm: " + s); },
+                    canvas: (function() {
+                        var canvas = document.getElementById("canvas2");
+                        // TODO, should make this more robust.
+                        canvas.addEventListener("webglcontextlost", function(e) {
+                            console.log("WebGL context lost");
+                            e.preventDefault();
+                        });
+                        return canvas;
+                    })(),
+                    setStatus: function(text) {},
+                    monitorRunDependencies: function(left) {},
+                    arguments: ['input.png']
+                });
+            </script>
+        </div><div>
+            Source pixels are white (#ffffff) and drive a high voltage. Sink
+            pixels are dark gray (#303030) and drive a low voltage.
+        </div><div>
+            It is an error to connect a source to a sink directly.
+        </div><div>
+            Copper pixels (#f8ac59) connect components electrically.
+        </div><div>
+            Bridge pixels (#79443b) allow you to cross wires without connecting
+            them.
+        </div><div>
+            Transistor pixels (#ff00f2) ...
+        </div><div>
+            You can create pull-ups and pull-downs using .. These "weak"
+            sources and sinks drive a high or low voltage, but can be overruled
+            by the presence of a conventional source or sink.
+        </div><div>
+            Finally, as you've seen, there are a few "template devices" such as
+            input, switch, and LED. These must be reproduced exactly as shown
+            or <u>aspng</u> will not recognize them.
+        </div>
+
+
 
 
 
