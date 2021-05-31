@@ -96,8 +96,8 @@ class OneLoopContext {
             input_map(png->get_width(), png->get_height()),
             pan_x(0),
             pan_y(0),
-            zoom_level(2),
-            zoom(pow(1.2, 2)),
+            zoom_level(0),
+            zoom(pow(1.2, 0)),
             have_aspng_sim_exception(false),
             device_being_clicked(nullptr),
             then(duration_cast<milliseconds>(system_clock::now().time_since_epoch())),
@@ -178,6 +178,7 @@ void one_loop(void) {
             break;
 
         case SDL_MOUSEMOTION:
+            #ifndef __EMSCRIPTEN__
             context->last_mouse_position = Coord(e.motion.x, e.motion.y);
             switch (e.motion.state) {
             case SDL_BUTTON_MMASK:
@@ -188,9 +189,11 @@ void one_loop(void) {
             default:
                 break;
             }
+            #endif
             break;
 
         case SDL_MOUSEWHEEL:
+            #ifndef __EMSCRIPTEN__
             {
                 double mouse_pre_zoom_x = context->last_mouse_position.x / context->zoom;
                 double mouse_pre_zoom_y = context->last_mouse_position.y / context->zoom;
@@ -201,6 +204,7 @@ void one_loop(void) {
                 context->pan_x += mouse_post_zoom_x - mouse_pre_zoom_x;
                 context->pan_y += mouse_post_zoom_y - mouse_pre_zoom_y;
             }
+            #endif
             break;
 
         case SDL_QUIT:
@@ -241,6 +245,8 @@ void one_loop(void) {
     context->sdl_aspng_surface->finish_draw();
     SDL_Rect sdl_rect_dst;
     sdl_rect_dst.w = context->sdl_aspng_surface->get_width() * context->zoom;
+    std::cout << "width " <<  context->sdl_aspng_surface->get_width() <<std::endl;
+    std::cout << "height " <<  context->sdl_aspng_surface->get_height() <<std::endl;
     sdl_rect_dst.h = context->sdl_aspng_surface->get_height() * context->zoom;
     sdl_rect_dst.x = context->pan_x * context->zoom;
     sdl_rect_dst.y = context->pan_y * context->zoom;
@@ -257,7 +263,19 @@ void one_loop(void) {
 }
 
 int main(int argc, char **argv) {
+    // There should be just one argument: the png input.
     if (argc != 2) {
+        return -1;
+    }
+    auto png = Png::read(argv[1]);
+    if (png == nullptr) {
+        std::cout << "can't read input" << std::endl;
+        return -1;
+    }
+    std::string error;
+    auto aspng = new Aspng(png, error);
+    if (error != "") {
+        std::cout << "creating Aspng object failed: " << error << std::endl;
         return -1;
     }
 
@@ -265,21 +283,8 @@ int main(int argc, char **argv) {
     ASSERT(SDL_Init(SDL_INIT_VIDEO) == 0);
     SDL_Window *sdl_window;
     SDL_Renderer *sdl_renderer;
-    ASSERT(SDL_CreateWindowAndRenderer(500, 500, 0, &sdl_window, &sdl_renderer) == 0);
-
-    auto png = Png::read(argv[1]);
-    if (png == nullptr) {
-        std::cout << "can't read input" << std::endl;
-        return -1;
-    }
+    ASSERT(SDL_CreateWindowAndRenderer(png->get_width(), png->get_height(), 0, &sdl_window, &sdl_renderer) == 0);
     auto sdl_aspng_surface = new SDLAspngSurface(sdl_renderer, png->get_width(), png->get_height());
-
-    std::string error;
-    auto aspng = new Aspng(png, error);
-    if (error != "") {
-        std::cout << "creating Aspng object failed: " << error << std::endl;
-        return -1;
-    }
 
     // Event loop!
     context = new OneLoopContext(sdl_renderer, png, sdl_aspng_surface, aspng);
