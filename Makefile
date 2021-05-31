@@ -23,7 +23,9 @@ obj:
 obj/%.o: %.cpp | obj
 	$(CXX) -c $(CXXFLAGS) $^ -o $@
 
-bin/aspng_wasm.js: CXX = emcc $(CXXFLAGS) -s WASM=1 -s MODULARIZE=1 -s USE_LIBPNG -s USE_SDL=2
+# See https://github.com/emscripten-ports/SDL2/issues/130#issuecomment-851701543
+# for why we're using DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=0.
+bin/aspng_wasm.js: CXX = emcc $(CXXFLAGS) -s WASM=1 -s MODULARIZE=1 -s USE_LIBPNG -s USE_SDL=2 -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=0
 bin/aspng_wasm.js: obj/gui.ow $(CORE_OBJECTS_WASM) | bin
 	$(CXX) $^ --embed-file tests/full_ripple_adder/_.png@input.png --embed-file font.png -o $@
 
