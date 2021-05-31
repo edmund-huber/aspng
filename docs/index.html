@@ -3,6 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+        <title>aspng: application-specific PNG</title>
         <style>
             body {
                 margin: 0;
@@ -13,22 +14,38 @@
                 border: 0px none;
                 background-color: black;
             }
-            #emscripten_logo {
-                display: inline-block;
-                margin: 0;
-            }
         </style>
     </head>
     <body>
-        <canvas class="emscripten" id="canvas" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
+        <div>
+            Have you ever wanted to design a CPU with Paint? Well now you can!
+        </div><div>
+            <u>aspng</u> ("application-specific PNG") lets you draw out
+            transistor-level digital circuits using pixels, and then simulate
+            (and interact with!) those circuits.
+        </div><div>
+            To give you an idea of what's possible, here's a full ripple adder:
+            <ul>
+                <li>
+                    Use the switches on the left and right to change the input.
+                </li><li>
+                    The switch in the middle/top is for the input carry bit.
+                </li><li>
+                    The result (and the output carry bit) is conveyed with the
+                    LEDs in the middle.
+                </li>
+            </ul>
+        </div>
+        <script type="text/javascript" src="/aspng/wasm_full_ripple_adder.js"></script>
+        <canvas id="canvas1" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
         <script type="text/javascript">
-            var Module = {
+            Module({
                 preRun: [],
                 postRun: [],
                 print: function(s) { console.log("wasm: " + s); },
                 printErr: function(s) { console.log("wasm: " + s); },
                 canvas: (function() {
-                    var canvas = document.getElementById("canvas");
+                    var canvas = document.getElementById("canvas1");
                     // TODO, should make this more robust.
                     canvas.addEventListener("webglcontextlost", function(e) {
                         console.log("WebGL context lost");
@@ -38,13 +55,13 @@
                 })(),
                 setStatus: function(text) {},
                 monitorRunDependencies: function(left) {},
-                arguments: ['input.png'],
-                preRun: function() {
-                    FS.createPreloadedFile("/", "input.png", "/aspng/input.png", true, true);
-                    FS.createPreloadedFile("/", "font.png", "/aspng/font.png", true, true);
-                }
-            };
+                arguments: ['input.png']
+            });
         </script>
-        <script async type="text/javascript" src="/aspng/bin/aspng_wasm.js"></script>
+        <div>
+            (Note: if your browser doesn't support WASM, you will see a black
+            square here.  Sorry! TODO link to later instructions on how to run
+            locally)
+        </div>
     </body>
 </html>
