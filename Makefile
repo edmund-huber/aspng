@@ -3,7 +3,7 @@
 CXX = g++
 CXXFLAGS = -std=c++17 -pedantic -Wall -Wextra -Wpedantic -Wcast-align -Werror
 CORE_OBJECTS = obj/aspng.o obj/aspng_surface.o obj/background_device.o obj/base_template_device.o obj/bounding_box.o obj/bridge_device.o obj/coord.o obj/copper_device.o obj/device.o obj/electrical_value.o obj/input_device.o obj/led_device.o obj/net.o obj/patch.o obj/png.o obj/port.o obj/pull_device.o obj/simple_aspng_surface.o obj/sink_device.o obj/source_device.o obj/switch_device.o obj/transistor_device.o
-CORE_OBJECTS_WASM = obj/aspng.ow obj/aspng_surface.ow obj/background_device.ow obj/base_template_device.ow obj/bounding_box.ow obj/bridge_device.ow obj/coord.ow obj/copper_device.ow obj/device.ow obj/electrical_value.ow obj/input_device.ow obj/led_device.ow obj/net.ow obj/patch.ow obj/png.ow obj/port.ow obj/pull_device.ow obj/simple_aspng_surface.ow obj/sink_device.ow obj/source_device.ow obj/switch_device.ow obj/transistor_device.ow
+CORE_OBJECTS_WASM = $(CORE_OBJECTS:.o=.ow)
 
 test: bin/test
 	./bin/test
