@@ -14,11 +14,12 @@
                 border: 0 none;
                 background-color: black;
             }
-            div {
-                margin: 1em 0 1em 0;
+            body > * {
+                margin: 1em 0 1em 2em;
             }
-            div.header {
+            body > div.header {
                 font-size: 140%;
+                font-weight: bold;
                 margin: 2em 0 1em 0;
             }
         </style>
@@ -87,7 +88,7 @@
             Source pixels are white (#ffffff) and drive a high voltage. Sink
             pixels are dark gray (#303030) and drive a low voltage.<br>
             <br>
-            <script type="text/javascript" src="/aspng/source_and_sink.js"></script>
+            <script type="text/javascript" src="/aspng/edge_triggered_flip_flop.js"></script>
             <canvas id="canvas2" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
             <script type="text/javascript">
                 Module({
