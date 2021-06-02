@@ -26,13 +26,8 @@
     </head>
     <body>
         <div class="header">aspng: application-specific PNG</div>
-        <div>
-            <a href="#introduction">Introduction</a><br>
-            <a href="#design-guide">Design guide</a><br>
-            <a href="#why-aspng">Why does this exist? .. and design decisions</a>
-        </div>
 
-        <div class="header" id="introduction">Introduction</div>
+        <div class="header">Introduction</div>
         <div>
             Have you ever wanted to design a CPU with Paint? Well now you can!
         </div><div>
@@ -79,7 +74,7 @@
             locally)
         </div>
 
-        <div class="header" id="design-guide">Design guide</div>
+        <div class="header">Design guide</div>
         <div>
             First, your background must be entirely black (#000000).
             aspng ignores black pixels.
@@ -102,12 +97,12 @@
             and sinks drive a high or low voltage, but can be overruled by the
             presence of a conventional source or sink.
         </div><div>
-            Finally, as you've seen, there are a few "template devices" such as
-            input, switch, and LED. These must be reproduced exactly as shown
-            or aspng will not recognize them.
+            Finally, there are a few "template devices" such as input, switch,
+            and LED. These must be reproduced exactly as shown or aspng will
+            not recognize them.
         </div>
 
-        <div class="header" id="why-aspng">Why does this exist? .. and design decisions</div>
+        <div class="header">Why does this exist? .. and design decisions</div>
         <div>
             ASICs are crazy complicated. Every ASIC is a careful arrangement of
             n- and/or p-channel MOSFETs, pullups, pulldowns, clocks, latches,
