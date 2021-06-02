@@ -27,7 +27,7 @@ obj/%.o: %.cpp | obj
 # for why we're using DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=0.
 docs/full_ripple_adder.js: CXX = emcc $(CXXFLAGS) -s WASM=1 -s MODULARIZE=1 -s USE_LIBPNG -s USE_SDL=2 -s DISABLE_DEPRECATED_FIND_EVENT_TARGET_BEHAVIOR=0
 docs/full_ripple_adder.js: obj/gui.ow $(CORE_OBJECTS_WASM) | bin
-	$(CXX) $^ --embed-file tests/full_ripple_adder/_.png@input.png --embed-file font.png -o $@
+	$(CXX) $^ --embed-file examples/full_ripple_adder.png@input.png --embed-file font.png -o $@
 
 obj/%.ow: %.cpp | obj
 	$(CXX) -c $(CXXFLAGS) $^ -o $@
