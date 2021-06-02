@@ -25,20 +25,19 @@
         </style>
     </head>
     <body>
-        <div class="header">Table of contents</div>
+        <div class="header">aspng: application-specific PNG</div>
         <div>
-            <a href="#anchor-introduction">Introduction</a><br>
-            <a href="#anchor-design-guide">Design guide</a><br>
-            Why does this exist? and design decisions<br>
+            <a href="#introduction">Introduction</a><br>
+            <a href="#design-guide">Design guide</a><br>
+            <a href="#why-aspng">Why does this exist? .. and design decisions</a>
         </div>
 
-        <div class="header" id="anchor-introduction">Introduction</div>
+        <div class="header" id="introduction">Introduction</div>
         <div>
             Have you ever wanted to design a CPU with Paint? Well now you can!
         </div><div>
-            <u>aspng</u> ("application-specific PNG") lets you draw out
-            transistor-level digital circuits using pixels, and then simulate
-            (and interact with!) those circuits.
+            aspng lets you draw out transistor-level digital circuits using
+            pixels, and then simulate (and interact with!) those circuits.
         </div><div>
             To give you an idea of what's possible, here's a full ripple adder:
             <ul>
@@ -80,112 +79,71 @@
             locally)
         </div>
 
-        <div class="header" id="anchor-design-guide">Design guide</div>
+        <div class="header" id="design-guide">Design guide</div>
         <div>
             First, your background must be entirely black (#000000).
-            <u>aspng</u> ignores black pixels.
+            aspng ignores black pixels.
         </div><div>
             Source pixels are white (#ffffff) and drive a high voltage. Sink
-            pixels are dark gray (#303030) and drive a low voltage.<br>
-            <br>
-            <script type="text/javascript" src="/aspng/edge_triggered_flip_flop.js"></script>
-            <canvas id="canvas2" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
-            <script type="text/javascript">
-                Module({
-                    preRun: [],
-                    postRun: [],
-                    print: function(s) { console.log("wasm: " + s); },
-                    printErr: function(s) { console.log("wasm: " + s); },
-                    canvas: (function() {
-                        var canvas = document.getElementById("canvas2");
-                        // TODO, should make this more robust.
-                        canvas.addEventListener("webglcontextlost", function(e) {
-                            console.log("WebGL context lost");
-                            e.preventDefault();
-                        });
-                        return canvas;
-                    })(),
-                    setStatus: function(text) {},
-                    monitorRunDependencies: function(left) {},
-                    arguments: ['input.png']
-                });
-            </script>
+            pixels are dark gray (#303030) and drive a low voltage.
         </div><div>
             It is an error to connect a source to a sink directly.
-        </div><div>
-            Copper pixels (#f8ac59) connect components electrically.
         </div><div>
             Bridge pixels (#79443b) allow you to cross wires without connecting
             them.
         </div><div>
-            Transistor pixels (#ff00f2) ...
+            Transistor pixels (#ff00f2) let themselves be connected on three
+            sides with copper, forming a T. The copper forming the cross of the
+            T conducts if the third lead is driven high, otherwise it does not
+            conduct.
         </div><div>
-            You can create pull-ups and pull-downs using .. These "weak"
-            sources and sinks drive a high or low voltage, but can be overruled
-            by the presence of a conventional source or sink.
+            You can create pull-ups and pull-downs using a yellow (#fff200)
+            pixel paired with either a source or a sink. These "weak" sources
+            and sinks drive a high or low voltage, but can be overruled by the
+            presence of a conventional source or sink.
         </div><div>
             Finally, as you've seen, there are a few "template devices" such as
             input, switch, and LED. These must be reproduced exactly as shown
-            or <u>aspng</u> will not recognize them.
+            or aspng will not recognize them.
         </div>
 
-
-
-
-
-Why `aspng`?
-------------
-
-A digital ASIC is a careful arrangement of n- and/or p-channel MOSFETs,
-pullups, pulldowns, clocks, latches, etc., implementing arbitrarily complicated
-relationships between input and output pins.
-
-![MOS 6502 designers](/readme/mos6502mask.jpg)
-
-In the early days, all decisions about the logic and the layout of these
-circuits were made by humans, and the lithography masks were drawn out by hand.
-Microprocessors like the Intel 4004 and the MOS 6502 (pictured above) were
-designed this way.
-
-Today, digital ASICs are much too large and complicated to be designed by
-humans. Instead, hardware description languages like Verilog or VHDL are used
-to describe the behavior of the ASIC, and then very heavily researched computer
-programs figure out the exact layout of physical devices to realize the design
-("logic synthesis").
-
-I'm a simple person. I romanticize those early days, with the intimate and
-artisanal relationship between the designer and their circuit. `aspng` exists
-so that I can capture a fraction of that feeling of satisfaction when a
-carefully designed digital circuit does the right thing.
-
-At the same time, I don't have a lifetime of experience managing power
-consumption, switching delays, parasitic capacitances, capacitance delays,
-leakage, and so on that true ASIC designers must have to make a functioning
-circuit. I'm lazy! I just want the fun parts that make me feel smart. So on to
-design decisions..
-
-Design decisions
-----------------
-
-For the sake of keeping "ASIC design" fun (?) and feasibly simple for a
-non-expert whose main motivation is seeing some blinkenlights, `aspng` greatly
-simplifies all electrical properties:
-
-* *Resistance* does not exist.
-* *Capacitance* only exists in CapacitorDevices, which charge instantly and
-  don't lose charge over time.
-* *Inductance* does not exist.
-* *Voltage* is either floating, low, or high.
-
-Unlike very similar projects (that I know of) such as
-[TICS](https://github.com/onidev/TICS), `aspng` doesn't reduce down to logical
-networks of "true" or "false". To me, logical networks feel so far removed from
-the reality of MOS technology and how electrical devices work, that I don't
-feel compelled to write a simulator that functions at that level of
-abstraction. If designing an ASIC in `aspng` is science fiction, then I view
-designing a logical network as science fantasy -- interesting, but not remotely
-authentic.
-
-
+        <div class="header" id="why-aspng">Why does this exist? .. and design decisions</div>
+        <div>
+            ASICs are crazy complicated. Every ASIC is a careful arrangement of
+            n- and/or p-channel MOSFETs, pullups, pulldowns, clocks, latches,
+            etc., implementing arbitrarily complicated relationships between
+            input and output pins.
+        </div><div>
+            And yet, in the early days all decisions about the logic and the
+            layout of these circuits were made by humans, and the lithography
+            masks were drawn out by hand.  Microprocessors like the Intel 4004
+            and the MOS 6502 were designed this way.
+        </div><div>
+            Today, digital ASICs are much too large and complicated to be
+            designed by humans. Instead, hardware description languages like
+            Verilog or VHDL are used to describe the behavior of the ASIC, and
+            then very heavily researched computer programs figure out the exact
+            layout of physical devices to realize the design ("logic
+            synthesis").
+        </div><div>
+            aspng exists so that I can attempt to experience, and capture some
+            of the satisfaction those early ASIC designers must have felt when
+            their artisanal circuits worked.
+        </div><div>
+            At the same time, I don't have a lifetime of experience managing
+            power consumption, switching delays, parasitic capacitances,
+            capacitance delays, leakage, and so on that true ASIC designers
+            must have to make a functioning circuit. I'm lazy! I just want the
+            fun parts that make me feel smart.
+        </div><div>
+            For the sake of keeping "ASIC design" fun (?) and feasible for the
+            amateur, aspng greatly simplifies all electrical properties:
+            <ul>
+                <li>Resistance does not exist.</li>
+                <li>Capacitance does not exist.</li>
+                <li>Inductance does not exist.</li>
+                <li>Voltage is either "floating", "low", or "high".</li>
+            </ul>
+        </div>
     </body>
 </html>
