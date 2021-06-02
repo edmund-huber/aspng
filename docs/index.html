@@ -7,15 +7,19 @@
         <style>
             body {
                 margin: 0;
-                padding: none;
+                padding: 0 15%;
             }
             /* the canvas *must not* have any border or padding, or mouse coords will be wrong */
             canvas {
-                border: 0px none;
+                border: 0 none;
                 background-color: black;
+            }
+            div {
+                margin: 1em 0 1em 0;
             }
             div.header {
                 font-size: 140%;
+                margin: 2em 0 1em 0;
             }
         </style>
     </head>
@@ -79,6 +83,10 @@
         <div>
             First, your background must be entirely black (#000000).
             <u>aspng</u> ignores black pixels.
+        </div><div>
+            Source pixels are white (#ffffff) and drive a high voltage. Sink
+            pixels are dark gray (#303030) and drive a low voltage.<br>
+            <br>
             <script type="text/javascript" src="/aspng/source_and_sink.js"></script>
             <canvas id="canvas2" oncontextmenu="event.preventDefault()" tabindex=-1></canvas>
             <script type="text/javascript">
@@ -101,9 +109,6 @@
                     arguments: ['input.png']
                 });
             </script>
-        </div><div>
-            Source pixels are white (#ffffff) and drive a high voltage. Sink
-            pixels are dark gray (#303030) and drive a low voltage.
         </div><div>
             It is an error to connect a source to a sink directly.
         </div><div>
