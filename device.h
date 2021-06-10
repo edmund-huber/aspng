@@ -71,6 +71,10 @@ public:
 
     virtual void apply_new_value(std::shared_ptr<Port>, ElectricalValue) = 0;
 
+    // If the device needs to know when a new simulation step has started,
+    // implement this.
+    virtual void new_step(void) {};
+
     virtual void draw(AspngSurface *);
     virtual void draw_debug(AspngSurface *);
 
@@ -117,8 +121,8 @@ public:
     std::tuple<LinkResult, PortType, std::string> prelink(Patch *, std::shared_ptr<Device>) override;
     static Rgb color;
     void draw(AspngSurface *) override;
-    virtual std::string template_name(void) = 0;
-    virtual bool sub_parse(AspngSurface *, int32_t, int32_t, int32_t, int32_t) = 0;
+    virtual std::string prefix(void) = 0;
+    virtual bool sub_parse(AspngSurface *, int32_t, int32_t, int32_t, int32_t, std::string) = 0;
     virtual std::list<Patch *> sub_patches(void) = 0;
     virtual void sub_draw(AspngSurface *, int32_t, int32_t, int32_t, int32_t) = 0;
 
@@ -148,6 +152,29 @@ private:
     virtual Rgb get_draw_color(Patch *) override;
 };
 
+class ClockDevice : public BaseTemplateDevice {
+public:
+    ClockDevice(void);
+    std::string name(void) override;
+    static Device *create(void);
+    std::string prefix(void) override;
+    bool sub_parse(AspngSurface *, int32_t, int32_t, int32_t, int32_t, std::string) override;
+    bool link(void) override;
+    std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>) override;
+    ElectricalValue get_value_at_port(std::shared_ptr<Port>) override;
+    void apply_new_value(std::shared_ptr<Port>, ElectricalValue) override;
+    std::list<Patch *> sub_patches(void) override;
+    void sub_draw(AspngSurface *, int32_t, int32_t, int32_t, int32_t) override;
+    void new_step(void) override;
+
+private:
+    ElectricalValue get_state(void);
+
+    uint64_t tick;
+    uint32_t divisor;
+    Patch sub_patch;
+};
+
 class CopperDevice : public Device {
 public:
     CopperDevice();
@@ -174,8 +201,8 @@ public:
     InputDevice(void);
     std::string name(void) override;
     static Device *create(void);
-    std::string template_name(void) override;
-    bool sub_parse(AspngSurface *, int32_t, int32_t, int32_t, int32_t) override;
+    std::string prefix(void) override;
+    bool sub_parse(AspngSurface *, int32_t, int32_t, int32_t, int32_t, std::string) override;
     bool link(void) override;
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>) override;
     ElectricalValue get_value_at_port(std::shared_ptr<Port>) override;
@@ -195,8 +222,8 @@ public:
     LEDDevice(void);
     std::string name(void) override;
     static Device *create(void);
-    std::string template_name(void) override;
-    bool sub_parse(AspngSurface *, int32_t, int32_t, int32_t, int32_t) override;
+    std::string prefix(void) override;
+    bool sub_parse(AspngSurface *, int32_t, int32_t, int32_t, int32_t, std::string) override;
     bool link(void) override;
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>) override;
     ElectricalValue get_value_at_port(std::shared_ptr<Port>) override;
@@ -275,8 +302,8 @@ class SwitchDevice : public BaseTemplateDevice {
 public:
     std::string name(void) override;
     static Device *create(void);
-    std::string template_name(void) override;
-    bool sub_parse(AspngSurface *, int32_t, int32_t, int32_t, int32_t) override;
+    std::string prefix(void) override;
+    bool sub_parse(AspngSurface *, int32_t, int32_t, int32_t, int32_t, std::string) override;
     bool link(void) override;
     std::list<std::shared_ptr<Port>> propagate(std::shared_ptr<Port>) override;
     ElectricalValue get_value_at_port(std::shared_ptr<Port>) override;

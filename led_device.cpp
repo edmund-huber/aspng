@@ -12,12 +12,15 @@ Device *LEDDevice::create(void) {
     return new LEDDevice();
 }
 
-std::string LEDDevice::template_name(void) {
+std::string LEDDevice::prefix(void) {
     return "led";
 }
 
 // A valid LEDDevice must be empty (black).
-bool LEDDevice::sub_parse(AspngSurface *surface, int32_t min_x, int32_t min_y, int32_t max_x, int32_t max_y) {
+bool LEDDevice::sub_parse(AspngSurface *surface, int32_t min_x, int32_t min_y, int32_t max_x, int32_t max_y, std::string param) {
+    if (param != "") {
+        return false;
+    }
     for (int32_t x = min_x; x <= max_x; x++) {
         for (int32_t y = min_y; y <= max_y; y++) {
             if (surface->get_pixel(x, y) != Rgb(0, 0, 0)) {

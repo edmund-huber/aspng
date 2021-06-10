@@ -27,6 +27,7 @@ Aspng::Aspng(AspngSurface *surface, std::string &error) {
     std::list<std::function<Device *(void)>> registry;
     registry.push_back(BackgroundDevice::create);
     registry.push_back(BridgeDevice::create);
+    registry.push_back(ClockDevice::create);
     registry.push_back(CopperDevice::create);
     registry.push_back(InputDevice::create);
     registry.push_back(LEDDevice::create);
@@ -181,11 +182,17 @@ std::string Aspng::maybe_add_ports(std::map<Coord, std::shared_ptr<Device>> &dev
 }
 
 void Aspng::step(void) {
-    // Build Nets for simulation: for each port,
+    // Call new_step() on all devices. In fact, only ClockDevices care.
+    for (auto i = this->all_devices.begin(); i != this->all_devices.end(); i++) {
+        auto device = *i;
+        device->new_step();
+    }
+
+    // Build Nets for simulation: for each port ..
     std::list<std::shared_ptr<Net>> nets;
     std::set<std::shared_ptr<Port>> contained_ports;
     for (auto i = this->all_ports.begin(); i != this->all_ports.end(); i++) {
-        // If this Port isn't in any Net, then let's start a new Net,
+        // .. if this Port isn't in any Net, then let's start a new Net,
         // propagating out from this Port.
         auto port = *i;
         if (!(contained_ports.find(port) != contained_ports.end())) {

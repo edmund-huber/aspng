@@ -72,10 +72,11 @@ bool BaseTemplateDevice::parse(AspngSurface *surface, Coord coord) {
     }
 
     // Instantiate the underlying device named in the tab.
-    if (this->template_name() != tab) {
+    if (tab.find(this->prefix()) != 0) {
         return false;
     }
-    if (!this->sub_parse(surface, min_x + 1, min_y + 5, max_x - 1, max_y - 1)) {
+    std::string param = tab.substr(this->prefix().length());
+    if (!this->sub_parse(surface, min_x + 1, min_y + 5, max_x - 1, max_y - 1, param)) {
         return false;
     }
 

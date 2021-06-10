@@ -8,12 +8,15 @@ Device *SwitchDevice::create(void) {
     return new SwitchDevice();
 }
 
-std::string SwitchDevice::template_name(void) {
+std::string SwitchDevice::prefix(void) {
     return "switch";
 }
 
 // A valid SwitchDevice is white if on, black if off.
-bool SwitchDevice::sub_parse(AspngSurface *surface, int32_t min_x, int32_t min_y, int32_t max_x, int32_t max_y) {
+bool SwitchDevice::sub_parse(AspngSurface *surface, int32_t min_x, int32_t min_y, int32_t max_x, int32_t max_y, std::string param) {
+    if (param != "") {
+        return false;
+    }
     enum {
         On,
         Off,
